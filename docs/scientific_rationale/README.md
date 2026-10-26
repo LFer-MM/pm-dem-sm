@@ -15,7 +15,8 @@ to generate the SIC / RMIC datasets. Each topic file has the same structure:
 All page locations below were checked by text search in the PDFs stored in
 Zotero (`/home/pher/Zotero/storage/<key>/`). "PDF p" is the page index of the
 file; "j." is the printed journal page. Slide numbers refer to
-`avances_tt.pptx` (Zotero `J8ID6KEP`) in presentation order (slide *N* is the
+`avances_tt.pptx` (Zotero item `YM2798IJ`, file `J8ID6KEP`, collection
+`bppm_dem_sm/project`) in presentation order (slide *N* is the
 *N*-th slide; verified against `ppt/presentation.xml`).
 
 ## Plant data: one reference mill, two supporting mills
@@ -108,7 +109,13 @@ plant angle of repose ([06](06_rolling_resistance.md)).
 ## Source registry
 
 Bibliographic data below is taken from the Zotero records (checked against
-the Zotero database on 2026-10-19). "Item" is the Zotero item key, "File" the
+the Zotero database on 2026-10-19; item and file keys re-checked after the
+library was reorganised, 2026-10-26: all present). Library collections:
+`bppm_dem_sm/core` (Kishida 2025, with its supplementary PDF and video),
+`bppm_dem_sm/dem` (all other cited papers, books and the YADE docs),
+`bppm_dem_sm/project` (the PPT), `bppm_dem_sm/unison` (university
+guidelines, not cited here). New items from "Pending Zotero additions" go
+into `bppm_dem_sm/dem`. "Item" is the Zotero item key, "File" the
 storage folder of the PDF actually read. Page references in these documents
 are to that PDF ("PDF p") and, where the PDF is the published version, to
 the printed page ("j.").
