@@ -15,8 +15,8 @@ to generate the SIC / RMIC datasets. Each topic file has the same structure:
 All page locations below were checked by text search in the PDFs stored in
 Zotero (`/home/pher/Zotero/storage/<key>/`). "PDF p" is the page index of the
 file; "j." is the printed journal page. Slide numbers refer to
-`avances_tt.pptx` (Zotero item `YM2798IJ`, file `J8ID6KEP`, collection
-`bppm_dem_sm/project`) in presentation order (slide *N* is the
+`avances_tt.pptx` (Zotero item `YM2798IJ` "presentacion_seguimiento",
+file `J8ID6KEP`, collection `bppm_dem_sm/unison`) in presentation order (slide *N* is the
 *N*-th slide; verified against `ppt/presentation.xml`).
 
 ## Plant data: one reference mill, two supporting mills
@@ -113,8 +113,7 @@ the Zotero database on 2026-10-19; item and file keys re-checked after the
 library was reorganised, 2026-10-26: all present). Library collections:
 `bppm_dem_sm/core` (Kishida 2025, with its supplementary PDF and video),
 `bppm_dem_sm/dem` (all other cited papers, books and the YADE docs),
-`bppm_dem_sm/project` (the PPT), `bppm_dem_sm/unison` (university
-guidelines, not cited here). New items from "Pending Zotero additions" go
+`bppm_dem_sm/unison` (the PPT and the university guidelines). New items from "Pending Zotero additions" go
 into `bppm_dem_sm/dem`. "Item" is the Zotero item key, "File" the
 storage folder of the PDF actually read. Page references in these documents
 are to that PDF ("PDF p") and, where the PDF is the published version, to
@@ -140,7 +139,7 @@ the printed page ("j.").
 | **Nan et al. 2022** | W. Nan, W.P. Goh, M.T. Rahman, *Elasto-plastic and adhesive contact: an improved linear model and its application*, Powder Technol. 407 (2022) 117634 | 10.1016/j.powtec.2022.117634 | `M78ZRT88` / `MEHLVFKI` | The PDF is the **author manuscript** (49 pages, same text as arXiv:2202.09520): page numbers are manuscript pages |
 | **McLaskey & Glaser 2010** | G.C. McLaskey, S.D. Glaser, *Hertzian impact: Experimental study of the force pulse and resulting stress waves*, J. Acoust. Soc. Am. 128(3) (2010) 1087-1096 | 10.1121/1.3466847 | `J45IS7SQ` / `PWTRWT5T` | j. = PDF p + 1086 |
 | **YADE docs 2021** | V. Smilauer et al. (27 authors), *Yade documentation*, 3rd ed., 2021 (the latest official edition; PPT ref. [8] cites the 2nd ed., 2015, DOI 10.5281/zenodo.34073) | 10.5281/zenodo.5705394 | `4NJP35ET` / `86JYU2WN` | printed p = PDF p - 7 |
-| **PPT** | `avances_tt.pptx` (project progress deck) | -- | `YM2798IJ` / `J8ID6KEP` | slide numbers |
+| **PPT** | `avances_tt.pptx` (project progress deck; Zotero item "presentacion_seguimiento") | -- | `YM2798IJ` / `J8ID6KEP` | slide numbers |
 
 Govender et al. 2016 (Blaze-DEMGPU framework, SoftwareX 5 (2016) 62-66,
 `2GMEKA42`) and Chou et al. 2017 (mixing index, KONA 34 (2017) 275-281,
