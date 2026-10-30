@@ -56,8 +56,8 @@ target anyway).
 | 07 | [07_restitution.md](07_restitution.md) | Fixed pair-wise e (Cleary & Morrison 2016): 0.3 / 0.5 / 0.8; steel liners take the steel values; es = en |
 | 08 | [08_density.md](08_density.md) | Steel 7850 / ore 2850 kg/m^3 (Chilean porphyry copper: Vergara 2020, Govender 2015); not calibrated; sensitivity 2650 incl. segregation |
 | 09 | [09_poisson_ratio.md](09_poisson_ratio.md) | Steel 0.292 (Shigley), rock 0.25 (Vergara 2020, El Teniente andesite); physical, not calibrated; effect < 7 % on contact stiffness |
-| 10 | [10_mill_geometry.md](10_mill_geometry.md) | SAG_A design with new liners (from reports, generated in code); 0.6 m slice (4.3 ball diameters, as Owen & Cleary); frictionless end walls, V11 checks liner friction |
-| 11 | [11_mill_speed.md](11_mill_speed.md) | SAG_A median 9 rpm = 72.8 % of critical (73.2 % with plain D); SAG_B / SAG_C typical (8.6-10 rpm); confirm from post-reline window (A1) |
+| 10 | [10_mill_geometry.md](10_mill_geometry.md) | SAG_A: 36 ft x 19 ft, 36 lifters (395 mm, 35 deg) + 36 plates (130 mm), D inside liners 10.71 m, new liners, generated in code; 0.6 m slice (4.3 ball diameters, 10.4 % of length); frictionless end walls |
+| 11 | [11_mill_speed.md](11_mill_speed.md) | SAG_A median 9 rpm = 69.2 % of critical (N_c 13.01 rpm); SAG_B / SAG_C share the 36 ft design (8.6-10 rpm); D / E compared as % critical |
 | 12 | [12_charge_fill_and_particles.md](12_charge_fill_and_particles.md) | Jb 17 % / Jc 26 % in Morrell's convention (D inside liners, lifters not subtracted); counts from a simulated grind-out + mixed crash stop; phi is a result |
 | 13 | [13_initial_conditions.md](13_initial_conditions.md) | SIC / RMIC at rest, undamped settle with a geometric stop rule, velocities zeroed; SIC = rock bottom, balls top |
 | 14 | [14_dataset_runs_and_recording.md](14_dataset_runs_and_recording.md) | Record from rest; durations in revolutions; training window after measured quasi-steady state |
@@ -96,8 +96,8 @@ topics' open items.
 
 | # | Item | Details | Used in |
 |---|---|---|---|
-| A1 | Plant time series, SAG_A-E | 10 s resolution; toe, shoulder, Jc, Jb, speed, **power** (state motor input vs shaft power), reline dates; at least one full liner campaign (min ~3 months, ideally 6-12) | [15](15_calibration_targets.md) claims 1-2, V15 |
-| A2 | Mill design data, SAG_A-E (reports) | Diameter inside shell **and** liner plate thickness (Morrell's two inputs; D inside liners = D shell - 2 x plate thickness), belly length inside liners, lifter rows, lifter height, base / top width, face angle (new; worn if available), liner / grate design, plant's critical-speed definition | [10](10_mill_geometry.md), [15](15_calibration_targets.md) |
+| A1 | Plant time series, SAG_A-E (in progress) | 2026 H1 campaign, esp. the weeks after the reline. **SAG_A**: 10 s; toe, shoulder, Jc, Jb, speed, **power** (motor input or shaft?), reline dates. **SAG_B-E**: coarser (1-5 min or hourly); toe, shoulder, Jc, Jb, speed; compared as % of critical speed | [15](15_calibration_targets.md) claims 1-2, V15 |
+| A2 | Mill design data, SAG_A-E | **Received 2026-10-30** (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`). Still open: re-check plate thickness / angles; lifter and plate widths (or liner drawing); LH from shell or plate?; length = belly inside liners?; cone ends; plant's critical-speed definition | [10](10_mill_geometry.md), [15](15_calibration_targets.md) |
 | A3 | Plant Maleki-model inputs | Which liner geometry feeds the plant's Maleki-Moghaddam model, and whether it is updated with wear | [15](15_calibration_targets.md) claim 3 |
 | A4 | Mill generator code | Add the author's mill-generation code to the repo as the primary geometry source | [10](10_mill_geometry.md) C10-4 |
 | A5 | Zotero additions | Work through "Pending Zotero additions" below (priority: Maleki-Moghaddam 2013; read Wensrich & Katterfeld 2012, Ai 2011, Thornton 2013) | registry below |
@@ -168,7 +168,7 @@ registry with its item / file keys and page mapping.
 | Key used in docs | Reference | DOI / source | Used in | Status in docs | Action |
 |---|---|---|---|---|---|
 | **Maleki-Moghaddam et al. 2013** | M. Maleki-Moghaddam, M. Yahyaei, S. Banisi, *A method to predict shape and trajectory of charge in industrial mills*, Miner. Eng. 46-47 (2013) 157-166 | 10.1016/j.mineng.2013.04.013 | [15](15_calibration_targets.md) | Abstract only (marked "No") | Add by DOI; PDF via library access. **Priority**: the plant angles come from this model |
-| **Toor et al. 2023** | P. Toor, W. Valery, S. Morrell, K. Duffy, *Real-Time Estimation of SAG Mill Charge Characteristics for Process Optimization*, SAG Conference, Vancouver, 2023 (page footers read "SAG CONFERENCE 2019 VANCOUVER \| June 18, 2023") | ceecthefuture.org publication 4122 (free PDF) | [15](15_calibration_targets.md) | Read (PDF) | Add as conference paper; attach the free PDF |
+| **Toor et al. 2023** | P. Toor, W. Valery, S. Morrell, K. Duffy, *Real-Time Estimation of SAG Mill Charge Characteristics for Process Optimization*, SAG Conference, Vancouver, 2023 (page footers read "SAG CONFERENCE 2019 VANCOUVER \| June 18, 2023") | ceecthefuture.org publication 4122 (free PDF) | [11](11_mill_speed.md), [15](15_calibration_targets.md) | Read (PDF) | Add as conference paper; attach the free PDF |
 | **Pural & Boylu 2025** | Y.E. Pural, F. Boylu, *Prediction and visualization of charge shape and ball trajectory in tumbling mills: a python-based tool for liner design and operational optimizations*, Physicochem. Probl. Miner. Process. 61(3) (2025) 204533 | 10.37190/ppmp/204533 (open access) | [15](15_calibration_targets.md) | Read (PDF) | Add by DOI (Zotero fetches the PDF) |
 | **Wei et al. 2022** | S. Wei, H. Wei, H. Saxen, Y. Yu, *Numerical analysis of the relationship between friction coefficient and repose angle of blast furnace raw materials by discrete element method*, Materials 15(3) (2022) 903 | 10.3390/ma15030903 (open access) | [06](06_rolling_resistance.md) | Read (online full text) | Add by DOI (Zotero fetches the PDF) |
 | **Marin Perez et al. 2024** | J. Marin Perez, T. Comlekci, Y. Gorash, D. MacKenzie, *Calibration of the DEM sliding friction and rolling friction parameters of a cohesionless bulk material*, preprint, 28 May 2024 | strathprints.strath.ac.uk/89399 (free PDF) | [06](06_rolling_resistance.md) | Read (PDF) | Add as preprint; attach the PDF; check for a published version |
@@ -214,8 +214,13 @@ file, with the decided material set (physical moduli / 26, see
 [03](03_stiffness_young_modulus.md)): steel rho = 7850, E = 7.962e9,
 nu = 0.292, r = 0.06985 m; rock rho = 2850 (2650 until 2026-10-21, now the
 sensitivity case), E = 2.115e9, nu = 0.25, r = 0.034925 m. Particle masses:
-ball 11.206 kg, rock 0.5086 kg (0.4729 kg at 2650). Numbers in docs 02-04
-that depend on rock density were recomputed on 2026-10-21; the historical
+ball 11.206 kg, rock 0.5086 kg (0.4729 kg at 2650). Mill: SAG_A, diameter
+inside liners 10.7128 m (36 ft shell - 2 x 130 mm plates), 19 ft long,
+0.6 m slice; worst-case impact speed sqrt(2 g D) = 14.5 m/s; N_c =
+13.01 rpm. Numbers that depend on the mill were recomputed for SAG_A on
+2026-10-30 (they were first computed for an old 40 ft STL, D = 11.8375 m,
+which is not SAG_A). Numbers in docs 02-04 that depend on rock density
+were recomputed on 2026-10-21; the historical
 test setups in [04](04_numerical_damping.md) keep the 2650 they were run with. Where a
 doc compares with the PPT's slide-12 set (33.16e9 / 2.868e9), it says so.
 

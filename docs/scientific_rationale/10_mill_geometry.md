@@ -10,23 +10,31 @@ Decided 2026-10-22.
   SAG_A's design is typical (as done for the operating point in
   [15](15_calibration_targets.md)); an average "generic" mill is not used,
   because the plant toe / shoulder targets are computed for SAG_A's liner.
+- **SAG_A's design (received 2026-10-30, campaign start 2026 H1, new
+  liners):** 36 ft x 19 ft (inside shell; length to be confirmed as belly
+  length inside liners), hi-lo shell liner of **36 lifters** (height 395 mm,
+  face angle 35 deg) alternating with **36 plates** (thickness 130 mm, angle
+  35 deg). Diameter inside liners **D = 10.9728 - 2 x 0.130 = 10.7128 m**
+  (provisional: plate thickness and angles being re-checked by the author).
+  Full table and the SAG_A-E comparison in Analysis.
 - **Geometry is generated in code** from those parameters (the author's mill
   generator, to be added to the repo), not read from an input STL file. The
-  current STL (`sag_mill_40ft_m.stl`, PPT slide 1) and its values -- inside
-  diameter 11.8375 m, 30 lifters -- are provisional until the report values
-  are in.
+  old STL (`sag_mill_40ft_m.stl`, PPT slide 1: 40 ft, 30 lifters, 11.8375 m)
+  is **not SAG_A** and is retired.
 - **Slice depth 0.6 m** (was 0.375 m): 4.3 diameters of the 139.7 mm balls,
-  the same depth as Owen & Cleary's SAG slice (Analysis).
+  the same depth as Owen & Cleary's SAG slice, and 10.4 % of SAG_A's 19 ft
+  length -- Govender's 10 % as well (Analysis).
 - **End walls frictionless** (baseline). The liner-friction case is a
   one-off sensitivity check (V11), compared on toe, shoulder, power **and
   segregation**. Periodic axial boundaries are not used.
-- Every diameter-based quantity uses SAG_A's inside diameter (currently
-  11.8375 m: critical speed, Lacey cell 0.04 D = 0.4735 m).
+- Every diameter-based quantity uses SAG_A's diameter inside liners,
+  10.7128 m: critical speed 13.01 rpm, Lacey cell 0.04 D = 0.4285 m.
 
 ## Evidence
 
 | Source | What it says | Where | Verified |
 |---|---|---|---|
+| Plant design data (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`, attachment `ZBFFQY29`) | SAG_A-E at the start of the 2026 H1 campaign (new liners): diameter inside shell (ft), length (ft), lifter rows LQ, lifter height LH, lifter angle LA, plate rows PQ, plate thickness PH, plate angle PA | CSV, columns as named | Yes (read 2026-10-30) |
 | Owen & Cleary 2015 | "a 3D slice of a generic SAG mill": shell inner diameter 8.4 m, slice length 0.6 m "along the cylindrical belly", 56 lifters, base width 320 mm, height 50-300 mm, face angle 15-25 deg; how the slice ends are treated is not stated | §3 and Table 1, PDF p2 / j.20 | Yes |
 | Owen & Cleary 2015 | Charge: balls 145 mm down to 30 mm, rocks 200 mm down to 25 mm (Table 3) -> slice = 4.1 top-ball diameters, 3.0 top-rock diameters | §3 and Table 3, PDF p3 / j.21 | Yes |
 | Govender 2015 | "Fig. 30(b) depicts the charge profile for a slice of 10% of length. We notice that the pattern is very similar to the full length of the mill. Clearly the effect of the axial direction cannot just be neglected as the 2D case cannot fully reproduce the dynamics." | §3.1, PDF p16 / j.167 | Yes |
@@ -40,8 +48,8 @@ Decided 2026-10-22.
 
 | Slide | Content |
 |---|---|
-| 1 | "Diametro Total = 40 ft = 12.192 m (medicion exterior molino real)"; "Diametro Interno = 11,837.5 mm (sin grosor cilindro)"; "Cantidad de Elevadores = 30 elevadores (STL y real)"; "Profundidad del Slice = 375 mm (del STL)"; "Volumen Interno = 39.4693 m^3 (STL via MeshMixer)"; "Diametro Efectivo = 11.576 m (calculado con volumen STL)"; bounding box X = 11.8227, Y = 11.8375, Z = 0.375 m. **Depth superseded by 0.6 m; other values provisional** |
-| 21 | Lacey cell_size = 0.04 D = 0.04 x 11.83 = 0.4732 m |
+| 1 | "Diametro Total = 40 ft = 12.192 m (medicion exterior molino real)"; "Diametro Interno = 11,837.5 mm (sin grosor cilindro)"; "Cantidad de Elevadores = 30 elevadores (STL y real)"; "Profundidad del Slice = 375 mm (del STL)"; "Volumen Interno = 39.4693 m^3 (STL via MeshMixer)"; "Diametro Efectivo = 11.576 m (calculado con volumen STL)"; bounding box X = 11.8227, Y = 11.8375, Z = 0.375 m. **Old 40 ft STL, not SAG_A: superseded by SAG_A's design data** |
+| 21 | Lacey cell_size = 0.04 D = 0.04 x 11.83 = 0.4732 m (old STL; SAG_A: 0.4285 m) |
 | 31 | Snapshot of the STL slice with lifters visible |
 
 ## Current state
@@ -49,13 +57,13 @@ Decided 2026-10-22.
 | Where | What |
 |---|---|
 | `config.py:68` | `SAGMILL_STL_PATH = "sag_mill_40ft_m.stl"`; the file is not in the repo |
-| `config.py:72` | `MILL_DIAMETER_M = 11.0` -- **wrong**: it is the default `MillGeometry.diameter_m` (`scenario.py:76`), which sizes the fill boxes and derived checks, and it sets `MetricsOptions.cell_size` (`config.py:209`, 0.44 m instead of 0.4735 m) |
-| `configs/pipeline_example.json:32` | `cell_size = 0.4732` (correct D) |
+| `config.py:72` | `MILL_DIAMETER_M = 11.0` -- **wrong**: it is the default `MillGeometry.diameter_m` (`scenario.py:76`), which sizes the fill boxes and derived checks, and it sets `MetricsOptions.cell_size` (`config.py:209`, 0.44 m instead of SAG_A's 0.4285 m) |
+| `configs/pipeline_example.json:32` | `cell_size = 0.4732` (old 40 ft STL; SAG_A: 0.4285) |
 | `scenario.py:77` | `depth_m = 0.375` |
 | `scenario.py:85` | `end_walls = "liner"` (default); `"frictionless"` available (`run_simulation.py:145-154`: friction 0, restitution copied from the liner) |
 | `scenario.py:467-470` | Warns when the slice is < 4 large diameters deep with frictional end walls |
 | `scenario.py:53-70`, `stl.py` | Parametric shell + trapezoidal lifters exist as an alternative source (`source = "parametric"`) |
-| Existing dataset | Particle centres reach 5.88 m from the axis, consistent with an inside radius of 5.92 m, not 5.5 m |
+| Existing dataset | Particle centres reach 5.88 m from the axis, consistent with the old 40 ft STL (inside radius 5.92 m), not with SAG_A |
 
 ## Analysis
 
@@ -72,15 +80,39 @@ Decided 2026-10-22.
   Cleary and a larger ratio under either reading. This matters more here
   because every ball is at the top size, whereas in their charges the top
   size is a minority of the balls.
-- For a 40 ft mill, 0.6 m is probably near 10 % of the length too; to be
-  checked when SAG_A's length is in.
-- Side benefits: the Lacey cell (0.4735 m, [14](14_dataset_runs_and_recording.md))
+- SAG_A is 19 ft = 5.79 m long, so 0.6 m is **10.4 % of the length**:
+  the slice also meets Govender's 10 %.
+- Side benefits: the Lacey cell (0.4285 m, [14](14_dataset_runs_and_recording.md))
   fits inside the slice, which it did not at 0.375 m; the code's own
   thin-slice warning no longer applies.
-- Cost: particle count and run time scale with depth, x1.6
-  (~2.1 h per calibration run, ~19 h for the 9-run grid,
-  [05](05_friction.md)). Particle counts in [12](12_charge_fill_and_particles.md)
-  must be recomputed for the new volume.
+- Cost: ~1.7 h per calibration run, ~15 h for the 9-run grid
+  ([05](05_friction.md)); particle counts in
+  [12](12_charge_fill_and_particles.md).
+
+### SAG_A-E design data and why SAG_A is typical
+
+Campaign start, 2026 H1, new liners. D inside liners = D inside shell
+- 2 x plate thickness; N_c = 42.3 / sqrt(D - d_ball).
+
+| Mill | D shell | L | Lifters (rows / height / angle) | Plates (rows / thickness / angle) | D inside liners | N_c | Slice 0.6 m / L |
+|---|---|---|---|---|---|---|---|
+| **SAG_A** | **36 ft (10.973 m)** | **19 ft (5.791 m)** | **36 / 395 mm / 35 deg** | **36 / 130 mm / 35 deg** | **10.713 m** | **13.01 rpm** | **10.4 %** |
+| SAG_B | 36 ft | 19 ft | 36 / 396 mm / 35 deg | 36 / 123 mm / 35 deg | 10.727 m | 13.00 rpm | 10.4 % |
+| SAG_C | 36 ft | 19 ft | 30 / 387 mm / 35 deg | 30 / 123 mm / 35 deg | 10.727 m | 13.00 rpm | 10.4 % |
+| SAG_D | 40 ft (12.192 m) | 29 ft (8.839 m) | 30 / 530 mm / 34 deg | 30 / 230 mm / 34 deg | 11.732 m | 12.42 rpm | 6.8 % |
+| SAG_E | 40 ft | 26 ft (7.925 m) | 27 / 458 mm / 30 deg | 27 / 250 mm / 30 deg | 11.692 m | 12.45 rpm | 7.6 % |
+
+- SAG_A, B and C share one design (36 x 19 ft, ~390-395 mm lifters at
+  35 deg; C has 30 instead of 36 rows). SAG_D and E are larger 40 ft mills
+  with taller lifters and plates. SAG_A is therefore representative of the
+  36 ft group, and D / E show the range across mill sizes.
+- Comparisons of operating data between the groups use dimensionless
+  quantities (% of critical speed, J, angles), not rpm
+  ([11](11_mill_speed.md), [15](15_calibration_targets.md)).
+- Plate angles equal to the lifter angles are being re-checked by the
+  author. Not yet in the data: lifter / plate base and top widths (or the
+  liner drawing) needed by the generator, and whether LH is measured from
+  the shell or from the plate.
 
 ### End walls: frictionless, and what it leaves behind
 
@@ -114,9 +146,9 @@ Decided 2026-10-22.
 ### Diameter
 
 Use SAG_A's **diameter inside liners** (Morrell's D: inside shell minus
-2 x liner plate thickness; currently the STL's 11.8375 m) everywhere. The
-PPT's "effective" 11.576 m is a volume-equivalent diameter (lifters
-subtracted) and is not used; the word "effective" is avoided because its
+2 x liner plate thickness = 10.7128 m) everywhere. The PPT's "effective"
+11.576 m (a volume-equivalent diameter of the old 40 ft STL, lifters
+subtracted) is not used; the word "effective" is avoided because its
 meaning varies ([12](12_charge_fill_and_particles.md)).
 
 ### Geometry source
@@ -130,35 +162,35 @@ reline ([15](15_calibration_targets.md), claim 2).
 ## Verdict and how to defend it
 
 "The mill is modelled as a 0.6 m slice of SAG_A, generated from its design
-data with new liners (inside diameter, lifter rows, height, widths and face
-angle from the mill reports); the same data for SAG_B-E show the design is
-typical. Slice models are standard for SAG mills: Owen & Cleary (2015) use a
+data with new liners (36 ft x 19 ft, 36 lifters of 395 mm at 35 deg
+alternating with 130 mm plates; 10.71 m inside liners); SAG_B and SAG_C
+share this design and SAG_D-E show the range for larger 40 ft mills. Slice models are standard for SAG mills: Owen & Cleary (2015) use a
 0.6 m slice of an 8.4 m mill, and a slice of ~10 % of the length reproduces
 the full-mill charge profile whereas a 2D model does not (Govender et al.
 2015, §3.1). Our slice is 4.3 ball diameters deep, at least as deep as
-theirs relative to the largest particles. The end walls are frictionless,
+theirs relative to the largest particles, and 10.4 % of SAG_A's length. The end walls are frictionless,
 so they confine the slice without adding wall shear; a run with frictional
 end walls bounds their effect, and segregation next to the end walls is
 reported separately because it has no counterpart in the real mill."
 
 ## Open items / validation
 
-- Mill design data for SAG_A-E from the reports (see the data list in
-  [15](15_calibration_targets.md)): inside diameter, length, lifter rows,
-  lifter height, base / top width, face angle (new), liner configuration.
+- Design data SAG_A-E received (CSV, 2026-10-30). Still open: the
+  author's re-check of plate thickness / angles; lifter and plate widths or
+  the liner drawing; whether LH is from the shell or the plate; confirm the
+  CSV length is the belly length inside liners.
 - Add the author's mill generator to the repo as the primary geometry
   source; record its parameters (and a hash of the generated mesh) in each
   run manifest; cross-check the old STL against it.
 - V11 end-wall check ([16](16_validation_checks.md)): frictionless vs liner
   friction, 3 revolutions each; compare toe, shoulder, power and
   segregation.
-- Check 0.6 m against 10 % of SAG_A's length once known.
 
 ## Pending code changes
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C10-1 | `MILL_DIAMETER_M` = SAG_A inside diameter (11.8375 until the report value) | 11.0 (`config.py:72`) | Before any production run |
+| C10-1 | `MILL_DIAMETER_M` = SAG_A diameter inside liners, 10.7128 m (provisional until the plate re-check) | 11.0 (`config.py:72`) | Before any production run |
 | C10-2 | Default `end_walls = "frictionless"` | `"liner"` (`scenario.py:85`) | Before calibration |
 | C10-3 | Default `depth_m = 0.6` | 0.375 (`scenario.py:77`) | Before calibration |
-| C10-4 | Add the author's mill generator as the primary geometry source; geometry parameters in the run manifest; drop the required STL input | `source = "stl"` with an external file | Before calibration |
+| C10-4 | Add the author's mill generator as the primary geometry source (SAG_A: 36 lifters + 36 plates); geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |

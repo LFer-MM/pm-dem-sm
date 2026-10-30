@@ -12,19 +12,21 @@ Both physical Young's moduli are reduced by the **same factor f = 26**
 
 Steel / rock ratio: 3.76 in both the physical and the simulated set.
 
-**Rule that fixes f = 26:** the smallest uniform reduction for which every
-contact type (steel-steel, steel-rock, rock-rock) is integrated with
-**>= 20 steps at the worst-case impact speed** sqrt(2 g D) = 15.2 m/s with
-dt = 2.5e-5 s ([02](02_time_step.md)), satisfying both the 15-25 steps of
-Cleary 2001 and the 20-70 of Boemer & Ponthot 2017. Any stiffer set drops
-some contact below 20 steps; any softer set only increases overlap.
+**Rule behind f = 26:** every contact type (steel-steel, steel-rock,
+rock-rock) is integrated with **>= 20 steps at the worst-case impact speed**
+sqrt(2 g D) with dt = 2.5e-5 s ([02](02_time_step.md)), satisfying both the
+15-25 steps of Cleary 2001 and the 20-70 of Boemer & Ponthot 2017. f = 26
+was the smallest such reduction for the earlier 40 ft geometry (15.2 m/s);
+for SAG_A (D inside liners 10.71 m, 14.5 m/s) the threshold is 25.0 for the
+2650 sensitivity case and 23.3 at 2850, so 26 is kept with ~1 step of
+margin. Softer sets only increase overlap.
 
 Acceptance (all relative to the smaller particle **diameter**):
 
 - **mean** overlap <= 0.5 % (the strictest average in the literature,
   Cleary & Morrison 2016);
 - **maximum** overlap < 10 % (Boemer & Ponthot's sensitivity limit); the
-  predicted worst case is 3.9 % (3.8 % with rock at 2650 kg/m^3);
+  predicted worst case is 3.8 % (3.6 % with rock at 2650 kg/m^3);
 - macroscopic results (toe, shoulder, power) unchanged when E is halved or
   doubled (validation check **V10**, [16](16_validation_checks.md)).
 
@@ -102,26 +104,28 @@ harmless in a mixed charge; the uniform reduction avoids having to argue it.)
 
 ### Why f = 26: the admissible range at dt = 2.5e-5 s
 
-| f | E steel / rock | Fewest steps per collision (15.2 m/s) | Max peak overlap (15.2 m/s) | Status |
-|---|---|---|---|---|
 Rock density 2850 kg/m^3 ([08](08_density.md)); values for the 2650
 sensitivity case in brackets where they change the conclusion.
 
-| f | E steel / rock | Fewest steps per collision (15.2 m/s) | Max peak overlap (15.2 m/s) | Status |
-|---|---|---|---|---|
-| <= 8.6 | >= 24.1 / 6.40 GPa | <= 13.3 | <= 2.5 % | meets Govender's customary 2.5 %, **fails** Cleary's 15 steps |
-| 11.6 | 17.8 / 4.74 GPa | 15.0 | 2.8 % | Cleary's minimum, no margin |
-| 23.8 | 8.70 / 2.31 GPa | 20.0 (19.4) | 3.7 % | meets Boemer's 20 at 2850 only, no margin |
-| **26** | **7.96 / 2.115 GPa** | **20.7 (20.1)** | **3.9 %** | **meets Cleary and Boemer for every contact at both rock densities** |
-| <= 275 | -- | -- | < 10 % | Boemer's overlap limit |
+SAG_A worst-case impact speed sqrt(2 g D) = 14.5 m/s (D inside liners
+10.71 m, [10](10_mill_geometry.md)).
 
-f = 26 is the stiffest uniform set that meets both step criteria for both
-rock densities used (2850 baseline, 2650 sensitivity run); f ~ 24 would
-suffice at 2850 alone, but keeping 26 lets the two density runs share the
-same moduli, so only density changes between them. Softening further gains
+| f | E steel / rock | Fewest steps per collision (14.5 m/s) | Max peak overlap (14.5 m/s) | Status |
+|---|---|---|---|---|
+| <= 9.4 | >= 21.9 / 5.82 GPa | <= 14.0 | <= 2.5 % | meets Govender's customary 2.5 %, **fails** Cleary's 15 steps |
+| 11.3 | 18.3 / 4.86 GPa | 15.0 | 2.7 % | Cleary's minimum, no margin |
+| 23.3 | 8.90 / 2.37 GPa | 20.0 (19.4) | 3.6 % | meets Boemer's 20 at 2850 only, no margin |
+| 25.0 | 8.28 / 2.20 GPa | 20.5 (20.0) | 3.7 % | meets both at both densities, no margin |
+| **26** | **7.96 / 2.115 GPa** | **20.9 (20.3)** | **3.8 %** | **meets Cleary and Boemer for every contact at both rock densities, ~1 step margin** |
+| <= 302 | -- | -- | < 10 % | Boemer's overlap limit |
+
+f = 26 (fixed 2026-10-19 on the earlier 40 ft geometry) still meets both
+step criteria for both rock densities used (2850 baseline, 2650 sensitivity
+run) with a small margin; the same moduli serve both density runs, so only
+density changes between them. Softening further gains
 nothing but overlap. The range itself shows that no stiffer set
 can meet both Cleary's/Boemer's step criteria and Govender's customary 2.5 %
-at this dt: the customary 2.5 % would need dt ~ 1.6e-5 s.
+at this dt: the customary 2.5 % would need dt ~ 1.7e-5 s.
 
 ### Peak overlaps with f = 26
 
@@ -129,20 +133,20 @@ delta_max = (15 m* v^2 / (16 E* R*^0.5))^(2/5) (Johnson 1985 Eq. 11.22,
 p. 353, with E*, R*, m* as defined in Eq. 11.20, p. 352), relative to the
 smaller diameter (rock density 2850 kg/m^3; steel-steel independent of it):
 
-| Pair | 1 m/s | 5 m/s | 8 m/s | 12 m/s | **15.2 m/s (worst case)** |
+| Pair | 1 m/s | 5 m/s | 8 m/s | 12 m/s | **14.5 m/s (worst case)** |
 |---|---|---|---|---|---|
-| steel-steel | 0.38 % | 1.37 % | 2.00 % | 2.77 % | **3.35 %** |
-| steel-rock | 0.44 % | 1.60 % | 2.33 % | 3.22 % | **3.89 %** |
-| rock-rock | 0.43 % | 1.57 % | 2.29 % | 3.17 % | **3.83 %** |
+| steel-steel | 0.38 % | 1.37 % | 2.00 % | 2.77 % | **3.22 %** |
+| steel-rock | 0.44 % | 1.60 % | 2.33 % | 3.22 % | **3.75 %** |
+| rock-rock | 0.43 % | 1.57 % | 2.29 % | 3.17 % | **3.68 %** |
 
 The worst case follows Boemer's method: v_r = sqrt(2 g D) =
-sqrt(2 x 9.81 x 11.8375) = 15.2 m/s, a particle falling from the top of the
-mill to the bottom. Real impacts are slower (the old dataset's fastest
-particle moved at 12.6 m/s).
+sqrt(2 x 9.81 x 10.7128) = 14.5 m/s for SAG_A, a particle falling from the
+top of the mill to the bottom. Real impacts are slower (the old 40 ft
+dataset's fastest particle moved at 12.6 m/s).
 
 Against the criteria:
 
-- **Maximum overlap.** Worst case 3.4-3.9 %: well below Boemer's ~10 %
+- **Maximum overlap.** Worst case 3.2-3.8 %: well below Boemer's ~10 %
   sensitivity limit. Govender's *customary* 2.5 % is exceeded only for
   impacts above ~9 m/s; meeting it would need a stiffer set and dt ~1.6e-5 s,
   which no sensitivity evidence requires.
@@ -184,12 +188,12 @@ ores.
 the ores of the reference mills were not characterised -- and are reduced by
 a common factor of 26, preserving their physical ratio, to 7.96 and
 2.115 GPa. In mill DEM the stiffness is a numerical parameter (Cleary &
-Morrison 2016, §2); the factor is the smallest for which every collision is
-integrated with at least 20 steps at dt = 2.5e-5 s for both ore densities
-considered (2850 and 2650 kg/m^3), satisfying the accuracy
+Morrison 2016, §2); with this factor every collision is integrated with at
+least 20 steps at dt = 2.5e-5 s for both ore densities considered (2850
+and 2650 kg/m^3), satisfying the accuracy
 criteria of Cleary (2001, §2) and Boemer & Ponthot (2017, §2.2.3). The
 maximum overlap, estimated with Hertz theory (Johnson 1985, Eq. 11.22) at
-Boemer & Ponthot's worst-case impact speed sqrt(2 g D) = 15.2 m/s, is 3.9 %,
+Boemer & Ponthot's worst-case impact speed sqrt(2 g D) = 14.5 m/s, is 3.8 %,
 well below the ~10 % up to which charge motion and power are insensitive to
 stiffness (Boemer & Ponthot 2017, §4); average overlaps stay within the
 0.1-0.5 % of Cleary & Morrison (2016, §2). A sensitivity study with both

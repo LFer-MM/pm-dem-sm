@@ -69,7 +69,7 @@ No slide mentions rolling resistance. Slide 42 (structure map) lists
   friction only roll freely and pile at ~24-27 deg (Li et al. 2005), well
   below ore (30-37 deg in the handbook values below). The charge then has
   less shear strength than the real one: lower shoulder at sub-critical
-  speeds (Cleary 2001, §11). At 72.8 % CS shape changes the power little
+  speeds (Cleary 2001, §11). At 69 % CS shape changes the power little
   (Cleary 2001, §10), so the effect shows mainly in charge shape -- the
   calibration targets.
 - The mill papers that reach good agreement either use real shapes (Cleary

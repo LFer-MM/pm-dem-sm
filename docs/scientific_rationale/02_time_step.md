@@ -7,11 +7,14 @@
 factor **f = 26** (decided 2026-10-19), i.e. **E_steel = 7.96 GPa,
 E_rock = 2.115 GPa**.
 
-dt and f are chosen together: f = 26 is the smallest uniform reduction for
-which **every contact type gets >= 20 integration steps at the worst-case
-impact speed** sqrt(2 g D) = 15.2 m/s with dt = 2.5e-5 s for **both** rock
-densities used (2850 kg/m^3 baseline: 20.7-36.2 steps; 2650 sensitivity
-case: 20.1-36.2 steps; [08](08_density.md)).
+dt and f are chosen together: with f = 26 **every contact type gets >= 20
+integration steps at the worst-case impact speed** sqrt(2 g D) = 14.5 m/s
+(SAG_A, D inside liners 10.71 m, [10](10_mill_geometry.md)) with
+dt = 2.5e-5 s for **both** rock densities used (2850 kg/m^3 baseline:
+20.9-36.6 steps; 2650 sensitivity case: 20.3-36.6 steps;
+[08](08_density.md)). f = 26 was fixed (2026-10-19) as the smallest
+reduction meeting this at the earlier 40 ft geometry; for SAG_A the
+threshold is f >= 25.0 (2650 case), so 26 keeps a margin of ~1 step.
 That satisfies both accuracy criteria of the literature -- 15-25 steps
 (Cleary 2001) and 20-70 steps (Boemer & Ponthot 2017) -- plus an energy
 balance within a few percent (see [16](16_validation_checks.md)).
@@ -19,11 +22,11 @@ balance within a few percent (see [16](16_validation_checks.md)).
 Options considered (contact time and peak overlap both scale as E^-0.4, so a
 larger dt needs a larger reduction for the same number of steps):
 
-| Option | dt | Uniform reduction f | E steel / rock | Max peak overlap at 15.2 m/s | Cost vs 1e-4 | Status |
+| Option | dt | Uniform reduction f | E steel / rock | Max peak overlap at 14.5 m/s | Cost vs 1e-4 | Status |
 |---|---|---|---|---|---|---|
-| **A** | 2.5e-5 s | **26** | 7.96 / 2.115 GPa | 3.9 % | 4x | **chosen** |
-| C | 5e-5 s | 147 | 1.41 / 0.374 GPa | 7.8 % | 2x | fallback if compute is short |
-| B | 1e-4 s | 832 | 0.249 / 0.066 GPa | 16 % | 1x | rejected: exceeds Boemer's ~10 % limit |
+| **A** | 2.5e-5 s | **26** | 7.96 / 2.115 GPa | 3.8 % | 4x | **chosen** |
+| C | 5e-5 s | 147 | 1.41 / 0.374 GPa | 7.5 % | 2x | fallback if compute is short |
+| B | 1e-4 s | 832 | 0.249 / 0.066 GPa | 15 % | 1x | rejected: exceeds Boemer's ~10 % limit |
 
 The PPT's slide-12 set (33.16 / 2.868 GPa, i.e. steel / 6.2 and rock / 19.2)
 was first adopted with dt = 2.5e-5 s and then replaced by the uniform
@@ -71,7 +74,8 @@ stricter.
 | Boemer & Ponthot 2017 | Maximum relative impact velocity "can be assumed to be equal to sqrt(2 x 9.81 x 0.8) ~ 4 m/s, which corresponds to the terminal velocity when a ball falls from the top of the mill (diameter of 0.8 m) to its lowest position starting from rest" | §3.1.2, PDF p8 / j.60 | Yes |
 | Govender 2015 | Kn / dt chosen "for the typical range of velocities observed in tumbling mill simulations" | §1.5, PDF p6 / j.157 | Yes |
 
-Applied here: sqrt(2 x 9.81 x 11.8375) = 15.2 m/s.
+Applied here (SAG_A, D inside liners 10.7128 m): sqrt(2 x 9.81 x 10.7128) =
+14.5 m/s.
 
 ### E5. Stiffness and dt are chosen together
 
@@ -184,13 +188,14 @@ not depend on it):
 | steel-rock | 8 | 5.99e-4 | 6.0 | 12.0 | 24.0 |
 | steel-rock | 12 | 5.52e-4 | 5.5 | 11.0 | 22.1 |
 | rock-rock | 8 | 5.89e-4 | 5.9 | 11.8 | 23.6 |
-| steel-steel | **15.2** (worst case) | 9.05e-4 | 9.0 | 18.1 | **36.2** |
-| steel-rock | **15.2** | 5.27e-4 | 5.3 | 10.5 | **21.1** (20.5 at 2650) |
-| rock-rock | **15.2** | 5.18e-4 | 5.2 | 10.4 | **20.7** (20.1 at 2650) |
+| steel-steel | **14.5** (worst case) | 9.14e-4 | 9.1 | 18.3 | **36.6** |
+| steel-rock | **14.5** | 5.32e-4 | 5.3 | 10.6 | **21.3** (20.7 at 2650) |
+| rock-rock | **14.5** | 5.23e-4 | 5.2 | 10.5 | **20.9** (20.3 at 2650) |
 
 The worst case uses Boemer & Ponthot's choice of impact speed (§3.1.2,
-PDF p8): free fall across the mill, sqrt(2 g D) = 15.2 m/s for D = 11.84 m.
-Real impacts are slower: the shell moves at 5.58 m/s at 9 rpm and the old
+PDF p8): free fall across the mill, sqrt(2 g D) = 14.5 m/s for SAG_A's
+D = 10.71 m (inside liners). Real impacts are slower: the shell moves at
+5.05 m/s at 9 rpm and the old (40 ft)
 dataset's fastest particle moved at 12.6 m/s (frame 399). Even in the worst
 case every contact gets >= 20 steps, meeting both Cleary's 15-25 and
 Boemer's 20-70 (the rock contacts, with low restitution 0.3-0.5, need the
@@ -200,14 +205,15 @@ dt = 1e-4 s the same collisions would get only ~5 steps.
 
 ### Govender's lifter-motion bound
 
-dt_max = d_max / (R omega) with R = 5.92 m, omega = 0.942 rad/s:
-3.1e-4 s (d_max = 0.05 r_rock) or 1.6e-4 s (0.025 r_rock). Not binding.
+dt_max = d_max / (R omega) with R = 5.36 m (SAG_A inside liners),
+omega = 0.942 rad/s: 3.5e-4 s (d_max = 0.05 r_rock) or 1.7e-4 s
+(0.025 r_rock). Not binding.
 
 ### Option B: keep dt = 1e-4 s
 
 Getting the same >= 20 steps at 1e-4 s needs t_c x4, i.e. E / 32 relative to
 option A (f = 832: E_steel ~ 0.25 GPa, E_rock ~ 0.07 GPa). Peak overlaps then
-grow x4, to ~13-15 % of the smaller diameter at the 15.2 m/s worst case.
+grow x4, to ~13-15 % of the smaller diameter at the 14.5 m/s worst case.
 Boemer (§4, PDF p13) finds results insensitive "provided that the maximum
 overlap percentage ... is smaller than about 10 %", so option B exceeds the
 only measured sensitivity limit and is rejected. All overlap criteria in the
@@ -228,10 +234,10 @@ since recovering the coefficient of restitution is more restrictive than the
 stability limit (Boemer & Ponthot 2017, §2.2.3; Cleary 2001, §2). Stiffness
 being a numerical parameter chosen jointly with dt (Cleary & Morrison 2016,
 §2; Govender et al. 2015, §1.5), both Young's moduli were reduced by the same
-factor, 26, the smallest for which every collision is integrated with at
-least 20 steps at dt = 2.5e-5 s -- satisfying both the 15-25 steps of Cleary
+factor, 26, with which every collision is integrated with at least 20
+steps at dt = 2.5e-5 s -- satisfying both the 15-25 steps of Cleary
 (2001, §2) and the 20-70 of Boemer & Ponthot (2017, §2.2.3) -- at the
-worst-case impact speed sqrt(2 g D) = 15.2 m/s (the free-fall estimate of
+worst-case impact speed sqrt(2 g D) = 14.5 m/s (the free-fall estimate of
 Boemer & Ponthot 2017, §3.1.2), using the Hertz impact duration of Johnson
 (1985, Eq. 11.24). The P-wave and Rayleigh stability limits (YADE
 documentation; Li et al. 2005) and the lifter-motion bound of Govender et al.

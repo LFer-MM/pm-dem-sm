@@ -112,24 +112,25 @@ The SAG_A shoulder lies inside Owen's range. The SAG_A bulk toe (215 deg)
 is just past the edge of Owen's bulk-toe range (216 deg, reached in Owen's
 highest-fill case, 32.8 %), i.e. the plant charge extends ~10 deg further
 round the mill than Owen's 27.5 % case. Plausible causes: different mill
-(8.4 m, 56 lifters, 75 % critical, wide PSD vs. 11.84 m, 30 lifters, 72.8 %,
-binary charge). This is a quantitative check of the targets, not a
+(8.4 m, 56 lifters of 50-300 mm, 75 % critical, wide PSD vs. SAG_A's
+10.71 m inside liners, 36 lifters of 395 mm, 69 %, binary charge). This is a quantitative check of the targets, not a
 contradiction.
 
 ### Plant values vs. nominal SAG values
 
 All angles in this convention (0 deg at 3 o'clock, counter-clockwise).
 Morrell's toe is evaluated at SAG_A's operating point (J_t = 0.26,
-phi = 0.728 -> phi_c = 1.086).
+phi = 0.692 -> phi_c = 1.086; the toe is practically speed-independent
+below 80 % CS, so the 238 deg is unchanged from the earlier 40 ft estimate).
 
 | Source | Mill / conditions | Shoulder (deg) | Bulk toe (deg) |
 |---|---|---|---|
-| **SAG_A (target)** | 11.84 m, 9 rpm (72.8 % CS), Jc 26 % | **24.6** | **215** |
+| **SAG_A (target)** | 36 ft x 19 ft (10.71 m inside liners), 36 lifters 395 mm / 35 deg, 9 rpm (69 % CS), Jc 26 % | **24.6** | **215** |
 | SAG_B, SAG_C (plant, medians) | Similar SAG mills | up to 38.2 | 206-215 |
 | Owen & Cleary 2015, Table 5 (DEM) | 8.4 m SAG, 75 % CS, 12 cases of fill and lifter height | 16-34 | 216-234 |
 | Owen & Cleary 2015 (DEM) | Same, 27.5 % fill, 175 mm lifters | 28-32 | 226 |
 | Govender 2015, Fig. 26 (DEM tuned to a measured profile) | Los Bronces SAG, 10.12 m, 10 rpm (~75 % CS), 41 % fill | ~30 ("nearly at 2 o'clock") | 210-240 ("between 7 and 8 o'clock") |
-| Morrell 1993 correlation (lab mills) | J_t = 0.26, 72.8 % CS | -- | 238 |
+| Morrell 1993 correlation (lab mills) | J_t = 0.26, 69 % CS | -- | 238 |
 
 **Shoulder:** 24.6 deg is inside Owen's DEM range (16-34 deg), a few degrees
 below Owen's comparable case (28-32 deg) and Govender's Los Bronces
@@ -225,8 +226,8 @@ then:
 - Simulated power: mean drive power P = -T_z omega of the slice over the
   steady window ([16](16_validation_checks.md), V7), scaled to the full mill
   as P_mill = P_slice x L_eff / L_slice, with L_slice = 0.6 m and L_eff
-  the effective grinding length of SAG_A (cylinder plus a cone-end
-  allowance, from the mill reports).
+  the grinding length of SAG_A: belly length 19 ft = 5.79 m (factor 9.65)
+  plus a cone-end allowance if SAG_A has cone ends.
 - Plant power: median SAG_A power in the same operating window used for the
   toe / shoulder target (claim 2: Jc, Jb, speed near the simulated point).
 - Report the deviation (P_mill - P_plant) / P_plant in %, together with
@@ -266,17 +267,22 @@ independent check (deviation reported in %)."
 ## Open items
 
 To get (author, from plant data and reports):
-- **Time series, SAG_A-E**, 10 s resolution: toe, shoulder, Jc, Jb, speed
-  (and **power** -- needed for V15 -- plus liner-campaign / reline dates;
-  state whether the power tag is motor input or mill shaft power). Period: at least one full
-  shell-liner campaign (reline to reline), so that the operating window of
-  claim 2 can also be matched to a liner state; minimum ~3 months, ideally
-  6-12 months. At 10 s, 6 months is ~1.6 million rows per mill.
-- **Mill properties, SAG_A-E** (from reports): diameter inside shell and
-  liner plate thickness (Morrell's inputs, [12](12_charge_fill_and_particles.md)),
-  belly length inside liners, number of lifter rows, lifter height, base / top width and face
-  angle (new; worn if available), liner / grate design, critical-speed
-  definition used by the plant ([10](10_mill_geometry.md)).
+- **Time series** (decided 2026-10-30: all five mills, at two levels of
+  detail; period: the 2026 H1 campaign, which the design data describe,
+  and in particular the weeks right after the reline, when the liners
+  match the new-liner geometry):
+  - **SAG_A** (targets and V15): 10 s resolution; toe, shoulder, Jc, Jb,
+    speed, **power** (state motor input or shaft power), reline dates.
+    At 10 s, 6 months is ~1.6 million rows.
+  - **SAG_B-E** (typicality only): coarser is enough (1-5 min, or hourly
+    medians); toe, shoulder, Jc, Jb, speed; power optional. Compared with
+    SAG_A in dimensionless form (% of critical speed, J, angles), because
+    SAG_D-E are 40 ft mills.
+- **Mill design, SAG_A-E: received 2026-10-30** (`mill_dimensions.csv`,
+  [10](10_mill_geometry.md)). Still open: re-check of plate thickness /
+  angles; lifter and plate widths (or the liner drawing); whether LH is
+  from the shell or the plate; that the length is the belly length inside
+  liners; cone ends (for V15); the plant's critical-speed definition.
 - The Maleki-Moghaddam model inputs used at the plant (which liner geometry,
   updated with wear or not).
 

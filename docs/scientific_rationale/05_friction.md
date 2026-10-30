@@ -27,8 +27,8 @@ Friction is the **primary calibration variable**.
   point; mu_w extended to 0.8-0.9 if the shoulder / toe are not reached
   (the SAG_A toe is high for its fill, [15](15_calibration_targets.md)).
   All runs start from **one shared settled initial condition** and spin up
-  to a steady charge shape (~6 revolutions, ~2.1 h per run at full scale with
-  the 0.6 m slice of [10](10_mill_geometry.md), ~19 h for the grid). Score: simulated bulk toe / shoulder (position-density
+  to a steady charge shape (~6 revolutions, ~1.7 h per run at full scale with
+  SAG_A's 0.6 m slice, [10](10_mill_geometry.md), ~15 h for the grid). Score: simulated bulk toe / shoulder (position-density
   contour) vs. SAG_A.
 
 ## Evidence
@@ -70,7 +70,7 @@ shape, friction is treated as the main calibration variable.
 
 Consequence: any run made with `main` -- including, if it used this code,
 the 212 deg / 26.5 deg match of slide 31 -- had practically frictionless
-particles and liner. The lifters (30 rows) can still lift such a charge,
+particles and liner. The lifters (30 rows in the old 40 ft STL) can still lift such a charge,
 which is why a plausible toe / shoulder may have been reached, but those
 parameters are not valid once friction is correct. The manual friction and
 density search of slide 30 must be repeated after the fix.

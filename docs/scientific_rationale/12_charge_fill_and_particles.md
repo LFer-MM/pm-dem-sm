@@ -16,13 +16,13 @@ Decided 2026-10-23.
 
 **Diameter naming.** "Effective diameter" is not used: it means the
 inside-liner diameter in some documents and a volume-equivalent diameter
-in others (PPT slide 1: 11.576 m, lifters subtracted). These docs say:
+in others (PPT slide 1: 11.576 m for the old 40 ft STL, lifters subtracted). These docs say:
 
 | Name | Value now | Use |
 |---|---|---|
-| D inside liners (Morrell's D) | 11.8375 m (STL liner surface; provisional until A2) | J, critical speed, Lacey cell, Morrell comparisons |
-| D inside shell and liner plate thickness t | from the reports (A2) | the two inputs of Morrell's model; D inside liners = D inside shell - 2 t (40 ft and 11.8375 m would imply t = 177 mm, to be confirmed) |
-| Volume-equivalent diameter | 11.576 m | not used |
+| D inside liners (Morrell's D) | **10.7128 m** = 10.9728 - 2 x 0.130 (SAG_A, [10](10_mill_geometry.md); provisional until the plate re-check) | J, critical speed, Lacey cell, Morrell comparisons |
+| D inside shell and liner plate thickness t | 36 ft = 10.9728 m and 130 mm (SAG_A design data) | the two inputs of Morrell's model; D inside liners = D inside shell - 2 t |
+| Volume-equivalent diameter | 11.576 m (old 40 ft STL) | not used |
 
 **Procedure for the counts (simulated grind-out and crash stop).** Both
 stages run in the 0.6 m slice ([10](10_mill_geometry.md)) with damping 0
@@ -46,10 +46,14 @@ stages run in the 0.6 m slice ([10](10_mill_geometry.md)) with damping 0
    rolling resistance change the packing) and once SAG_A's design (A2)
    is in.
 
-**Provisional counts** (0.6 m slice, D = 11.8375 m, phi = 0.5617 from the
-PPT, lifters under each bed excluded): **~4,060 balls + ~18,200 rocks**
-(~22,240). Estimates only, until the procedure above runs; a mixed charge
-will probably take somewhat more rock than this separate-bulk estimate.
+**Provisional counts** (SAG_A, 0.6 m slice, D inside liners 10.7128 m,
+cylinder 54.08 m^3, phi = 0.5617 from the PPT): **at most ~3,620 balls +
+~15,320 rocks** (~18,940), before removing the lifters and plates under
+each bed (~13 of 36 lifters under the 26 % bed, ~11 under the 17 % ball
+bed), which lowers them by a few percent; the lifter widths needed to
+compute that are not yet in the design data. Estimates only, until the
+procedure above runs; a mixed charge will probably take somewhat more rock
+than a separate-bulk estimate.
 
 ## Evidence
 
@@ -99,8 +103,7 @@ way, and the plant's Jc / Jb come from a model of that kind. A J of 26 %
 therefore fixes **where the charge surface lies** (the height of a 26 %
 segment of the smooth cylinder). The real charge volume is smaller by the
 lifters under the bed: at rest the 26 % bed covers ~37 % of the
-circumference, ~11 of 30 lifters, ~6 % of the segment (~9.5 lifters under
-the 17 % ball bed). Matching the surface in the simulation reproduces this
+circumference, ~13 of SAG_A's 36 lifters (~11 under the 17 % ball bed). Matching the surface in the simulation reproduces this
 without computing lifter volumes.
 
 ### Mixed rather than layered

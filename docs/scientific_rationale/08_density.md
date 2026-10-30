@@ -95,11 +95,11 @@ compares segregation, not only charge shape and power.
 ### Effect of the change on other topics
 
 Heavier rock lengthens rock collisions and raises the rock critical step, so
-the time step stays valid (dt = 0.62 of the smallest P-wave step, >= 20.7
-steps per collision at 15.2 m/s) and f = 26 is kept: it is the reduction
-that satisfies the step criteria at **both** 2850 and 2650, so the
-sensitivity run changes density only. Peak overlap rises from 3.8 to 3.9 %
-(limit 10 %). Recomputed numbers: [02](02_time_step.md),
+the time step stays valid (dt = 0.62 of the smallest P-wave step, >= 20.9
+steps per collision at SAG_A's worst-case 14.5 m/s) and f = 26 is kept: it
+satisfies the step criteria at **both** 2850 and 2650 (20.3 steps), so the
+sensitivity run changes density only. Peak overlap 3.8 % at 2850 vs 3.6 %
+at 2650 (limit 10 %). Recomputed numbers: [02](02_time_step.md),
 [03](03_stiffness_young_modulus.md), [04](04_numerical_damping.md).
 
 ## Verdict and how to defend it
