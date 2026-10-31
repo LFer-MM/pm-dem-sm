@@ -97,9 +97,9 @@ topics' open items.
 | # | Item | Details | Used in |
 |---|---|---|---|
 | A1 | Plant time series, SAG_A-E (in progress) | 2026 H1 campaign, esp. the weeks after the reline. **SAG_A**: 10 s; toe, shoulder, Jc, Jb, speed, **power** (motor input or shaft?), reline dates. **SAG_B-E**: coarser (1-5 min or hourly); toe, shoulder, Jc, Jb, speed; compared as % of critical speed | [15](15_calibration_targets.md) claims 1-2, V15 |
-| A2 | Mill design data, SAG_A-E | **Received 2026-10-30** (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`; plates verified flat, LH from the inside shell). Still open: lifter and plate widths (or liner drawing); length = belly length inside liners?; cone angle and trunnion diameter (V15 only); plant's critical-speed definition; replace the Zotero CSV with the edited version (no `pa_deg`) | [10](10_mill_geometry.md), [15](15_calibration_targets.md) |
+| A2 | Mill design data, SAG_A-E | **Received 2026-10-30** (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`; plates flat, LH from the inside shell, lengths flange to flange). Still open: **SAG_A lifter top or base width** (one number); optional: SAG_A EGL with its definition (V15 only); plant's critical-speed definition; replace the Zotero CSV with the edited version (no `pa_deg`). Cone geometry: not available (V15 caveat) | [10](10_mill_geometry.md), [15](15_calibration_targets.md) |
 | A3 | Plant Maleki-model inputs | Which liner geometry feeds the plant's Maleki-Moghaddam model, and whether it is updated with wear | [15](15_calibration_targets.md) claim 3 |
-| A4 | Mill generator code | Add the author's mill-generation code to the repo as the primary geometry source | [10](10_mill_geometry.md) C10-4 |
+| A4 | Mill generator code | Add the author's mill-generation code if it handles flat plates; otherwise the repo's `initialize_parametric_mill` is extended (C10-4) | [10](10_mill_geometry.md) C10-4 |
 | A5 | Zotero additions | Work through "Pending Zotero additions" below (priority: Maleki-Moghaddam 2013; read Wensrich & Katterfeld 2012, Ai 2011, Thornton 2013) | registry below |
 | A6 | Optional | Official CEMA 550 material table (ore angle of repose) | [06](06_rolling_resistance.md) |
 

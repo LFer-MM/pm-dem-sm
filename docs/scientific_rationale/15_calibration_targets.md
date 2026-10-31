@@ -226,8 +226,14 @@ then:
 - Simulated power: mean drive power P = -T_z omega of the slice over the
   steady window ([16](16_validation_checks.md), V7), scaled to the full mill
   as P_mill = P_slice x L_eff / L_slice, with L_slice = 0.6 m and L_eff
-  the grinding length of SAG_A: belly length 19 ft = 5.79 m (factor 9.65)
-  plus a cone-end allowance if SAG_A has cone ends.
+  SAG_A's length. Available: 19 ft = 5.79 m flange to flange (factor
+  9.65), longer than Morrell's belly length inside liners, so it biases
+  P_mill **high**; the vendor EGL replaces it if its definition is
+  "inside liners". Cone ends: SAG_A has them, but the cone angle and
+  trunnion diameter are not available, so P_mill is belly-only and biased
+  **low** by the cone charge. The two biases partly offset by unknown
+  amounts; V15 is therefore an order-of-magnitude check, reported with both
+  caveats.
 - Plant power: median SAG_A power in the same operating window used for the
   toe / shoulder target (claim 2: Jc, Jb, speed near the simulated point).
 - Report the deviation (P_mill - P_plant) / P_plant in %, together with
@@ -280,10 +286,9 @@ To get (author, from plant data and reports):
     SAG_D-E are 40 ft mills.
 - **Mill design, SAG_A-E: received 2026-10-30** (`mill_dimensions.csv`,
   [10](10_mill_geometry.md); plates verified flat, LH from the inside
-  shell). Still open: lifter and plate widths (or the liner drawing); that
-  the length is the belly length inside liners; cone angle and trunnion
-  diameter (all five mills have cone ends; needed only for V15); the
-  plant's critical-speed definition.
+  shell; lengths flange to flange). Still open: SAG_A lifter top or base
+  width; optionally SAG_A's EGL (V15); the plant's critical-speed
+  definition. Cone geometry not available (V15 caveat).
 - The Maleki-Moghaddam model inputs used at the plant (which liner geometry,
   updated with wear or not).
 

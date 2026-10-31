@@ -11,8 +11,8 @@ Decided 2026-10-22.
   [15](15_calibration_targets.md)); an average "generic" mill is not used,
   because the plant toe / shoulder targets are computed for SAG_A's liner.
 - **SAG_A's design (received 2026-10-30, campaign start 2026 H1, new
-  liners):** 36 ft x 19 ft (inside shell; length to be confirmed as belly
-  length inside liners). Shell liner of **36 lifters** (height 395 mm
+  liners):** 36 ft inside shell x 19 ft **flange to flange** (vendor
+  length; the belly length inside liners is somewhat shorter). Shell liner of **36 lifters** (height 395 mm
   measured from the inside shell, face angle 35 deg) alternating with **36
   flat plates** 130 mm thick (verified by the author 2026-10-30: SAG_A-D
   have flat plates, no low lifters). The lifters therefore stand
@@ -82,8 +82,9 @@ Decided 2026-10-22.
   Cleary and a larger ratio under either reading. This matters more here
   because every ball is at the top size, whereas in their charges the top
   size is a minority of the balls.
-- SAG_A is 19 ft = 5.79 m long, so 0.6 m is **10.4 % of the length**:
-  the slice also meets Govender's 10 %.
+- SAG_A is 19 ft = 5.79 m flange to flange, so 0.6 m is **10.4 % of that
+  length** and a larger share of the shorter belly length: the slice also
+  meets Govender's 10 %.
 - Side benefits: the Lacey cell (0.4285 m, [14](14_dataset_runs_and_recording.md))
   fits inside the slice, which it did not at 0.375 m; the code's own
   thin-slice warning no longer applies.
@@ -105,7 +106,7 @@ inside shell; plates are flat (SAG_A-D). D inside liners = D inside shell
 | SAG_D | 40 ft (12.192 m) | 29 ft (8.839 m) | 30 / 530 mm / 34 deg | 300 mm | 30 / 230 mm | 11.732 m | 12.42 rpm | 6.8 % |
 | SAG_E | 40 ft | 26 ft (7.925 m) | 27 / 458 mm / 30 deg | 208 mm | 27 / 250 mm (*) | 11.692 m | 12.45 rpm | 7.6 % |
 
-(*) SAG_E actually has a high-low liner; its low lifters are entered as a
+L is the vendor flange-to-flange length. (*) SAG_E actually has a high-low liner; its low lifters are entered as a
 250 mm plate. SAG_E is only used for comparison and is not simulated, so
 this simplification does not affect any model input.
 
@@ -116,8 +117,15 @@ this simplification does not affect any model input.
 - Comparisons of operating data between the groups use dimensionless
   quantities (% of critical speed, J, angles), not rpm
   ([11](11_mill_speed.md), [15](15_calibration_targets.md)).
-- Not yet in the data: lifter and plate widths (or the liner drawing),
-  needed by the generator.
+- Lengths are vendor flange-to-flange values. Only the power check V15
+  uses a length.
+- **Lifter shape:** height above the plate (265 mm for SAG_A) and face
+  angle are known; **one width (top or base) per lifter** completes the
+  trapezoid (same face angle on both sides). Plate widths are not needed:
+  the flat plates fill the pitch (pi D / 36 = 0.935 m for SAG_A) between
+  lifter bases. The width matters for the pocket between lifters and the
+  charge each lifter carries, so it is needed for SAG_A; if unavailable, a
+  stated assumption plus one sensitivity run.
 
 ### End walls: frictionless, and what it leaves behind
 
@@ -181,11 +189,11 @@ reported separately because it has no counterpart in the real mill."
 ## Open items / validation
 
 - Design data SAG_A-E received (CSV, 2026-10-30; plates verified flat, LH
-  from the inside shell). Still open: lifter and plate widths (or the liner
-  drawing); confirm the CSV length is the belly length inside liners; cone
-  geometry (cone angle, trunnion diameter) for the power check V15. The
-  Zotero CSV still has the `pa_deg` column; replace it with the edited
-  version.
+  from the inside shell; lengths flange to flange). Still open: **SAG_A
+  lifter top or base width** (one number); optionally SAG_A's EGL if its
+  definition is stated (V15 only). Cone angle / trunnion diameter will not
+  be available: V15 runs belly-only with that caveat. The Zotero CSV still
+  has the `pa_deg` column; replace it with the edited version.
 - Add the author's mill generator to the repo as the primary geometry
   source; record its parameters (and a hash of the generated mesh) in each
   run manifest; cross-check the old STL against it.
@@ -200,4 +208,4 @@ reported separately because it has no counterpart in the real mill."
 | C10-1 | `MILL_DIAMETER_M` = SAG_A diameter inside liners, 10.7128 m | 11.0 (`config.py:72`) | Before any production run |
 | C10-2 | Default `end_walls = "frictionless"` | `"liner"` (`scenario.py:85`) | Before calibration |
 | C10-3 | Default `depth_m = 0.6` | 0.375 (`scenario.py:77`) | Before calibration |
-| C10-4 | Add the author's mill generator as the primary geometry source (SAG_A: 36 lifters, 395 mm from the inside shell, alternating with 36 flat 130 mm plates); geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |
+| C10-4 | Geometry from parameters (SAG_A: 36 lifters, 395 mm from the inside shell, 35 deg faces, alternating with 36 flat 130 mm plates). The repo's `initialize_parametric_mill` (`stl.py:49`) builds trapezoidal lifters on a shell but has no plates and no face-angle input: extend it, or add the author's generator if it covers plates; geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |
