@@ -279,10 +279,11 @@ To get (author, from plant data and reports):
     SAG_A in dimensionless form (% of critical speed, J, angles), because
     SAG_D-E are 40 ft mills.
 - **Mill design, SAG_A-E: received 2026-10-30** (`mill_dimensions.csv`,
-  [10](10_mill_geometry.md)). Still open: re-check of plate thickness /
-  angles; lifter and plate widths (or the liner drawing); whether LH is
-  from the shell or the plate; that the length is the belly length inside
-  liners; cone ends (for V15); the plant's critical-speed definition.
+  [10](10_mill_geometry.md); plates verified flat, LH from the inside
+  shell). Still open: lifter and plate widths (or the liner drawing); that
+  the length is the belly length inside liners; cone angle and trunnion
+  diameter (all five mills have cone ends; needed only for V15); the
+  plant's critical-speed definition.
 - The Maleki-Moghaddam model inputs used at the plant (which liner geometry,
   updated with wear or not).
 

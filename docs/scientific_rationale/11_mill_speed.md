@@ -17,7 +17,7 @@ The liner is symmetric, so the orientation is a free choice in simulation.
   SAG_A's median speed in the same post-reline operating window used for
   the toe / shoulder target ([15](15_calibration_targets.md), claim 2).
 - The % of critical speed is quoted with N_c = 42.3 / sqrt(D - d), D inside
-  liners (provisional until the author's plate-thickness re-check).
+  liners.
 - SAG_D and SAG_E are 40 ft mills (N_c ~12.4 rpm): their speeds are compared
   as % of critical, not rpm ([15](15_calibration_targets.md), claim 1).
 

@@ -12,11 +12,13 @@ Decided 2026-10-22.
   because the plant toe / shoulder targets are computed for SAG_A's liner.
 - **SAG_A's design (received 2026-10-30, campaign start 2026 H1, new
   liners):** 36 ft x 19 ft (inside shell; length to be confirmed as belly
-  length inside liners), hi-lo shell liner of **36 lifters** (height 395 mm,
-  face angle 35 deg) alternating with **36 plates** (thickness 130 mm, angle
-  35 deg). Diameter inside liners **D = 10.9728 - 2 x 0.130 = 10.7128 m**
-  (provisional: plate thickness and angles being re-checked by the author).
-  Full table and the SAG_A-E comparison in Analysis.
+  length inside liners). Shell liner of **36 lifters** (height 395 mm
+  measured from the inside shell, face angle 35 deg) alternating with **36
+  flat plates** 130 mm thick (verified by the author 2026-10-30: SAG_A-D
+  have flat plates, no low lifters). The lifters therefore stand
+  395 - 130 = **265 mm above the plate surface**. Diameter inside liners
+  **D = 10.9728 - 2 x 0.130 = 10.7128 m**. Full table and the SAG_A-E
+  comparison in Analysis.
 - **Geometry is generated in code** from those parameters (the author's mill
   generator, to be added to the repo), not read from an input STL file. The
   old STL (`sag_mill_40ft_m.stl`, PPT slide 1: 40 ft, 30 lifters, 11.8375 m)
@@ -91,16 +93,21 @@ Decided 2026-10-22.
 
 ### SAG_A-E design data and why SAG_A is typical
 
-Campaign start, 2026 H1, new liners. D inside liners = D inside shell
+Campaign start, 2026 H1, new liners. Lifter height is measured from the
+inside shell; plates are flat (SAG_A-D). D inside liners = D inside shell
 - 2 x plate thickness; N_c = 42.3 / sqrt(D - d_ball).
 
-| Mill | D shell | L | Lifters (rows / height / angle) | Plates (rows / thickness / angle) | D inside liners | N_c | Slice 0.6 m / L |
-|---|---|---|---|---|---|---|---|
-| **SAG_A** | **36 ft (10.973 m)** | **19 ft (5.791 m)** | **36 / 395 mm / 35 deg** | **36 / 130 mm / 35 deg** | **10.713 m** | **13.01 rpm** | **10.4 %** |
-| SAG_B | 36 ft | 19 ft | 36 / 396 mm / 35 deg | 36 / 123 mm / 35 deg | 10.727 m | 13.00 rpm | 10.4 % |
-| SAG_C | 36 ft | 19 ft | 30 / 387 mm / 35 deg | 30 / 123 mm / 35 deg | 10.727 m | 13.00 rpm | 10.4 % |
-| SAG_D | 40 ft (12.192 m) | 29 ft (8.839 m) | 30 / 530 mm / 34 deg | 30 / 230 mm / 34 deg | 11.732 m | 12.42 rpm | 6.8 % |
-| SAG_E | 40 ft | 26 ft (7.925 m) | 27 / 458 mm / 30 deg | 27 / 250 mm / 30 deg | 11.692 m | 12.45 rpm | 7.6 % |
+| Mill | D shell | L | Lifters (rows / height from shell / angle) | Lifter above plate | Plates (rows / thickness) | D inside liners | N_c | Slice 0.6 m / L |
+|---|---|---|---|---|---|---|---|---|
+| **SAG_A** | **36 ft (10.973 m)** | **19 ft (5.791 m)** | **36 / 395 mm / 35 deg** | **265 mm** | **36 / 130 mm** | **10.713 m** | **13.01 rpm** | **10.4 %** |
+| SAG_B | 36 ft | 19 ft | 36 / 396 mm / 35 deg | 273 mm | 36 / 123 mm | 10.727 m | 13.00 rpm | 10.4 % |
+| SAG_C | 36 ft | 19 ft | 30 / 387 mm / 35 deg | 264 mm | 30 / 123 mm | 10.727 m | 13.00 rpm | 10.4 % |
+| SAG_D | 40 ft (12.192 m) | 29 ft (8.839 m) | 30 / 530 mm / 34 deg | 300 mm | 30 / 230 mm | 11.732 m | 12.42 rpm | 6.8 % |
+| SAG_E | 40 ft | 26 ft (7.925 m) | 27 / 458 mm / 30 deg | 208 mm | 27 / 250 mm (*) | 11.692 m | 12.45 rpm | 7.6 % |
+
+(*) SAG_E actually has a high-low liner; its low lifters are entered as a
+250 mm plate. SAG_E is only used for comparison and is not simulated, so
+this simplification does not affect any model input.
 
 - SAG_A, B and C share one design (36 x 19 ft, ~390-395 mm lifters at
   35 deg; C has 30 instead of 36 rows). SAG_D and E are larger 40 ft mills
@@ -109,10 +116,8 @@ Campaign start, 2026 H1, new liners. D inside liners = D inside shell
 - Comparisons of operating data between the groups use dimensionless
   quantities (% of critical speed, J, angles), not rpm
   ([11](11_mill_speed.md), [15](15_calibration_targets.md)).
-- Plate angles equal to the lifter angles are being re-checked by the
-  author. Not yet in the data: lifter / plate base and top widths (or the
-  liner drawing) needed by the generator, and whether LH is measured from
-  the shell or from the plate.
+- Not yet in the data: lifter and plate widths (or the liner drawing),
+  needed by the generator.
 
 ### End walls: frictionless, and what it leaves behind
 
@@ -175,10 +180,12 @@ reported separately because it has no counterpart in the real mill."
 
 ## Open items / validation
 
-- Design data SAG_A-E received (CSV, 2026-10-30). Still open: the
-  author's re-check of plate thickness / angles; lifter and plate widths or
-  the liner drawing; whether LH is from the shell or the plate; confirm the
-  CSV length is the belly length inside liners.
+- Design data SAG_A-E received (CSV, 2026-10-30; plates verified flat, LH
+  from the inside shell). Still open: lifter and plate widths (or the liner
+  drawing); confirm the CSV length is the belly length inside liners; cone
+  geometry (cone angle, trunnion diameter) for the power check V15. The
+  Zotero CSV still has the `pa_deg` column; replace it with the edited
+  version.
 - Add the author's mill generator to the repo as the primary geometry
   source; record its parameters (and a hash of the generated mesh) in each
   run manifest; cross-check the old STL against it.
@@ -190,7 +197,7 @@ reported separately because it has no counterpart in the real mill."
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C10-1 | `MILL_DIAMETER_M` = SAG_A diameter inside liners, 10.7128 m (provisional until the plate re-check) | 11.0 (`config.py:72`) | Before any production run |
+| C10-1 | `MILL_DIAMETER_M` = SAG_A diameter inside liners, 10.7128 m | 11.0 (`config.py:72`) | Before any production run |
 | C10-2 | Default `end_walls = "frictionless"` | `"liner"` (`scenario.py:85`) | Before calibration |
 | C10-3 | Default `depth_m = 0.6` | 0.375 (`scenario.py:77`) | Before calibration |
-| C10-4 | Add the author's mill generator as the primary geometry source (SAG_A: 36 lifters + 36 plates); geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |
+| C10-4 | Add the author's mill generator as the primary geometry source (SAG_A: 36 lifters, 395 mm from the inside shell, alternating with 36 flat 130 mm plates); geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |

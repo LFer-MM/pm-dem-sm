@@ -20,7 +20,7 @@ in others (PPT slide 1: 11.576 m for the old 40 ft STL, lifters subtracted). The
 
 | Name | Value now | Use |
 |---|---|---|
-| D inside liners (Morrell's D) | **10.7128 m** = 10.9728 - 2 x 0.130 (SAG_A, [10](10_mill_geometry.md); provisional until the plate re-check) | J, critical speed, Lacey cell, Morrell comparisons |
+| D inside liners (Morrell's D) | **10.7128 m** = 10.9728 - 2 x 0.130 (SAG_A, [10](10_mill_geometry.md)) | J, critical speed, Lacey cell, Morrell comparisons |
 | D inside shell and liner plate thickness t | 36 ft = 10.9728 m and 130 mm (SAG_A design data) | the two inputs of Morrell's model; D inside liners = D inside shell - 2 t |
 | Volume-equivalent diameter | 11.576 m (old 40 ft STL) | not used |
 
