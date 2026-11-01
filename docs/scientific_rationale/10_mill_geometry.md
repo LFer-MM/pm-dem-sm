@@ -36,7 +36,7 @@ Decided 2026-10-22.
 
 | Source | What it says | Where | Verified |
 |---|---|---|---|
-| Plant design data (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`, attachment `ZBFFQY29`) | SAG_A-E at the start of the 2026 H1 campaign (new liners): diameter inside shell (ft), length (ft), lifter rows LQ, lifter height LH, lifter angle LA, plate rows PQ, plate thickness PH, plate angle PA | CSV, columns as named | Yes (read 2026-10-30) |
+| Plant design data (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`, attachment `ZBFFQY29`; columns updated 2026-11-01) | SAG_A-E at the start of the 2026 H1 campaign (new liners). Columns: `inside_shell_diam_ft`; `ff_len_ft` (vendor flange-to-flange length); `egl_len_ft` (vendor EGL, empty); `lifter_qty`; `lifter_h_mm` (measured from the inside shell); `lifter_w_mm` (empty; top or base to be stated); `lifter_angle_deg` (face angle); `plate_qty`; `plate_h_mm` (flat plate thickness); `plate_w_mm` (empty, not needed: follows from the pitch); `trunnion_diam` (empty, unit to be stated; useful only with a cone angle) | CSV | Yes (re-read 2026-11-01) |
 | Owen & Cleary 2015 | "a 3D slice of a generic SAG mill": shell inner diameter 8.4 m, slice length 0.6 m "along the cylindrical belly", 56 lifters, base width 320 mm, height 50-300 mm, face angle 15-25 deg; how the slice ends are treated is not stated | §3 and Table 1, PDF p2 / j.20 | Yes |
 | Owen & Cleary 2015 | Charge: balls 145 mm down to 30 mm, rocks 200 mm down to 25 mm (Table 3) -> slice = 4.1 top-ball diameters, 3.0 top-rock diameters | §3 and Table 3, PDF p3 / j.21 | Yes |
 | Govender 2015 | "Fig. 30(b) depicts the charge profile for a slice of 10% of length. We notice that the pattern is very similar to the full length of the mill. Clearly the effect of the axial direction cannot just be neglected as the 2D case cannot fully reproduce the dynamics." | §3.1, PDF p16 / j.167 | Yes |
@@ -192,8 +192,8 @@ reported separately because it has no counterpart in the real mill."
   from the inside shell; lengths flange to flange). Still open: **SAG_A
   lifter top or base width** (one number); optionally SAG_A's EGL if its
   definition is stated (V15 only). Cone angle / trunnion diameter will not
-  be available: V15 runs belly-only with that caveat. The Zotero CSV still
-  has the `pa_deg` column; replace it with the edited version.
+  be available: V15 runs belly-only with that caveat. The CSV in Zotero was
+  updated 2026-11-01 (no plate-angle column); SAG_B-E rows are complete.
 - Add the author's mill generator to the repo as the primary geometry
   source; record its parameters (and a hash of the generated mesh) in each
   run manifest; cross-check the old STL against it.
