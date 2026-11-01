@@ -224,18 +224,26 @@ check.
 **Post-calibration plant power check (V15).** After calibration, and only
 then:
 - Simulated power: mean drive power P = -T_z omega of the slice over the
-  steady window ([16](16_validation_checks.md), V7), scaled to the full mill
-  as P_mill = P_slice x L_eff / L_slice, with L_slice = 0.6 m and L_eff
-  SAG_A's length. Available: 19 ft = 5.79 m flange to flange (factor
-  9.65), longer than Morrell's belly length inside liners, so it biases
-  P_mill **high**; the vendor EGL replaces it if its definition is
-  "inside liners". Cone ends: SAG_A has them, but the cone angle and
-  trunnion diameter are not available, so P_mill is belly-only and biased
-  **low** by the cone charge. The two biases partly offset by unknown
-  amounts; V15 is therefore an order-of-magnitude check, reported with both
-  caveats.
+  steady window ([16](16_validation_checks.md), V7) -- the power delivered
+  **to the charge**. Scaled to the full mill as
+  **P_mill = P_slice x (L / 0.6 m) x (1 + c_cone)**:
+  - L: SAG_A's length. Available: 19 ft = 5.79 m flange to flange (factor
+    9.65), longer than the belly length inside liners, so it biases P_mill
+    **high**; the vendor EGL replaces it if its definition is "inside
+    liners".
+  - c_cone = **0.05**, the cone-end allowance recommended by Doll (2013)
+    ("5% extra power should be added", based on Barratt, Brodie & Pfeifer
+    1999), since SAG_A's cone angle and trunnion diameter are not
+    available. Sensitivity band 0.05-0.13: Morrell's explicit cone term in
+    Doll's 13 surveys is 8-13 % of the cylinder power; Austin's published
+    factor (0.17 at 15 deg) predicts high according to Doll.
 - Plant power: median SAG_A power in the same operating window used for the
-  toe / shoulder target (claim 2: Jc, Jb, speed near the simulated point).
+  toe / shoulder target (claim 2: Jc, Jb, speed near the simulated point),
+  brought to the same basis as the simulation: **motor input -> mill shell**
+  (drive / motor losses; ~5 % in Doll's example, 3,374 vs 3,190 kW) and
+  **minus the no-load power** of the empty mill (bearings, windage; ~8 %
+  of gross in Doll's Morrell example, 265 of 3,349 kW). Use plant values
+  for both if known, otherwise these as stated assumptions.
 - Report the deviation (P_mill - P_plant) / P_plant in %, together with
   what the plant figure includes (motor / drive losses, slurry, real size
   distribution) so the sign of the expected bias is clear: the model has
