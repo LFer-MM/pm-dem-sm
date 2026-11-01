@@ -20,7 +20,7 @@ written to the run manifest so each dataset can be defended individually.
 | V12 | Replicate scatter | Spread of toe / shoulder / Lacey curves over seeds reported | Owen & Cleary Table 5 / §4.1 (4 centre-point replicates, PDF p4) |
 | V13 | No initial overlaps | Zero sphere-sphere and sphere-facet overlaps before the first step of every fill batch; abort otherwise. Spawning inside a facet ejects particles through it | [04](04_numerical_damping.md), [13](13_initial_conditions.md) |
 | V14 | No escapes | Zero particles outside the shell radius or slice depth at the end of every stage | [04](04_numerical_damping.md) (instability test) |
-| V15 | Plant power (once, after calibration) | Slice power at the calibrated point scaled to SAG_A's effective length vs SAG_A plant power in the same operating window; report the % deviation (not a pass / fail target; ~+-20 % consistent with the comparison uncertainty) | [15](15_calibration_targets.md); Govender 2015 §3 (6.8 vs 7.1 MW) |
+| V15 | Plant power (once, after calibration) | P_mill = P_slice x (L / 0.6 m) x 1.05 (cone allowance, Doll 2013) vs P_charge,plant = eta_d x (P_motor - P_NL) in the same operating window; report the % deviation (not a pass / fail target; ~+-20 % consistent with the comparison uncertainty) | [15](15_calibration_targets.md); Govender 2015 §3 (6.8 vs 7.1 MW) |
 | V16 | Fill level | Settled J (Morrell convention, from the stopped surface profile) within +-0.5 points of Jb (ball stage) and Jc (full charge) | [12](12_charge_fill_and_particles.md) |
 
 ## Notes

@@ -239,15 +239,28 @@ then:
     factor (0.17 at 15 deg) predicts high according to Doll.
 - Plant power: median SAG_A power in the same operating window used for the
   toe / shoulder target (claim 2: Jc, Jb, speed near the simulated point),
-  brought to the same basis as the simulation: **motor input -> mill shell**
-  (drive / motor losses; ~5 % in Doll's example, 3,374 vs 3,190 kW) and
-  **minus the no-load power** of the empty mill (bearings, windage; ~8 %
-  of gross in Doll's Morrell example, 265 of 3,349 kW). Use plant values
-  for both if known, otherwise these as stated assumptions.
-- Report the deviation (P_mill - P_plant) / P_plant in %, together with
-  what the plant figure includes (motor / drive losses, slurry, real size
-  distribution) so the sign of the expected bias is clear: the model has
-  no drive losses, no slurry and a binary charge.
+  brought to the simulation's basis (power reaching the charge):
+  **P_charge,plant = eta_d x (P_motor - P_NL)**
+  - P_motor: plant (motor input) power, median in the window.
+  - P_NL: no-load power -- motor power of the empty mill (bearings,
+    windage, and the motor / drive losses at no load). Measured value if
+    available (rarely, per Morrell); otherwise Morrell's empirical no-load
+    estimate or ~8 % of gross (Doll's example: 265 of 3,349 kW).
+  - eta_d: motor + drive efficiency for the load-dependent part; plant
+    value if known, otherwise ~0.95 (Doll's example: 3,190 kW at the mill
+    shell for 3,374 kW at the motor).
+  - If the plant tag is shaft / pinion power, eta_d = 1 and P_NL is taken
+    at that same point.
+  - P_NL is subtracted at the motor before applying eta_d, so the drive
+    losses contained in the no-load power are not counted twice.
+  - Morrell's k = 1.26 is **not** applied: it corrects his analytical
+    continuum model for losses it does not represent, whereas the DEM
+    power is the mechanical power the simulated charge actually absorbs.
+- Deviation = (P_mill - P_charge,plant) / P_charge,plant, reported with the
+  cone band (c_cone 0.05-0.13), the length used, and the eta_d / P_NL
+  values and whether they are measured or assumed.
+- Remaining differences, stated with the result: slurry and the real size
+  distribution are not modelled (binary, dry charge).
 - Interpretation only: deviations within roughly +-20 % are consistent
   with the comparison uncertainty (Govender et al. 2015 obtained 6.8 vs
   7.1 MW, -4 %, for a full-length SAG model); a much larger deviation
