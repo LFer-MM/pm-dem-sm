@@ -227,11 +227,10 @@ then:
   steady window ([16](16_validation_checks.md), V7) -- the power delivered
   **to the charge**. Scaled to the full mill as
   **P_mill = P_slice x (L / 0.6 m) x (1 + c_cone)**:
-  - L: SAG_A's grinding length. **EGL 17.21 ft = 5.246 m** (factor 8.74;
-    0.55 m shorter than the 19 ft flange-to-flange length, consistent with
-    head liners and grate), used if it is measured inside the liners, as
-    Morrell's belly length; otherwise the flange-to-flange 5.79 m (factor
-    9.65, biases P_mill high).
+  - L: SAG_A's belly length, **5.244 m** (17.21 ft), measured by the plant
+    on the cylindrical section between the cone junctions (t0, 7 March
+    2026; author's drawing) -- the cylindrical length Morrell's model uses,
+    the cones being added separately (c_cone). Factor 8.74.
   - c_cone = **0.05**, the cone-end allowance recommended by Doll (2013)
     ("5% extra power should be added", based on Barratt, Brodie & Pfeifer
     1999), since SAG_A's cone angle and trunnion diameter are not
@@ -252,6 +251,9 @@ then:
     shell for 3,374 kW at the motor).
   - If the plant tag is shaft / pinion power, eta_d = 1 and P_NL is taken
     at that same point.
+  - **SAG_A (2026-11-01):** the power tag is taken as **motor input**
+    (not known); no measured no-load power and no efficiency data, so
+    P_NL ~ 8 % of gross and eta_d ~ 0.95 are used as stated assumptions.
   - P_NL is subtracted at the motor before applying eta_d, so the drive
     losses contained in the no-load power are not counted twice.
   - Morrell's k = 1.26 is **not** applied: it corrects his analytical
