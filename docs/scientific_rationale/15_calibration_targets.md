@@ -9,8 +9,7 @@ Z in YADE). The charge rises on the right: shoulder in the first quadrant
 (~25 deg), toe in the third quadrant (~215 deg). Liner designs are
 symmetric, so this orientation is a free choice in simulation.
 
-**Role of the reference mills** (SAG_A, SAG_B, SAG_C; SAG_D and SAG_E
-may be added). **SAG_A is the reference**: its operating point sets the
+**Role of the reference mills** (SAG_A-E). **SAG_A is the reference**: its operating point sets the
 simulation and its charge-shape angles are the targets the simulation is
 compared to. **The other mills are evidence that the selected values are
 typical**: their designs and dimensions differ, so they are not simulated
@@ -20,9 +19,11 @@ argument, joining plant data and literature, is in the Analysis
 ("Reference-mill argument").
 
 **Calibration target (SAG_A, at SAG_A's operating point Jb 17 %, Jc 26 %,
-9 rpm):**
+9 rpm)** -- current values from the PPT's whole-period box plots (slide 3,
+SAG_A-C); **provisional** until recomputed from the post-reline window of
+the plant time series (claim 2):
 
-| Target | SAG_A median | SAG_A interquartile range (box) | Range over the three mills (medians) |
+| Target | SAG_A median | SAG_A interquartile range (box) | Range over SAG_A-C (medians) |
 |---|---|---|---|
 | **Bulk** toe angle | **215 deg** | ~214.6-215.8 deg | 206-215 deg |
 | Shoulder angle | **24.6 deg** | ~22-26.4 deg | 24.6-38.2 deg |
@@ -97,9 +98,9 @@ twice, neither time to choose parameters:
 
 ## Current state
 
-No toe / shoulder measurement exists in code. The branch's `monitor.py` logs
-the contact torque on the mill facets and the drive power P = -T_z * omega
-every monitor interval.
+No toe / shoulder measurement exists in code. `monitor.py` logs the contact
+torque on the mill facets and the drive power P = -T_z * omega every monitor
+interval.
 
 ## Analysis
 
@@ -132,7 +133,7 @@ below 80 % CS, so the 238 deg is unchanged from the earlier 40 ft estimate).
 | Source | Mill / conditions | Shoulder (deg) | Bulk toe (deg) |
 |---|---|---|---|
 | **SAG_A (target)** | 36 ft x 19 ft (10.71 m inside liners), 36 lifters 395 mm / 35 deg, 9 rpm (69 % CS), Jc 26 % | **24.6** | **215** |
-| SAG_B, SAG_C (plant, medians) | Similar SAG mills | up to 38.2 | 206-215 |
+| SAG_B, SAG_C (plant, medians; PPT slide 3) | Same 36 ft design as SAG_A | up to 38.2 | 206-215 |
 | Owen & Cleary 2015, Table 5 (DEM) | 8.4 m SAG, 75 % CS, 12 cases of fill and lifter height | 16-34 | 216-234 |
 | Owen & Cleary 2015 (DEM) | Same, 27.5 % fill, 175 mm lifters | 28-32 | 226 |
 | Govender 2015, Fig. 26 (DEM tuned to a measured profile) | Los Bronces SAG, 10.12 m, 10 rpm (~75 % CS), 41 % fill | ~30 ("nearly at 2 o'clock") | 210-240 ("between 7 and 8 o'clock") |
@@ -167,9 +168,13 @@ reviewer can dismiss as coincidence. The argument is rebuilt as four
 claims, each compared at matched conditions:
 
 1. **SAG_A's operating point is typical.** Jc, Jb and % CS of SAG_A against
-   SAG_A-E (box plots) and against usual SAG practice (total filling
-   ~20-35 %, 70-80 % CS; "SAG mills typically operate at mill fillings below
-   40 %", Toor et al. 2023, p10). Jc / Jb are trustworthy because they are
+   SAG_A-E (box plots; % CS computed here from rpm, [11](11_mill_speed.md))
+   and against usual SAG practice: total filling ~20-35 % (Owen & Cleary's
+   "usual operating range"; "SAG mills typically operate at mill fillings
+   below 40 %", Toor et al. 2023, p10) and speed up to ~80 % CS ("most
+   variable-speed drives do not go above 80% CS", ibid.). SAG_A's 69 % CS
+   is inside the plant range of SAG_A-C (66-77 %) and a little below the
+   ~75 % of the DEM references. Jc / Jb are trustworthy because they are
    measured (load cells / bearing pressure plus power model) and calibrated
    with crash stops / grind-outs.
 2. **The target is SAG_A's angle at the simulated operating point**, not
@@ -213,7 +218,7 @@ for three reasons:
    mass and centre-of-mass position, which are fixed by Jc, Jb, density and
    speed, not by friction.
 2. **Large comparison uncertainty.** A 0.6 m slice must be scaled to the
-   full mill (P_mill ~ P_slice x L_eff / 0.6 m), and the plant figure
+   full mill (P_mill ~ P_slice x L / 0.6 m), and the plant figure
    includes motor / drive losses, conical ends, slurry and a real size
    distribution. These systematic differences (likely 10-20 %) exceed the
    ~6 % signal from friction, so power cannot discriminate between candidate
@@ -282,10 +287,10 @@ then:
 "SAG_A is the reference mill: the operating point (9 rpm, Jb 17 %, Jc 26 %)
 and the charge-shape targets were taken from it; the plant angles are
 computed with the Maleki-Moghaddam et al. (2013) charge-shape model from the
-measured operating point and liner geometry. SAG_B and SAG_C are evidence
-that the selected values are typical: their operating data place SAG_A's
-values within the normal ranges of SAG operation (speed 8.6-10 rpm, bulk toe
-206-215 deg, shoulder 24.6-38.2 deg). Contact parameters were calibrated so the simulated
+measured operating point and liner geometry. SAG_B and SAG_C, which share SAG_A's 36 ft design, are evidence that the
+selected values are typical (speed 8.6-10 rpm, bulk toe 206-215 deg,
+shoulder 24.6-38.2 deg), and the 40 ft SAG_D and SAG_E extend the
+comparison in dimensionless terms (% of critical speed, filling, angles). Contact parameters were calibrated so the simulated
 steady-state bulk toe and shoulder, read from the position-density contour
 (Boemer & Ponthot 2017, §2.3), fall within the SAG_A interquartile ranges
 (215 deg, 24.6 deg; counter-clockwise from 3 o'clock). The shoulder lies within the
@@ -310,8 +315,8 @@ To get (author, from plant data and reports):
   plant's models still use the new-liner profiles; the same window for all
   five mills, so their values are comparable):
   - **SAG_A** (targets and V15): 10 s resolution; toe, shoulder, Jc, Jb,
-    speed, **power** (state motor input or shaft power), reline dates.
-    At 10 s, 6 months is ~1.6 million rows.
+    speed, **power** (taken as motor input). At 10 s, 2 months is
+    ~0.5 million rows.
   - **SAG_B-E** (typicality only): coarser is enough (1-5 min, or hourly
     medians); toe, shoulder, Jc, Jb, speed; power optional. Compared with
     SAG_A in dimensionless form (% of critical speed, J, angles), because
@@ -339,3 +344,12 @@ To do (Claude):
   source before quoting a Morrell shoulder value.
 - Implement bulk toe / shoulder extraction from the time-averaged position
   density (plus the liner-force cross-check).
+
+## Pending code changes
+
+| ID | Change | Current code | When |
+|---|---|---|---|
+| C15-1 | Bulk toe / shoulder from the time-averaged position-density contour (Boemer & Ponthot §2.3), in this angle convention; liner-force cross-check | None | Before calibration |
+| C15-2 | Plant-data analysis: post-reline window, steady-period filter near the operating point, target medians / IQR; SAG_A-E typicality (claims 1-2) | None | When A1 arrives |
+| C15-3 | V15 power comparison (P_mill vs P_charge,plant with the stated assumptions) | Monitor logs P only | After calibration |
+
