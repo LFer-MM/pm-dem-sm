@@ -82,9 +82,11 @@ Decided 2026-10-22.
   Cleary and a larger ratio under either reading. This matters more here
   because every ball is at the top size, whereas in their charges the top
   size is a minority of the balls.
-- SAG_A is 19 ft = 5.79 m flange to flange, so 0.6 m is **10.4 % of that
-  length** and a larger share of the shorter belly length: the slice also
-  meets Govender's 10 %.
+- SAG_A's belly length (cylindrical section between the cone junctions,
+  plant measurement t0, 7 March 2026) is 5.244 m, so 0.6 m is **11.4 % of
+  the length**: the slice also meets Govender's 10 %. The length is used
+  only here and in the power check V15; the simulation itself works per
+  slice and does not use it.
 - Side benefits: the Lacey cell (0.4285 m, [14](14_dataset_runs_and_recording.md))
   fits inside the slice, which it did not at 0.375 m; the code's own
   thin-slice warning no longer applies.
@@ -121,11 +123,13 @@ this simplification does not affect any model input.
   uses a length.
 - **Lifter shape (SAG_A):** base width 523 mm **at the shell**, height
   395 mm from the shell (265 mm above the plate), both faces 35 deg
-  (author, 2026-11-01). A trapezoid with 35 deg faces over the full
-  395 mm would have a negative top (523 - 2 x 395 x tan 35 deg = -30 mm),
-  so the section must differ; the working assumption is vertical sides
-  through the 130 mm plate thickness and 35 deg faces on the exposed
-  265 mm, giving a **152 mm top** (to confirm). Plates fill the pitch
+  (author, 2026-11-01). Section confirmed by the author's profile drawing
+  (2026-11-01): **near-vertical sides through the 130 mm plate thickness,
+  then 35 deg faces over the exposed 265 mm, narrow rounded top**; top
+  width 523 - 2 x 265 x tan 35 deg = **152 mm** (rounded corners ignored
+  at this scale). The drawing's proportions match the CSV (base ~520 mm,
+  plate ~125 mm, faces ~35 deg). Flat plates of 130 mm fill the space
+  between lifters. Plates fill the pitch
   between lifter bases: pi D / 36 = 0.935 m, so the gap is 0.412 m =
   2.9 ball diameters (above the code's 2-diameter packing warning).
 
@@ -193,11 +197,9 @@ reported separately because it has no counterpart in the real mill."
 - Design data SAG_A-E received (CSV, 2026-10-30; plates verified flat, LH
   from the inside shell; lengths flange to flange; SAG_A EGL 17.21 ft and
   lifter base width 523 mm added 2026-11-01; belly length 5,244 mm between
-  the cone junctions per the plant drawing). Open: the lifter section
-  (see Analysis); what the drawing's "r : 4890 mm" is -- it does not match
-  the inside-liner radius 5,356 mm derived from the CSV (36 ft shell,
-  130 mm plates); if it were the inside radius, D would be 9.78 m and the
-  diameter-based numbers would change. Cone angle / trunnion diameter will not
+  the cone junctions per the plant drawing; lifter section confirmed by the
+  author's profile drawing). The radius printed on the plant's length
+  drawing is not used (author, 2026-11-01). Cone angle / trunnion diameter will not
   be available: V15 runs belly-only with that caveat. The CSV in Zotero was
   updated 2026-11-01 (no plate-angle column); SAG_B-E rows are complete.
 - Add the author's mill generator to the repo as the primary geometry
@@ -214,4 +216,4 @@ reported separately because it has no counterpart in the real mill."
 | C10-1 | `MILL_DIAMETER_M` = SAG_A diameter inside liners, 10.7128 m | 11.0 (`config.py:72`) | Before any production run |
 | C10-2 | Default `end_walls = "frictionless"` | `"liner"` (`scenario.py:85`) | Before calibration |
 | C10-3 | Default `depth_m = 0.6` | 0.375 (`scenario.py:77`) | Before calibration |
-| C10-4 | Geometry from parameters (SAG_A: 36 lifters, 395 mm from the inside shell, 35 deg faces, alternating with 36 flat 130 mm plates). The repo's `initialize_parametric_mill` (`stl.py:49`) builds trapezoidal lifters on a shell but has no plates and no face-angle input: extend it, or add the author's generator if it covers plates; geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |
+| C10-4 | Geometry from parameters (SAG_A: 36 lifters, base 523 mm at the shell, vertical sides through the plate, 35 deg faces above it, top 152 mm, 395 mm high from the inside shell; alternating with 36 flat 130 mm plates). The repo's `initialize_parametric_mill` (`stl.py:49`) builds trapezoidal lifters on a shell but has no plates and no face-angle input: extend it, or add the author's generator if it covers plates; geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |
