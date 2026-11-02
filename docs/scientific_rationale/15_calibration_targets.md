@@ -30,7 +30,12 @@ the plant time series (claim 2):
 
 Friction and rolling resistance ([05](05_friction.md),
 [06](06_rolling_resistance.md)) are tuned until the simulated steady-state
-bulk toe and shoulder fall inside the SAG_A interquartile ranges.
+bulk toe and shoulder fall inside the acceptance band: **SAG_A's
+interquartile range, widened to the simulation's own replicate scatter
+(V12) if that is larger** (decided 2026-11-02). The current toe IQR is only
+~1.2 deg wide, which may be finer than a DEM measurement can resolve
+across seeds; the rule keeps a correct model from failing on the plant
+model's smoothness without changing the target values.
 
 **Measurement in simulation:** the plant reports the **bulk** toe, so the
 simulated toe and shoulder are read from the boundary of the main charge
@@ -293,6 +298,7 @@ shoulder 24.6-38.2 deg), and the 40 ft SAG_D and SAG_E extend the
 comparison in dimensionless terms (% of critical speed, filling, angles). Contact parameters were calibrated so the simulated
 steady-state bulk toe and shoulder, read from the position-density contour
 (Boemer & Ponthot 2017, §2.3), fall within the SAG_A interquartile ranges
+(widened to the replicate scatter where that is larger)
 (215 deg, 24.6 deg; counter-clockwise from 3 o'clock). The shoulder lies within the
 ranges of DEM SAG studies (Owen & Cleary 2015, Table 5: 16-34 deg; Govender
 et al. 2015: ~30 deg). The toe lies within the plant range of the three SAG

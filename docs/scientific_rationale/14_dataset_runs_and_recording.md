@@ -9,7 +9,7 @@
 | RMIC duration | **20 s** (3.0 revolutions at 9 rpm; Kishida: 2.5) -- decided 2026-11-02 |
 | SIC duration | **35 s** (5.25 revolutions; Kishida: 5) -- decided 2026-11-02 |
 | Training window | 20 frames (1 s) starting **after the measured quasi-steady state** of kinetic energy / power -- not a fixed 3-4 s |
-| Replicates | **5 per IC type** (different seeds; decided 2026-11-02), to show that the metrics vary little between runs; more if the spread is large compared with the segregation effect |
+| Replicates | **5 per IC type, each with its own seed** (decided 2026-11-02): different random initial packings of the same charge, everything else identical; they show that the metrics do not depend on the microscopic arrangement. More if the spread is large compared with the segregation effect. Seed and thread count go into each manifest |
 | Frame storage | Binary float32 (parquet), not per-frame CSV kept long term |
 
 **Metrics** (decided 2026-11-02):
@@ -87,6 +87,17 @@ Compare in revolutions, not seconds:
   ~12 h of compute and ~4 GB of float32 frames for SAG_A's ~19,000
   particles, against ~70 h and ~22 GB for 30 + 30 (rough estimates, to be
   replaced by the pilot's timings).
+- **Why different seeds, not the same run repeated.** On 1 thread YADE is
+  bit-for-bit deterministic: repeating the same input gives identical runs
+  and zero spread. On several threads (needed for speed) the order in which
+  contact forces are summed varies, round-off differs and the chaotic
+  granular flow amplifies it (test 2026-11-02: 3,000 spheres, 20,000 steps,
+  4 threads, two runs: median 0.6 mm apart, 1.6 % of particles more than a
+  radius apart) -- spread from uncontrolled noise. Different seeds instead
+  sample, reproducibly, the arbitrary microscopic arrangement of a fixed
+  macroscopic charge, give independent samples for means and confidence
+  intervals, and allow run-wise train / test splits without leakage. V17
+  checks determinism once on 1 thread.
 - **Cell size.** 0.04 D is 0.43 m for SAG_A, which does not tile the 0.6 m
   slice. Kishida found Lacey's index insensitive to the cell size below
   0.04 D, so 0.3 m cubes (two across the slice, ~35 particles per cell on

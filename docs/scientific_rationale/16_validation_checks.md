@@ -12,14 +12,15 @@ written to the run manifest so each dataset can be defended individually.
 | V5 | No artificial damping | `NewtonIntegrator.damping == 0`, set explicitly, in **every** stage (fill, settle, packing measurement, calibration, dataset) | [04](04_numerical_damping.md) |
 | V6 | Inventory | Same particle counts per species in every frame; no particle outside the shell | Integrity check of `data_processing` |
 | V7 | Quasi-steady time | Kinetic energy / power / charge angle quasi-steady before the training window | Kishida 2025 §3, PDF p6; SM Fig. S1 |
-| V8 | Charge shape (calibration runs) | Bulk toe and shoulder within the interquartile range of SAG_A (the reference mill) | [15](15_calibration_targets.md) |
+| V8 | Charge shape (calibration runs) | Bulk toe and shoulder within SAG_A's interquartile range, widened to the replicate scatter of V12 if that is larger | [15](15_calibration_targets.md) |
 | V9 | dt sensitivity (once) | dt vs dt/2: toe, shoulder, power within run-to-run scatter | [02](02_time_step.md) |
 | V10 | Stiffness sensitivity (once; kept 2026-10-19) | Both moduli x 0.5 (f = 52) and x 2 (f = 13), same dt = 2.5e-5 s, 3 revolutions each: toe, shoulder, power and charge angle within the replicate scatter (V12). Tests in this mixed steel-rock charge the insensitivity Boemer found for steel balls only | Boemer abstract and §4 (PDF p13); [03](03_stiffness_young_modulus.md) |
 | V11 | End-wall sensitivity (once) | Frictionless (baseline) vs liner-friction end walls, 3 revolutions each: toe, shoulder, power and segregation within the replicate scatter | [10](10_mill_geometry.md) |
 | V11b | Ore-density sensitivity (once) | 2850 (baseline) vs 2650 kg/m^3, same moduli: toe, shoulder, power **and steel / rock segregation** within the replicate scatter | [08](08_density.md) |
-| V12 | Replicate scatter | Spread of toe / shoulder / Lacey curves over seeds reported | Owen & Cleary Table 5 / §4.1 (4 centre-point replicates, PDF p4) |
+| V12 | Replicate scatter | Replicates = **different seeds** (different random initial packings, everything else identical); spread of toe / shoulder / Lacey / radial-fraction curves over the seeds reported | Owen & Cleary Table 5 / §4.1 (4 centre-point replicates, PDF p4) |
 | V13 | No initial overlaps | Zero sphere-sphere and sphere-facet overlaps before the first step of every fill batch; abort otherwise. Spawning inside a facet ejects particles through it | [04](04_numerical_damping.md), [13](13_initial_conditions.md) |
 | V14 | No escapes | Zero particles outside the shell radius or slice depth at the end of every stage | [04](04_numerical_damping.md) (instability test) |
+| V17 | Determinism (once) | Rerun one short case with the same seed on 1 thread: bit-identical result. Confirms that the spread in V12 comes from the initial packing, not from the software (multithreaded runs are not bit-reproducible: test 2026-11-02, 3,000 spheres, 4 threads, median 0.6 mm divergence after 20,000 steps) | this doc |
 | V15 | Plant power (once, after calibration) | P_mill = P_slice x (L / 0.6 m) x 1.05 (cone allowance, Doll 2013) vs P_charge,plant = eta_d x (P_motor - P_NL) in the same operating window; report the % deviation (not a pass / fail target; ~+-20 % consistent with the comparison uncertainty) | [15](15_calibration_targets.md); Govender 2015 §3 (6.8 vs 7.1 MW) |
 | V16 | Fill level | Settled J (Morrell convention, from the stopped surface profile) within +-0.5 points of Jb (ball stage) and Jc (full charge) | [12](12_charge_fill_and_particles.md) |
 
