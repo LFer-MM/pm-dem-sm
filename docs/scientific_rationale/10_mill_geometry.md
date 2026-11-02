@@ -82,8 +82,8 @@ Decided 2026-10-22.
   Cleary and a larger ratio under either reading. This matters more here
   because every ball is at the top size, whereas in their charges the top
   size is a minority of the balls.
-- SAG_A's belly length (cylindrical section between the cone junctions,
-  plant measurement t0, 7 March 2026) is 5.244 m, so 0.6 m is **11.4 % of
+- SAG_A's belly length (cylindrical section between the cone junctions)
+  is 5.244 m, so 0.6 m is **11.4 % of
   the length**: the slice also meets Govender's 10 %. The length is used
   only here and in the power check V15; the simulation itself works per
   slice and does not use it.
@@ -195,8 +195,7 @@ reported separately because it has no counterpart in the real mill."
 - Design data SAG_A-E received (CSV, 2026-10-30; plates verified flat, LH
   from the inside shell; lengths flange to flange; SAG_A EGL 17.21 ft and
   lifter base width 523 mm and lifter section added 2026-11-01; belly
-  length 5,244 mm between the cone junctions, measured at t0, 7 March
-  2026). Cone angle / trunnion diameter will not
+  length 5,244 mm between the cone junctions). Cone angle / trunnion diameter will not
   be available: V15 runs belly-only with that caveat. The CSV in Zotero was
   updated 2026-11-01 (no plate-angle column); SAG_B-E rows are complete.
 - Add the author's mill generator to the repo as the primary geometry

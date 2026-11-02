@@ -63,9 +63,10 @@ superseded.)
 
 Convention: with N_c = 42.3 / sqrt(D) (no ball-diameter correction, also
 common in plant practice) 9 rpm is 69.6 % instead of 69.2 % -- a 0.4-point
-difference, small next to the 66-77 % operating band. The plant's own
-definition is collected with the mill data (author to-do A2); the
-literature comparisons hold under either: Owen & Cleary 74.7-75.4 %,
+difference, small next to the 66-77 % operating band. Plant speeds are
+recorded in rpm for all five mills, so % of critical is computed here with
+one convention for all of them; the literature comparisons hold under
+either: Owen & Cleary 74.7-75.4 %,
 Govender 74.7-75.2 %.
 
 The plant range 8.6-10 rpm is 66-77 % of critical for the 36 ft mills.

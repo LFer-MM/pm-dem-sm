@@ -228,8 +228,8 @@ then:
   **to the charge**. Scaled to the full mill as
   **P_mill = P_slice x (L / 0.6 m) x (1 + c_cone)**:
   - L: SAG_A's belly length, **5.244 m** (17.21 ft), measured by the plant
-    on the cylindrical section between the cone junctions (t0, 7 March
-    2026) -- the cylindrical length Morrell's model uses,
+    on the cylindrical section between the cone junctions -- the
+    cylindrical length Morrell's model uses,
     the cones being added separately (c_cone). Factor 8.74.
   - c_cone = **0.05**, the cone-end allowance recommended by Doll (2013)
     ("5% extra power should be added", based on Barratt, Brodie & Pfeifer
@@ -308,11 +308,11 @@ To get (author, from plant data and reports):
     medians); toe, shoulder, Jc, Jb, speed; power optional. Compared with
     SAG_A in dimensionless form (% of critical speed, J, angles), because
     SAG_D-E are 40 ft mills.
-- **Mill design, SAG_A-E: received 2026-10-30** (`mill_dimensions.csv`,
-  [10](10_mill_geometry.md); plates verified flat, LH from the inside
-  shell; lengths flange to flange). Still open: SAG_A lifter top or base
-  width; optionally SAG_A's EGL (V15); the plant's critical-speed
-  definition. Cone geometry not available (V15 caveat).
+- **Mill design, SAG_A-E: complete** (`mill_dimensions.csv`,
+  [10](10_mill_geometry.md): plates flat, lifter height from the inside
+  shell, SAG_A lifter section and belly length). Cone geometry not
+  available (V15 uses the 5 % allowance). Speeds will be in rpm for all
+  mills, so no plant critical-speed convention is needed.
 - The Maleki-Moghaddam model inputs used at the plant (which liner geometry,
   updated with wear or not).
 
