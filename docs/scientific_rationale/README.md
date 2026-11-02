@@ -60,7 +60,7 @@ target anyway).
 | 11 | [11_mill_speed.md](11_mill_speed.md) | SAG_A median 9 rpm = 69.2 % of critical (N_c 13.01 rpm); SAG_B / SAG_C share the 36 ft design (8.6-10 rpm); D / E compared as % critical |
 | 12 | [12_charge_fill_and_particles.md](12_charge_fill_and_particles.md) | Jb 17 % / Jc 26 % in Morrell's convention (D inside liners, lifters not subtracted); counts from a simulated grind-out + mixed crash stop; phi is a result |
 | 13 | [13_initial_conditions.md](13_initial_conditions.md) | SIC / RMIC at rest, undamped settle with a geometric stop rule, velocities zeroed; SIC = rock bottom, balls top |
-| 14 | [14_dataset_runs_and_recording.md](14_dataset_runs_and_recording.md) | Record from rest; durations in revolutions; training window after measured quasi-steady state |
+| 14 | [14_dataset_runs_and_recording.md](14_dataset_runs_and_recording.md) | Record from rest every 0.05 s; RMIC 20 s, SIC 35 s (revolution-matched); 5 replicates per IC; Lacey on 0.3 m cubes; radial segregation as result, axial only as end-wall check |
 | 15 | [15_calibration_targets.md](15_calibration_targets.md) | Match the SAG_A (reference) bulk toe 215 / shoulder 24.6 deg (0 deg at 3 o'clock, CCW); SAG_B / SAG_C show these values are typical; power only for the internal energy balance |
 | 16 | [16_validation_checks.md](16_validation_checks.md) | Acceptance tests every run must pass |
 
@@ -84,9 +84,9 @@ end.
 | [08](08_density.md) | C08-1 | **C08-1** |
 | [10](10_mill_geometry.md) | C10-1 ... C10-4 | **C10-1**, **C10-2**, **C10-3**, **C10-4** |
 | [12](12_charge_fill_and_particles.md) | C12-1 ... C12-3 | **C12-1**, **C12-2**, **C12-3** |
+| [14](14_dataset_runs_and_recording.md) | C14-1 ... C14-5 | **C14-1**, C14-2, **C14-3** |
 
-Related items from later topics (not yet reviewed): split the runner into
-calibrate / make-IC / dataset run types ([14](14_dataset_runs_and_recording.md)).
+
 
 ## Author to-do list (after the review sweep)
 

@@ -29,7 +29,7 @@ Common protocol for both (revised 2026-10-19):
 5. Save positions (CSV) **and** the YADE scene (`.yade.gz`), with the seed,
    counts, phi, material set, settling time and stop condition in a
    manifest.
-6. 30 replicates per IC type (PPT slide 30), differing only in the seed.
+6. **5 replicates per IC type** (decided 2026-11-02, [14](14_dataset_runs_and_recording.md); the PPT planned 30), differing only in the seed.
 
 **Particle counts** come from the simulated grind-out / crash-stop
 procedure of [12](12_charge_fill_and_particles.md) (charge run, stopped and
