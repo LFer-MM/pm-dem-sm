@@ -36,7 +36,7 @@ Decided 2026-10-22.
 
 | Source | What it says | Where | Verified |
 |---|---|---|---|
-| Plant design data (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`, attachment `ZBFFQY29`; columns updated 2026-11-01) | SAG_A-E at the start of the 2026 H1 campaign (new liners). Columns: `inside_shell_diam_ft`; `ff_len_ft` (vendor flange-to-flange length); `egl_len_ft` (vendor EGL, empty); `lifter_qty`; `lifter_h_mm` (measured from the inside shell); `lifter_w_mm` (empty; top or base to be stated); `lifter_angle_deg` (face angle); `plate_qty`; `plate_h_mm` (flat plate thickness); `plate_w_mm` (empty, not needed: follows from the pitch); `trunnion_diam` (empty, unit to be stated; useful only with a cone angle) | CSV | Yes (re-read 2026-11-01) |
+| Plant design data (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`, attachment `ZBFFQY29`; updated 2026-11-01 21:32) | SAG_A-E at the start of the 2026 H1 campaign (new liners). Columns: `inside_shell_diam_ft`; `ff_len_ft` (vendor flange-to-flange length); `egl_len_ft` (vendor EGL; SAG_A 17.21 ft); `lifter_qty`; `lifter_h_mm` (from the inside shell); `lifter_base_w_mm` (SAG_A 523 mm); `lifter_angle_deg` (face angle); `plate_qty`; `plate_h_mm` (flat plate thickness) | CSV | Yes (re-read 2026-11-01) |
 | Owen & Cleary 2015 | "a 3D slice of a generic SAG mill": shell inner diameter 8.4 m, slice length 0.6 m "along the cylindrical belly", 56 lifters, base width 320 mm, height 50-300 mm, face angle 15-25 deg; how the slice ends are treated is not stated | §3 and Table 1, PDF p2 / j.20 | Yes |
 | Owen & Cleary 2015 | Charge: balls 145 mm down to 30 mm, rocks 200 mm down to 25 mm (Table 3) -> slice = 4.1 top-ball diameters, 3.0 top-rock diameters | §3 and Table 3, PDF p3 / j.21 | Yes |
 | Govender 2015 | "Fig. 30(b) depicts the charge profile for a slice of 10% of length. We notice that the pattern is very similar to the full length of the mill. Clearly the effect of the axial direction cannot just be neglected as the 2D case cannot fully reproduce the dynamics." | §3.1, PDF p16 / j.167 | Yes |
@@ -119,13 +119,14 @@ this simplification does not affect any model input.
   ([11](11_mill_speed.md), [15](15_calibration_targets.md)).
 - Lengths are vendor flange-to-flange values. Only the power check V15
   uses a length.
-- **Lifter shape:** height above the plate (265 mm for SAG_A) and face
-  angle are known; **one width (top or base) per lifter** completes the
-  trapezoid (same face angle on both sides). Plate widths are not needed:
-  the flat plates fill the pitch (pi D / 36 = 0.935 m for SAG_A) between
-  lifter bases. The width matters for the pocket between lifters and the
-  charge each lifter carries, so it is needed for SAG_A; if unavailable, a
-  stated assumption plus one sensitivity run.
+- **Lifter shape (SAG_A):** base width 523 mm, 265 mm above the plate,
+  35 deg faces. Read as a symmetric trapezoid standing on the plate, the
+  top width is 523 - 2 x 265 x tan 35 deg = **152 mm**. (If the 523 mm were
+  taken at the shell with the full 395 mm height, the top would come out
+  negative, so the base width must be at the plate surface; to confirm,
+  together with whether both faces are at 35 deg.) Plates fill the pitch
+  between lifter bases: pi D / 36 = 0.935 m, so the gap is 0.412 m =
+  2.9 ball diameters (above the code's 2-diameter packing warning).
 
 ### End walls: frictionless, and what it leaves behind
 
@@ -189,9 +190,10 @@ reported separately because it has no counterpart in the real mill."
 ## Open items / validation
 
 - Design data SAG_A-E received (CSV, 2026-10-30; plates verified flat, LH
-  from the inside shell; lengths flange to flange). Still open: **SAG_A
-  lifter top or base width** (one number); optionally SAG_A's EGL if its
-  definition is stated (V15 only). Cone angle / trunnion diameter will not
+  from the inside shell; lengths flange to flange; SAG_A EGL 17.21 ft and
+  lifter base width 523 mm added 2026-11-01). To confirm: the 523 mm is
+  taken at the plate surface with both faces at 35 deg (top 152 mm); the
+  EGL is measured inside the liners (feed head liner to grate). Cone angle / trunnion diameter will not
   be available: V15 runs belly-only with that caveat. The CSV in Zotero was
   updated 2026-11-01 (no plate-angle column); SAG_B-E rows are complete.
 - Add the author's mill generator to the repo as the primary geometry

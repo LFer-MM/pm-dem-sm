@@ -227,10 +227,11 @@ then:
   steady window ([16](16_validation_checks.md), V7) -- the power delivered
   **to the charge**. Scaled to the full mill as
   **P_mill = P_slice x (L / 0.6 m) x (1 + c_cone)**:
-  - L: SAG_A's length. Available: 19 ft = 5.79 m flange to flange (factor
-    9.65), longer than the belly length inside liners, so it biases P_mill
-    **high**; the vendor EGL replaces it if its definition is "inside
-    liners".
+  - L: SAG_A's grinding length. **EGL 17.21 ft = 5.246 m** (factor 8.74;
+    0.55 m shorter than the 19 ft flange-to-flange length, consistent with
+    head liners and grate), used if it is measured inside the liners, as
+    Morrell's belly length; otherwise the flange-to-flange 5.79 m (factor
+    9.65, biases P_mill high).
   - c_cone = **0.05**, the cone-end allowance recommended by Doll (2013)
     ("5% extra power should be added", based on Barratt, Brodie & Pfeifer
     1999), since SAG_A's cone angle and trunnion diameter are not
