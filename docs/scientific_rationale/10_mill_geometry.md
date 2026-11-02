@@ -119,17 +119,15 @@ this simplification does not affect any model input.
 - Comparisons of operating data between the groups use dimensionless
   quantities (% of critical speed, J, angles), not rpm
   ([11](11_mill_speed.md), [15](15_calibration_targets.md)).
-- Lengths are vendor flange-to-flange values. Only the power check V15
-  uses a length.
+- `ff_len_ft` is the vendor flange-to-flange length; SAG_A's belly length
+  (cylindrical section between the cone junctions) is 5.244 m. Only the
+  power check V15 and the slice-share remark use a length.
 - **Lifter shape (SAG_A):** base width 523 mm **at the shell**, height
   395 mm from the shell (265 mm above the plate), both faces 35 deg
-  (author, 2026-11-01). Section confirmed by the author's profile drawing
-  (2026-11-01): **near-vertical sides through the 130 mm plate thickness,
-  then 35 deg faces over the exposed 265 mm, narrow rounded top**; top
-  width 523 - 2 x 265 x tan 35 deg = **152 mm** (rounded corners ignored
-  at this scale). The drawing's proportions match the CSV (base ~520 mm,
-  plate ~125 mm, faces ~35 deg). Flat plates of 130 mm fill the space
-  between lifters. Plates fill the pitch
+  (author, 2026-11-01). Section: **near-vertical sides through the 130 mm
+  plate thickness, then 35 deg faces over the exposed 265 mm, narrow
+  rounded top**; top width 523 - 2 x 265 x tan 35 deg = **152 mm** (rounded
+  corners ignored at this scale). Flat plates of 130 mm fill the pitch
   between lifter bases: pi D / 36 = 0.935 m, so the gap is 0.412 m =
   2.9 ball diameters (above the code's 2-diameter packing warning).
 
@@ -196,10 +194,9 @@ reported separately because it has no counterpart in the real mill."
 
 - Design data SAG_A-E received (CSV, 2026-10-30; plates verified flat, LH
   from the inside shell; lengths flange to flange; SAG_A EGL 17.21 ft and
-  lifter base width 523 mm added 2026-11-01; belly length 5,244 mm between
-  the cone junctions per the plant drawing; lifter section confirmed by the
-  author's profile drawing). The radius printed on the plant's length
-  drawing is not used (author, 2026-11-01). Cone angle / trunnion diameter will not
+  lifter base width 523 mm and lifter section added 2026-11-01; belly
+  length 5,244 mm between the cone junctions, measured at t0, 7 March
+  2026). Cone angle / trunnion diameter will not
   be available: V15 runs belly-only with that caveat. The CSV in Zotero was
   updated 2026-11-01 (no plate-angle column); SAG_B-E rows are complete.
 - Add the author's mill generator to the repo as the primary geometry

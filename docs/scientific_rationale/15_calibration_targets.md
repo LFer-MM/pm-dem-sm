@@ -229,7 +229,7 @@ then:
   **P_mill = P_slice x (L / 0.6 m) x (1 + c_cone)**:
   - L: SAG_A's belly length, **5.244 m** (17.21 ft), measured by the plant
     on the cylindrical section between the cone junctions (t0, 7 March
-    2026; author's drawing) -- the cylindrical length Morrell's model uses,
+    2026) -- the cylindrical length Morrell's model uses,
     the cones being added separately (c_cone). Factor 8.74.
   - c_cone = **0.05**, the cone-end allowance recommended by Doll (2013)
     ("5% extra power should be added", based on Barratt, Brodie & Pfeifer
