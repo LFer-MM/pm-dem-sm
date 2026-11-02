@@ -97,7 +97,7 @@ than a separate-bulk estimate.
 
 J is a measurement convention, not "the volume available to the charge".
 It is measured on site from the charge surface and the inside-liner
-diameter with circle geometry, which needs no lifter drawings and does not
+diameter with circle geometry, which needs no lifter geometry and does not
 change as lifters wear; Morrell's model is calibrated on data measured that
 way, and the plant's Jc / Jb come from a model of that kind. A J of 26 %
 therefore fixes **where the charge surface lies** (the height of a 26 %
