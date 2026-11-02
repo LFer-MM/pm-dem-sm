@@ -46,6 +46,12 @@ primary measure, because it mainly detects the impact toe.
   et al. (2013) charge-shape model** from the operating point (filling,
   speed) and the liner / lifter geometry. They are model outputs, not direct
   observations of the charge.
+- **Liner geometry in those models** (author, 2026-11-01): the plant's
+  models start each campaign with the **new-liner profiles** (the design
+  data of [10](10_mill_geometry.md)) and update them for wear about three
+  times per ~6-month campaign. The angles and the Jb / Jc of roughly the
+  **first two months** after a reline are therefore computed with the same
+  new-liner geometry that is simulated.
 
 **Decision (2026-10-20):** the plant angles are taken as precise **bulk**
 toe / shoulder angles (Maleki-Moghaddam's model is fitted to toe and
@@ -170,9 +176,10 @@ claims, each compared at matched conditions:
    its all-time median: from the 10 s time series, keep steady periods with
    Jc, Jb and speed near the simulated values (e.g. Jc 26 +- 1.5 %,
    9 +- 0.2 rpm) and, since the simulated liners are new
-   ([10](10_mill_geometry.md)), from the period just after a reline
-   (reline dates needed). Target = median in that window; acceptance
-   band = its interquartile range.
+   ([10](10_mill_geometry.md)), from the **first ~2 months after the
+   reline**, while the plant's models still use the new-liner profiles
+   (reline date and the dates of the profile updates needed). Target =
+   median in that window; acceptance band = its interquartile range.
 3. **The angle model is published and reproducible.** The angles come from
    Maleki-Moghaddam et al. (2013), an empirical model fitted to bulk toe /
    shoulder in a model mill and checked on an industrial SAG liner.
@@ -299,8 +306,9 @@ independent check (deviation reported in %)."
 To get (author, from plant data and reports):
 - **Time series** (decided 2026-10-30: all five mills, at two levels of
   detail; period: the 2026 H1 campaign, which the design data describe,
-  and in particular the weeks right after the reline, when the liners
-  match the new-liner geometry):
+  and in particular its **first ~2 months after the reline**, while the
+  plant's models still use the new-liner profiles; the same window for all
+  five mills, so their values are comparable):
   - **SAG_A** (targets and V15): 10 s resolution; toe, shoulder, Jc, Jb,
     speed, **power** (state motor input or shaft power), reline dates.
     At 10 s, 6 months is ~1.6 million rows.
@@ -313,8 +321,9 @@ To get (author, from plant data and reports):
   shell, SAG_A lifter section and belly length). Cone geometry not
   available (V15 uses the 5 % allowance). Speeds will be in rpm for all
   mills, so no plant critical-speed convention is needed.
-- The Maleki-Moghaddam model inputs used at the plant (which liner geometry,
-  updated with wear or not).
+- Dates of the reline and of the liner-profile updates in the plant's
+  models, to cut the new-liner window (A3 resolved 2026-11-01: new-liner
+  profiles at the start of each campaign, updated ~3 times per campaign).
 
 To do (Claude):
 - Get Maleki-Moghaddam, Yahyaei & Banisi 2013 (Minerals Engineering 46-47,
