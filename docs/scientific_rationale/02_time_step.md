@@ -195,7 +195,7 @@ not depend on it):
 The worst case uses Boemer & Ponthot's choice of impact speed (§3.1.2,
 PDF p8): free fall across the mill, sqrt(2 g D) = 14.5 m/s for SAG_A's
 D = 10.71 m (inside liners). Real impacts are slower: the shell moves at
-5.05 m/s at 9 rpm and the old (40 ft)
+5.33 m/s at 9.5 rpm and the old (40 ft)
 dataset's fastest particle moved at 12.6 m/s (frame 399). Even in the worst
 case every contact gets >= 20 steps, meeting both Cleary's 15-25 and
 Boemer's 20-70 (the rock contacts, with low restitution 0.3-0.5, need the
@@ -206,7 +206,7 @@ dt = 1e-4 s the same collisions would get only ~5 steps.
 ### Govender's lifter-motion bound
 
 dt_max = d_max / (R omega) with R = 5.36 m (SAG_A inside liners),
-omega = 0.942 rad/s: 3.5e-4 s (d_max = 0.05 r_rock) or 1.7e-4 s
+omega = 0.995 rad/s (9.5 rpm): 3.3e-4 s (d_max = 0.05 r_rock) or 1.6e-4 s
 (0.025 r_rock). Not binding.
 
 ### Option B: keep dt = 1e-4 s

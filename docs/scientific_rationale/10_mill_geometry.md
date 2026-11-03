@@ -90,7 +90,7 @@ Decided 2026-10-22.
 - Side benefits: the Lacey cell (0.4285 m, [14](14_dataset_runs_and_recording.md))
   fits inside the slice, which it did not at 0.375 m; the code's own
   thin-slice warning no longer applies.
-- Cost: ~1.7 h per calibration run, ~15 h for the 9-run grid
+- Cost: ~1.6 h per calibration run, ~15 h for the 9-run grid
   ([05](05_friction.md)); particle counts in
   [12](12_charge_fill_and_particles.md).
 

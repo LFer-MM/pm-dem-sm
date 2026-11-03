@@ -6,7 +6,7 @@
 (right side, +X in YADE), angles increasing **counter-clockwise**, mill
 rotating **counter-clockwise** seen from +Z (positive angular velocity about
 Z in YADE). The charge rises on the right: shoulder in the first quadrant
-(~25 deg), toe in the third quadrant (~215 deg). Liner designs are
+(~27 deg), toe in the third quadrant (~214 deg). Liner designs are
 symmetric, so this orientation is a free choice in simulation.
 
 **Role of the reference mills** (SAG_A-E). **SAG_A is the reference**: its operating point sets the
@@ -18,15 +18,22 @@ angles sit inside the normal operating ranges of real SAG mills. The full
 argument, joining plant data and literature, is in the Analysis
 ("Reference-mill argument").
 
-**Calibration target (SAG_A, at SAG_A's operating point Jb 17 %, Jc 26 %,
-9 rpm)** -- current values from the PPT's whole-period box plots (slide 3,
-SAG_A-C); **provisional** until recomputed from the post-reline window of
-the plant time series (claim 2):
+**Calibration target** (decided 2026-11-02, from the operational-data
+analysis: SAG_A's first ~2 months after a reline, steady running data;
+analysis and results in Zotero `bppm_dem_sm/data/operational_data`).
+SAG_A's operating point = medians of its steady running data: **9.5 rpm
+(73.0 % of critical), Jb 18.8 %, Jc 27.6 %**. Targets = toe / shoulder in
+the window +-0.2 rpm, +-1.5 % Jc, +-0.5 % Jb around it (239 h):
 
-| Target | SAG_A median | SAG_A interquartile range (box) | Range over SAG_A-C (medians) |
-|---|---|---|---|
-| **Bulk** toe angle | **215 deg** | ~214.6-215.8 deg | 206-215 deg |
-| Shoulder angle | **24.6 deg** | ~22-26.4 deg | 24.6-38.2 deg |
+| Target | SAG_A median | SAG_A interquartile range | P5-P95 | SAG_A-E medians (all usable data) |
+|---|---|---|---|---|
+| **Bulk** toe angle | **213.8 deg** | 213.4-214.5 deg | 212.9-215.4 deg | 208.6-215.4 deg |
+| Shoulder angle | **26.6 deg** | 26.0-27.3 deg | 25.0-28.5 deg | 23.0-35.7 deg |
+
+Cleaning (usable data): running (> 6 rpm, power > 0), power < 30,000 kW
+(drops sensor error codes), model outputs present and not frozen (identical
+for >= 30 min; 39 % of SAG_B's running time), >= 60 min after a start,
+speed standard deviation <= 0.2 rpm over 30 min.
 
 Friction and rolling resistance ([05](05_friction.md),
 [06](06_rolling_resistance.md)) are tuned until the simulated steady-state
@@ -97,7 +104,7 @@ twice, neither time to choose parameters:
 |---|---|
 | -- | **Naming:** the PPT labels the reference mill SAG_B and the other one SAG_A; swapped in these docs (reference = SAG_A), see [README](README.md) |
 | 2 | Jb and Jc box plots for SAG_A/B/C (operating-range justification) |
-| 3 | Toe and shoulder box plots for SAG_A/B/C; SAG_A toe 215 deg, shoulder 24.6 deg |
+| 3 | Toe and shoulder box plots for SAG_A/B/C; SAG_A toe 215 deg, shoulder 24.6 deg (other campaign, whole period; **superseded** by the post-reline analysis) |
 | 4 | Speed box plots; range 8.6-10 rpm; SAG_A 8.99 rpm |
 | 31 | Simulation snapshot annotated 212 deg / 26.5 deg (read by eye; likely run with the friction bug, see [05](05_friction.md)) |
 
@@ -116,52 +123,52 @@ this convention as theta' = 180 deg - theta:
 
 | Feature | Owen Table 5, 12 cases (their convention) | In this convention | Owen 27.5 % fill, 175 mm lifters | SAG_A |
 |---|---|---|---|---|
-| Shoulder | 146-164 | **16-34** | 28-32 | **24.6** |
-| Bulk toe | 306-324 | **216-234** | 226 | **215** |
+| Shoulder | 146-164 | **16-34** | 28-32 | **26.6** |
+| Bulk toe | 306-324 | **216-234** | 226 | **213.8** |
 | Impact toe | 306-338 | 202-234 | 208-210 | -- |
 
-The SAG_A shoulder lies inside Owen's range. The SAG_A bulk toe (215 deg)
-is just past the edge of Owen's bulk-toe range (216 deg, reached in Owen's
-highest-fill case, 32.8 %), i.e. the plant charge extends ~10 deg further
-round the mill than Owen's 27.5 % case. Plausible causes: different mill
+The SAG_A shoulder lies inside Owen's range, close to Owen's comparable
+case. The SAG_A bulk toe (213.8 deg) is ~2 deg past the edge of Owen's
+bulk-toe range (216 deg, reached in Owen's highest-fill case, 32.8 %), i.e.
+the plant charge extends ~12 deg further round the mill than Owen's
+27.5 % case at practically the same fill. Plausible causes: different mill
 (8.4 m, 56 lifters of 50-300 mm, 75 % critical, wide PSD vs. SAG_A's
-10.71 m inside liners, 36 lifters of 395 mm, 69 %, binary charge). This is a quantitative check of the targets, not a
+10.71 m inside liners, 36 lifters of 395 mm, 73 %, binary charge). This is a quantitative check of the targets, not a
 contradiction.
 
 ### Plant values vs. nominal SAG values
 
 All angles in this convention (0 deg at 3 o'clock, counter-clockwise).
-Morrell's toe is evaluated at SAG_A's operating point (J_t = 0.26,
-phi = 0.692 -> phi_c = 1.086; the toe is practically speed-independent
-below 80 % CS, so the 238 deg is unchanged from the earlier 40 ft estimate).
+Morrell's toe is evaluated at SAG_A's operating point (J_t = 0.276,
+phi = 0.730 -> phi_c = 1.0808).
 
 | Source | Mill / conditions | Shoulder (deg) | Bulk toe (deg) |
 |---|---|---|---|
-| **SAG_A (target)** | 36 ft x 19 ft (10.71 m inside liners), 36 lifters 395 mm / 35 deg, 9 rpm (69 % CS), Jc 26 % | **24.6** | **215** |
-| SAG_B, SAG_C (plant, medians; PPT slide 3) | Same 36 ft design as SAG_A | up to 38.2 | 206-215 |
+| **SAG_A (target)** | 36 ft x 19 ft (10.71 m inside liners), 36 lifters 395 mm / 35 deg, 9.5 rpm (73 % CS), Jb 18.8 %, Jc 27.6 % | **26.6** | **213.8** |
+| SAG_B-E (plant, medians of usable data) | B, C: SAG_A's 36 ft design; D, E: 40 ft; 70-76 % CS, Jc 25-34 % | 23.0-35.7 | 208.6-215.4 |
 | Owen & Cleary 2015, Table 5 (DEM) | 8.4 m SAG, 75 % CS, 12 cases of fill and lifter height | 16-34 | 216-234 |
 | Owen & Cleary 2015 (DEM) | Same, 27.5 % fill, 175 mm lifters | 28-32 | 226 |
 | Govender 2015, Fig. 26 (DEM tuned to a measured profile) | Los Bronces SAG, 10.12 m, 10 rpm (~75 % CS), 41 % fill | ~30 ("nearly at 2 o'clock") | 210-240 ("between 7 and 8 o'clock") |
-| Morrell 1993 correlation (lab mills) | J_t = 0.26, 69 % CS | -- | 238 |
+| Morrell 1993 correlation (lab mills) | J_t = 0.276, 73 % CS | -- | 235 |
 
-**Shoulder:** 24.6 deg is inside Owen's DEM range (16-34 deg), a few degrees
+**Shoulder:** 26.6 deg is inside Owen's DEM range (16-34 deg), a little
 below Owen's comparable case (28-32 deg) and Govender's Los Bronces
-(~30 deg), and at the low end of the three plant mills. It is a nominal SAG
-shoulder.
+(~30 deg), and inside the range of the five plant mills (23.0-35.7 deg). It
+is a nominal SAG shoulder.
 
-**Toe:** 215 deg lies inside the Los Bronces range (210-240 deg) and the
-range of the three plant mills (206-215 deg), and at the edge of Owen's DEM
-range (216 deg, reached at Owen's highest fill, 32.8 %). It is, however,
-**higher than the correlations predict at 26 % fill**: Owen's comparable
-case gives 226 deg and Morrell's correlation 238 deg. In Morrell's
-correlation 215 deg corresponds to J_t ~ 0.42, i.e. SAG_A's toe looks like
-that of a fuller mill (compare Govender's 41 % fill). That all three plant
-mills report 206-215 deg suggests a systematic feature, not noise in one
-mill: the plant angles come from Maleki-Moghaddam's model, which includes
+**Toe:** 213.8 deg lies inside the Los Bronces range (210-240 deg) and the
+range of the five plant mills (208.6-215.4 deg), and ~2 deg past the edge of
+Owen's DEM range (216 deg, reached at Owen's highest fill, 32.8 %). It is,
+however, **higher than the correlations predict at 27.6 % fill**: Owen's
+comparable case gives 226 deg and Morrell's correlation 235 deg. In
+Morrell's correlation 213.8 deg corresponds to J_t ~ 0.43, i.e. SAG_A's toe
+looks like that of a fuller mill (compare Govender's 41 % fill). That all
+five plant mills report 208.6-215.4 deg suggests a systematic feature, not
+noise in one mill: the plant angles come from Maleki-Moghaddam's model, which includes
 the lifter / liner geometry, whereas Morrell's correlation depends on
 filling and speed only; the difference is therefore partly model vs. model
 and partly liner design. It is taken as given (Decision); the consequence for
-calibration is that matching 215 deg at 26 % fill may require friction /
+calibration is that matching 213.8 deg at 27.6 % fill may require friction /
 rolling resistance at the upper end of the literature range. If the
 calibration cannot reach the toe within that range, this section is the
 explanation to report.
@@ -177,15 +184,16 @@ claims, each compared at matched conditions:
    and against usual SAG practice: total filling ~20-35 % (Owen & Cleary's
    "usual operating range"; "SAG mills typically operate at mill fillings
    below 40 %", Toor et al. 2023, p10) and speed up to ~80 % CS ("most
-   variable-speed drives do not go above 80% CS", ibid.). SAG_A's 69 % CS
-   is inside the plant range of SAG_A-C (66-77 %) and a little below the
-   ~75 % of the DEM references. Jc / Jb are trustworthy because they are
+   variable-speed drives do not go above 80% CS", ibid.). SAG_A's 73.0 % CS
+   is in the middle of SAG_B-E (70.4-76.2 %) and close to the ~75 % of the
+   DEM references. Jc / Jb are trustworthy because they are
    measured (load cells / bearing pressure plus power model) and calibrated
    with crash stops / grind-outs.
 2. **The target is SAG_A's angle at the simulated operating point**, not
    its all-time median: from the 10 s time series, keep steady periods with
-   Jc, Jb and speed near the simulated values (e.g. Jc 26 +- 1.5 %,
-   9 +- 0.2 rpm) and, since the simulated liners are new
+   Jc, Jb and speed near the simulated values (Jc 27.6 +- 1.5 %,
+   Jb 18.8 +- 0.5 %, 9.5 +- 0.2 rpm; 239 h) and, since the simulated liners
+   are new
    ([10](10_mill_geometry.md)), from the **first ~2 months after the
    reline**, while the plant's models still use the new-liner profiles
    (reline date and the dates of the profile updates needed). Target =
@@ -276,6 +284,9 @@ then:
   - Morrell's k = 1.26 is **not** applied: it corrects his analytical
     continuum model for losses it does not represent, whereas the DEM
     power is the mechanical power the simulated charge actually absorbs.
+- **SAG_A values** (target window, 239 h): P_motor median 12,627 kW (IQR
+  12,445-12,846), so P_charge,plant = 0.95 x (1 - 0.08) x 12,627 =
+  **11,036 kW**.
 - Deviation = (P_mill - P_charge,plant) / P_charge,plant, reported with the
   cone band (c_cone 0.05-0.13), the length used, and the eta_d / P_NL
   values and whether they are measured or assumed.
@@ -289,23 +300,26 @@ then:
 
 ## Verdict and how to defend it
 
-"SAG_A is the reference mill: the operating point (9 rpm, Jb 17 %, Jc 26 %)
+"SAG_A is the reference mill: the operating point (9.5 rpm, Jb 18.8 %,
+Jc 27.6 %, medians of its steady running data in the first two months after
+a reline)
 and the charge-shape targets were taken from it; the plant angles are
 computed with the Maleki-Moghaddam et al. (2013) charge-shape model from the
 measured operating point and liner geometry. SAG_B and SAG_C, which share SAG_A's 36 ft design, are evidence that the
-selected values are typical (speed 8.6-10 rpm, bulk toe 206-215 deg,
-shoulder 24.6-38.2 deg), and the 40 ft SAG_D and SAG_E extend the
+selected values are typical (medians: 72-76 % of critical speed, bulk toe
+208.6-210.5 deg, shoulder 29.6-35.7 deg), and the 40 ft SAG_D and SAG_E extend the
 comparison in dimensionless terms (% of critical speed, filling, angles). Contact parameters were calibrated so the simulated
 steady-state bulk toe and shoulder, read from the position-density contour
 (Boemer & Ponthot 2017, §2.3), fall within the SAG_A interquartile ranges
-(widened to the replicate scatter where that is larger)
-(215 deg, 24.6 deg; counter-clockwise from 3 o'clock). The shoulder lies within the
+(widened to the replicate scatter where that is larger): toe 213.8 deg
+(213.4-214.5), shoulder 26.6 deg (26.0-27.3), counter-clockwise from 3
+o'clock. The shoulder lies within the
 ranges of DEM SAG studies (Owen & Cleary 2015, Table 5: 16-34 deg; Govender
-et al. 2015: ~30 deg). The toe lies within the plant range of the three SAG
-mills and of Govender's Los Bronces simulation (210-240 deg) and at the edge
-of Owen & Cleary's range (216-234 deg); it is higher than Morrell's empirical
-correlation predicts at 26 % fill (238 deg), a difference shared by all
-three plant mills and attributed to the liner geometry included in the
+et al. 2015: ~30 deg). The toe lies within the plant range of the five SAG
+mills and of Govender's Los Bronces simulation (210-240 deg) and ~2 deg
+past Owen & Cleary's range (216-234 deg); it is higher than Morrell's
+empirical correlation predicts at 27.6 % fill (235 deg), a difference shared
+by all five plant mills and attributed to the liner geometry included in the
 Maleki-Moghaddam model. Power was not used as a calibration target, since it is
 insensitive to the contact parameters (Boemer & Ponthot 2017, §3.1.4); it
 was used to check the internal energy balance of the simulations and, after
@@ -314,27 +328,21 @@ independent check (deviation reported in %)."
 
 ## Open items
 
-To get (author, from plant data and reports):
-- **Time series** (decided 2026-10-30: all five mills, at two levels of
-  detail; period: for each mill, a 2025-2026 campaign with new liners,
-  and in particular its **first ~2 months after the reline**, while the
-  plant's models still use the new-liner profiles; the same window for all
-  five mills, so their values are comparable):
-  - **SAG_A** (targets and V15): 10 s resolution; toe, shoulder, Jc, Jb,
-    speed, **power** (taken as motor input). At 10 s, 2 months is
-    ~0.5 million rows.
-  - **SAG_B-E** (typicality only): coarser is enough (1-5 min, or hourly
-    medians); toe, shoulder, Jc, Jb, speed; power optional. Compared with
-    SAG_A in dimensionless form (% of critical speed, J, angles), because
-    SAG_D-E are 40 ft mills.
+Plant data (author):
+- **Time series: received 2026-11-02** -- one parquet file per mill in
+  Zotero `bppm_dem_sm/data/operational_data/data`, each covering that
+  mill's first ~2 months after a reline (new liners, 2025-2026 campaigns),
+  10 s samples. Analysed with `operational_data_analysis.py` / `.ipynb`
+  (Zotero `.../operational_data/analysis`); results (Markdown, CSV, plots)
+  in `.../operational_data/results`. Plant data and results are kept out of
+  the public repository.
 - **Mill design, SAG_A-E: complete** (`mill_dimensions.csv`,
-  [10](10_mill_geometry.md): plates flat, lifter height from the inside
-  shell, SAG_A lifter section and belly length). Cone geometry not
-  available (V15 uses the 5 % allowance). Speeds will be in rpm for all
-  mills, so no plant critical-speed convention is needed.
-- Dates of the reline and of the liner-profile updates in the plant's
-  models, to cut the new-liner window (A3 resolved 2026-11-01: new-liner
-  profiles at the start of each campaign, updated ~3 times per campaign).
+  [10](10_mill_geometry.md)). Cone geometry not available (V15 uses the
+  5 % allowance).
+- Still to confirm: the plant's toe / shoulder angle convention and the
+  rotation direction (the data are consistent with this convention: toe
+  in the third quadrant, shoulder in the first); that Jb / Jc are % of the
+  cylindrical volume inside liners.
 
 To do (Claude):
 - Get Maleki-Moghaddam, Yahyaei & Banisi 2013 (Minerals Engineering 46-47,
@@ -356,6 +364,6 @@ To do (Claude):
 | ID | Change | Current code | When |
 |---|---|---|---|
 | C15-1 | Bulk toe / shoulder from the time-averaged position-density contour (Boemer & Ponthot §2.3), in this angle convention; liner-force cross-check | None | Before calibration |
-| C15-2 | Plant-data analysis: post-reline window, steady-period filter near the operating point, target medians / IQR; SAG_A-E typicality (claims 1-2) | None | When A1 arrives |
+| C15-2 | Plant-data analysis: post-reline window, steady-period filter near the operating point, target medians / IQR; SAG_A-E typicality (claims 1-2) | **Done 2026-11-02** as `operational_data_analysis.py` / `.ipynb` in Zotero (kept out of the public repo with the data) | -- |
 | C15-3 | V15 power comparison (P_mill vs P_charge,plant with the stated assumptions) | Monitor logs P only | After calibration |
 

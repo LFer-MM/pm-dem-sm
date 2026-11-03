@@ -26,22 +26,23 @@ docs. The PPT (slides 2-5) labels it SAG_B and calls the other mill SAG_A;
 the two labels are swapped here so the reference comes first. SAG_C keeps
 its name. These docs, not the PPT, are the source of truth.
 
-Operational data from three SAG mills (SAG_A, SAG_B, SAG_C; PPT slides 2-5)
-is used in one specific way throughout these documents:
+Operational data from five SAG mills (SAG_A-E; each mill's first ~2 months
+after a reline, new liners, 2025-2026 campaigns; analysis in Zotero
+`bppm_dem_sm/data/operational_data`, decided 2026-11-02) is used in one
+specific way throughout these documents:
 
-- **SAG_A is the reference.** Its operating point (9 rpm, Jb 17 %, Jc 26 %)
-  sets the simulation, and its bulk toe and shoulder angles (215 deg,
-  24.6 deg) are the targets the simulation is compared to.
-- **SAG_B and SAG_C are evidence that the selected values are typical.**
-  Their designs and dimensions differ slightly from SAG_A, so they are not
-  simulated or used as validation cases; their box plots show that SAG_A's
-  values sit inside the normal operating ranges of SAG mills (speed
-  8.6-10 rpm, Jb 15.2-18.5 %, Jc 24.9-35.1 %, bulk toe 206-215 deg,
-  shoulder 24.6-38.2 deg).
+- **SAG_A is the reference.** Its operating point (median of steady running
+  data: 9.5 rpm = 73.0 % of critical, Jb 18.8 %, Jc 27.6 %) sets the
+  simulation, and its bulk toe and shoulder angles at that point (213.8 deg,
+  IQR 213.4-214.5; 26.6 deg, IQR 26.0-27.3) are the calibration targets.
+- **SAG_B-E are evidence that the selected values are typical.** They are
+  not simulated or used as validation cases; their distributions show that
+  SAG_A's values sit inside the normal operating ranges of SAG mills
+  (medians: 70.4-76.2 % of critical, Jb 17.1-18.8 %, Jc 25.2-34.3 %, bulk
+  toe 208.6-215.4 deg, shoulder 23.0-35.7 deg).
 
-Plant power and mill lengths are not used (decided 2026-10-18; see
-[15](15_calibration_targets.md) for why power would not be a determining
-target anyway).
+Plant power is used only in the report-only check V15, and SAG_A's belly
+length only there ([15](15_calibration_targets.md)).
 
 ## Topics
 
@@ -57,11 +58,11 @@ target anyway).
 | 08 | [08_density.md](08_density.md) | Steel 7850 / ore 2850 kg/m^3 (Chilean porphyry copper: Vergara 2020, Govender 2015); not calibrated; sensitivity 2650 incl. segregation |
 | 09 | [09_poisson_ratio.md](09_poisson_ratio.md) | Steel 0.292 (Shigley), rock 0.25 (Vergara 2020, El Teniente andesite); physical, not calibrated; effect < 7 % on contact stiffness |
 | 10 | [10_mill_geometry.md](10_mill_geometry.md) | SAG_A: 36 ft x 19 ft, 36 lifters (395 mm, 35 deg) + 36 plates (130 mm), D inside liners 10.71 m, new liners, generated in code; 0.6 m slice (4.3 ball diameters, 10.4 % of length); frictionless end walls |
-| 11 | [11_mill_speed.md](11_mill_speed.md) | SAG_A median 9 rpm = 69.2 % of critical (N_c 13.01 rpm); SAG_B / SAG_C share the 36 ft design (8.6-10 rpm); D / E compared as % critical |
-| 12 | [12_charge_fill_and_particles.md](12_charge_fill_and_particles.md) | Jb 17 % / Jc 26 % in Morrell's convention (D inside liners, lifters not subtracted); counts from a simulated grind-out + mixed crash stop; phi is a result |
+| 11 | [11_mill_speed.md](11_mill_speed.md) | SAG_A median 9.5 rpm = 73.0 % of critical (N_c 13.01 rpm); SAG_B-E 70.4-76.2 %; compared as % critical |
+| 12 | [12_charge_fill_and_particles.md](12_charge_fill_and_particles.md) | Jb 18.8 % / Jc 27.6 % (SAG_A) in Morrell's convention (D inside liners, lifters not subtracted); counts from a simulated grind-out + mixed crash stop; phi is a result |
 | 13 | [13_initial_conditions.md](13_initial_conditions.md) | SIC / RMIC at rest, undamped settle with a geometric stop rule, velocities zeroed; SIC = rock bottom, balls top |
 | 14 | [14_dataset_runs_and_recording.md](14_dataset_runs_and_recording.md) | Record from rest every 0.05 s; RMIC 20 s, SIC 35 s (revolution-matched); 5 replicates per IC; Lacey on 0.3 m cubes; radial segregation as result, axial only as end-wall check |
-| 15 | [15_calibration_targets.md](15_calibration_targets.md) | Match the SAG_A (reference) bulk toe 215 / shoulder 24.6 deg (0 deg at 3 o'clock, CCW); SAG_B / SAG_C show these values are typical; power only for the internal energy balance |
+| 15 | [15_calibration_targets.md](15_calibration_targets.md) | Match SAG_A's bulk toe 213.8 deg (IQR 213.4-214.5) and shoulder 26.6 deg (IQR 26.0-27.3) at Jb 18.8 % / Jc 27.6 % / 9.5 rpm (0 deg at 3 o'clock, CCW), band widened to the replicate scatter if larger; SAG_B-E show these are typical; power only for V4 and V15 |
 | 16 | [16_validation_checks.md](16_validation_checks.md) | Per-run checks (V1-V8, V12-V14, V16, V18, V19) and one-off studies (V9-V11e, V15, V17), mapped to code items |
 
 ## Pending code changes
@@ -98,7 +99,7 @@ topics' open items.
 
 | # | Item | Details | Used in |
 |---|---|---|---|
-| A1 | Plant time series, SAG_A-E (in progress) | **Window:** for each mill, the first ~2 months after a reline (new liners, plant models still on new-liner profiles), from campaigns in 2025-2026; the same kind of window for all mills. Data files carry their own date ranges; the docs do not cite campaign dates. **Time series:** timestamp, power (SAG_A; taken as motor input; optional for B-E), speed (rpm), Jb, Jc, toe, shoulder; SAG_A at 10 s, SAG_B-E coarser (1-5 min or hourly). Optional: running / status flag or feed rate, to drop stops and transients. **Metadata per mill:** reline date and liner-profile update dates; the plant's toe / shoulder angle convention (zero reference, direction) and the mill's rotation direction; confirm Jb / Jc are % of the cylindrical volume inside liners | [15](15_calibration_targets.md) claims 1-2, V15 |
+| A1 | Plant time series, SAG_A-E | **Received and analysed 2026-11-02** (Zotero `bppm_dem_sm/data/operational_data`: data, analysis `.py` / `.ipynb`, results). Still to confirm: the plant's angle convention and rotation direction (data consistent with ours); Jb / Jc as % of the cylindrical volume inside liners | [15](15_calibration_targets.md) claims 1-2, V15 |
 | A2 | Mill design data, SAG_A-E | **Complete for the model** (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`; plates flat 130 mm; lifters 395 mm from the shell, base 523 mm, vertical through the plate then 35 deg faces, top 152 mm; belly length 5,244 mm, used only by V15). SAG_B-E complete | [10](10_mill_geometry.md), [15](15_calibration_targets.md) |
 | A3 | Plant Maleki-model inputs | **Resolved 2026-11-01:** the plant's toe / shoulder (Maleki) and Jb / Jc models start each campaign with the new-liner profiles (the design CSV) and update them for wear ~3 times per ~6-month campaign, so the first ~2 months match the simulated geometry | [15](15_calibration_targets.md) claims 2-3 |
 | A4 | Mill generator code | Add the author's mill-generation code if it handles flat plates; otherwise the repo's `initialize_parametric_mill` is extended (C10-4) | [10](10_mill_geometry.md) C10-4 |
@@ -217,7 +218,7 @@ file, with the decided material set (physical moduli / 26, see
 [03](03_stiffness_young_modulus.md)): steel rho = 7850, E = 7.962e9,
 nu = 0.292, r = 0.06985 m; rock rho = 2850 (2650 until 2026-10-21, now the
 sensitivity case), E = 2.115e9, nu = 0.25, r = 0.034925 m. Particle masses:
-ball 11.206 kg, rock 0.5086 kg (0.4729 kg at 2650). Mill: SAG_A, diameter
+ball 11.206 kg, rock 0.5086 kg (0.4729 kg at 2650). Mill: SAG_A at 9.5 rpm, diameter
 inside liners 10.7128 m (36 ft shell - 2 x 130 mm plates), 19 ft long,
 0.6 m slice; worst-case impact speed sqrt(2 g D) = 14.5 m/s; N_c =
 13.01 rpm. Numbers that depend on the mill were recomputed for SAG_A on

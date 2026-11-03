@@ -6,8 +6,8 @@ Decided 2026-10-23.
 
 | Quantity | Value | Basis |
 |---|---|---|
-| Ball filling Jb | **17 %** | SAG_A, the reference mill (slide 2); SAG_B / SAG_C show it is typical (15.2-18.5 %); to confirm in the post-reline window (author to-do A1) |
-| Total filling Jc | **26 %** | SAG_A (slide 2); SAG_B / SAG_C typical (24.9-35.1 %); same confirmation |
+| Ball filling Jb | **18.8 %** | SAG_A, the reference mill: median of steady running data, first ~2 months after a reline (decided 2026-11-02); SAG_B-E medians 17.1-18.6 % |
+| Total filling Jc | **27.6 %** | SAG_A, same data; SAG_B-E medians 25.2-34.3 % |
 | Ball diameter | **0.1397 m** (5.5 in) | plant practice (slide 5) |
 | Rock diameter | **0.06985 m** (2.75 in) | 2:1 size ratio (slide 6), as Kishida |
 | Filling convention | **Morrell's**: J = bulk charge volume (incl. voids) / pi/4 D^2 L of the cylindrical section, with **D = diameter inside liners** (inside shell minus 2 x liner plate thickness); lifter volume **not** subtracted | SMC gross power calculator (Morrell model); plant Jc / Jb come from a model of this kind |
@@ -29,7 +29,7 @@ stages run in the 0.6 m slice ([10](10_mill_geometry.md)) with damping 0
 ([04](04_numerical_damping.md), [13](13_initial_conditions.md)):
 
 1. **Ball stage (grind-out analogue):** balls only; run 2-3 revolutions at
-   9 rpm, stop, settle; measure J. Adjust the ball count until J = Jb.
+   9.5 rpm, stop, settle; measure J. Adjust the ball count until J = Jb.
 2. **Full stage (crash-stop analogue):** add rocks **mixed** with the
    balls; run 2-3 revolutions (operating mixing / segregation state), stop,
    settle; measure J. Adjust the rock count until J = Jc.
@@ -47,9 +47,10 @@ stages run in the 0.6 m slice ([10](10_mill_geometry.md)) with damping 0
    is in.
 
 **Provisional counts** (SAG_A, 0.6 m slice, D inside liners 10.7128 m,
-cylinder 54.08 m^3, phi = 0.5617 from the PPT): **at most ~3,620 balls +
-~15,320 rocks** (~18,940), before removing the lifters and plates under
-each bed (~13 of 36 lifters under the 26 % bed, ~11 under the 17 % ball
+cylinder 54.08 m^3, Jb 18.8 %, Jc 27.6 %, phi = 0.5617 from the PPT): **at
+most ~4,000 balls + ~14,950 rocks** (~18,950), before removing the lifters
+and plates under each bed (~14 of 36 lifters under the 27.6 % bed, ~12
+under the 18.8 % ball
 bed), which lowers them by a few percent; the lifter widths needed to
 compute that are not yet in the design data. Estimates only, until the
 procedure above runs; a mixed charge will probably take somewhat more rock
@@ -74,7 +75,7 @@ than a separate-bulk estimate.
 | Slide | Content |
 |---|---|
 | 1 | "Diametro Efectivo = 11.576 m (calculado con volumen STL)" -- a volume-equivalent diameter, **not** Morrell's D |
-| 2 | Plant ranges: Jb 15.2-18.5 % (SAG_A 16.8 % ~ 17 %); Jc 24.9-35.1 % (SAG_A 25.9 % ~ 26 %) |
+| 2 | Plant ranges: Jb 15.2-18.5 % (SAG_A 16.8 % ~ 17 %); Jc 24.9-35.1 % (SAG_A 25.9 % ~ 26 %) -- other campaign; **superseded** by the post-reline analysis |
 | 5 | 5.5 in steel balls used in SAG_A/B/C "a lo largo de multiples campanas"; recent trial of 6 in balls in SAG_A/B, not confirmed as permanent |
 | 6 | "2.75 pulgadas -> Ratio 2:1"; "relacion 2:1, 3:1, superior 5:1 es ineficiente y 2:1 permite reducir cantidad de particulas" (no citation) |
 | 7 | Counts with phi = 1.0: 4,696 balls, 19,888 rocks (text divides the rock volume by the ball volume -- typo; numbers use 1.786e-4 m^3) |
@@ -99,11 +100,11 @@ J is a measurement convention, not "the volume available to the charge".
 It is measured on site from the charge surface and the inside-liner
 diameter with circle geometry, which needs no lifter geometry and does not
 change as lifters wear; Morrell's model is calibrated on data measured that
-way, and the plant's Jc / Jb come from a model of that kind. A J of 26 %
-therefore fixes **where the charge surface lies** (the height of a 26 %
+way, and the plant's Jc / Jb come from a model of that kind. A J of 27.6 %
+therefore fixes **where the charge surface lies** (the height of a 27.6 %
 segment of the smooth cylinder). The real charge volume is smaller by the
-lifters under the bed: at rest the 26 % bed covers ~37 % of the
-circumference, ~13 of SAG_A's 36 lifters (~11 under the 17 % ball bed). Matching the surface in the simulation reproduces this
+lifters under the bed: at rest the 27.6 % bed covers ~38 % of the
+circumference, ~14 of SAG_A's 36 lifters (~12 under the 18.8 % ball bed). Matching the surface in the simulation reproduces this
 without computing lifter volumes.
 
 ### Mixed rather than layered
@@ -131,13 +132,13 @@ needed for the binary-mixing surrogate.
 
 ### Fill check
 
-Jc = 26 % is inside Owen's 20-35 % and the plant range; Cleary 2001 notes
+Jc = 27.6 % is inside Owen's 20-35 % and the plant range; Cleary 2001 notes
 specific power falls above 25-30 %.
 
 ## Verdict and how to defend it
 
-"The charge reproduces SAG_A, the reference mill: Jb = 17 %, Jc = 26 %
-(plant data; SAG_B and SAG_C show these fillings are typical). Fillings
+"The charge reproduces SAG_A, the reference mill: Jb = 18.8 %, Jc = 27.6 %
+(median of its steady running data after a reline; SAG_B-E show these fillings are typical). Fillings
 follow Morrell's convention -- bulk volume as a fraction of the cylindrical
 section at the inside-liner diameter, lifters not subtracted -- the
 convention of the plant's filling model. Particle numbers were set by a
@@ -153,8 +154,6 @@ Zhang 2008) because of the walls and lifters."
 - Run the procedure provisionally (current STL, 0.6 m), after calibration,
   and with SAG_A's report geometry; record counts, J, phi and seeds in the
   scenario.
-- Confirm Jb / Jc in the post-reline window (A1) and SAG_A's inside-shell
-  diameter and liner plate thickness (A2).
 - Regenerate the datasets (the existing one uses 3 in rock and other
   counts).
 

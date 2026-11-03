@@ -4,10 +4,10 @@
 
 | Item | Value |
 |---|---|
-| Start | Load a saved IC; damping 0; mill starts from rest at t = 0 and turns at 9 rpm |
+| Start | Load a saved IC; damping 0; mill starts from rest at t = 0 and turns at 9.5 rpm ([11](11_mill_speed.md)) |
 | Recording | From t = 0, one frame every **0.05 s** (columns `id,x,y,z,r,m,vx,vy,vz`) plus an exact frame-time index and a mill log (charge angle, power, kinetic energy, overlaps) |
-| RMIC duration | **20 s** (3.0 revolutions at 9 rpm; Kishida: 2.5) -- decided 2026-11-02 |
-| SIC duration | **35 s** (5.25 revolutions; Kishida: 5) -- decided 2026-11-02 |
+| RMIC duration | **20 s** (3.2 revolutions at 9.5 rpm; Kishida: 2.5) -- decided 2026-11-02 |
+| SIC duration | **35 s** (5.5 revolutions; Kishida: 5) -- decided 2026-11-02 |
 | Training window | 20 frames (1 s) starting **after the measured quasi-steady state** of kinetic energy / power -- not a fixed 3-4 s |
 | Replicates | **5 per IC type, each with its own seed** (decided 2026-11-02): different random initial packings of the same charge, everything else identical; they show that the metrics do not depend on the microscopic arrangement. More if the spread is large compared with the segregation effect. Seed and thread count go into each manifest |
 | Frame storage | Binary float32 (parquet), not per-frame CSV kept long term |
@@ -62,20 +62,20 @@ No spin-up stage before recording: spinning up first would destroy the IC.
 
 Compare in revolutions, not seconds:
 
-| | Kishida (15 rpm) | SAG (9 rpm) with the PPT durations | SAG with matched revolutions |
+| | Kishida (15 rpm) | SAG (9.5 rpm) with the PPT durations | SAG with matched revolutions |
 |---|---|---|---|
-| RM-IC run | 10 s = 2.5 rev | 10 s = 1.5 rev | 16.7 s |
-| S-IC run | 20 s = 5 rev | 20 s = 3 rev | 33.3 s |
-| Training window | 3-4 s = 0.75-1.0 rev | 3-4 s = 0.45-0.60 rev | 5-6.7 s (if quasi-steady) |
+| RM-IC run | 10 s = 2.5 rev | 10 s = 1.6 rev | 15.8 s |
+| S-IC run | 20 s = 5 rev | 20 s = 3.2 rev | 31.6 s |
+| Training window | 3-4 s = 0.75-1.0 rev | 3-4 s = 0.48-0.63 rev | 4.7-6.3 s (if quasi-steady) |
 | Quasi-steady KE | 2.0 s = 0.5 rev | ? (measure) | -- |
 
-- Copying Kishida's seconds gives the SAG run only 60 % of the revolutions.
+- Copying Kishida's seconds gives the SAG run only 63 % of the revolutions.
 - Kishida chose 3-4 s *because* kinetic energy was quasi-steady there. The
   criterion transfers, the numbers do not: the old SAG dataset's charge angle
   was still rising at 3-4 s. The training window must be placed after the
   measured quasi-steady time of the new runs (kinetic energy and power from
   the mill log).
-- 0.05 s frames at 9 rpm are 0.0075 rev per frame (Kishida: 0.0125 rev), i.e.
+- 0.05 s frames at 9.5 rpm are 0.0079 rev per frame (Kishida: 0.0125 rev), i.e.
   finer sampling per revolution; keeping 0.05 s is conservative and keeps the
   RNN Delta t identical.
 - Govender's ~6 revolutions for power concerns long-term operation; mixing
@@ -110,7 +110,7 @@ Compare in revolutions, not seconds:
 
 "Dataset runs start from the static IC and are recorded from t = 0 every
 0.05 s, as in Kishida et al. (2025, §3). Durations are scaled by revolutions
-(20 s and 35 s, i.e. 3 and 5.25 revolutions, against 2.5 and 5 in the
+(20 s and 35 s, i.e. 3.2 and 5.5 revolutions, against 2.5 and 5 in the
 reference at 15 rpm), five replicates per initial condition show the
 run-to-run spread, mixing is measured with Lacey's index on 0.3 m cubic
 cells (Kishida et al. found it insensitive below 0.04 D) and segregation by
