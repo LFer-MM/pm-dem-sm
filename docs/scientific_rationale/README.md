@@ -62,7 +62,7 @@ target anyway).
 | 13 | [13_initial_conditions.md](13_initial_conditions.md) | SIC / RMIC at rest, undamped settle with a geometric stop rule, velocities zeroed; SIC = rock bottom, balls top |
 | 14 | [14_dataset_runs_and_recording.md](14_dataset_runs_and_recording.md) | Record from rest every 0.05 s; RMIC 20 s, SIC 35 s (revolution-matched); 5 replicates per IC; Lacey on 0.3 m cubes; radial segregation as result, axial only as end-wall check |
 | 15 | [15_calibration_targets.md](15_calibration_targets.md) | Match the SAG_A (reference) bulk toe 215 / shoulder 24.6 deg (0 deg at 3 o'clock, CCW); SAG_B / SAG_C show these values are typical; power only for the internal energy balance |
-| 16 | [16_validation_checks.md](16_validation_checks.md) | Acceptance tests every run must pass |
+| 16 | [16_validation_checks.md](16_validation_checks.md) | Per-run checks (V1-V8, V12-V14, V16, V18, V19) and one-off studies (V9-V11e, V15, V17), mapped to code items |
 
 ## Pending code changes
 
@@ -86,6 +86,7 @@ end.
 | [12](12_charge_fill_and_particles.md) | C12-1 ... C12-3 | **C12-1**, **C12-2**, **C12-3** |
 | [14](14_dataset_runs_and_recording.md) | C14-1 ... C14-5 | **C14-1**, C14-2, **C14-3** |
 | [15](15_calibration_targets.md) | C15-1 ... C15-3 | **C15-1** |
+| [16](16_validation_checks.md) | C16-1 | **C16-1** |
 
 
 
