@@ -10,7 +10,7 @@ Decided 2026-10-22.
   SAG_A's design is typical (as done for the operating point in
   [15](15_calibration_targets.md)); an average "generic" mill is not used,
   because the plant toe / shoulder targets are computed for SAG_A's liner.
-- **SAG_A's design (received 2026-10-30, campaign start 2026 H1, new
+- **SAG_A's design (received 2026-10-30; campaign start, new
   liners):** 36 ft inside shell x 19 ft **flange to flange** (vendor
   length; the belly length inside liners is somewhat shorter). Shell liner of **36 lifters** (height 395 mm
   measured from the inside shell, face angle 35 deg) alternating with **36
@@ -36,7 +36,7 @@ Decided 2026-10-22.
 
 | Source | What it says | Where | Verified |
 |---|---|---|---|
-| Plant design data (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`, attachment `ZBFFQY29`; updated 2026-11-01 21:32) | SAG_A-E at the start of the 2026 H1 campaign (new liners). Columns: `inside_shell_diam_ft`; `ff_len_ft` (vendor flange-to-flange length); `egl_len_ft` (vendor EGL; SAG_A 17.21 ft); `lifter_qty`; `lifter_h_mm` (from the inside shell); `lifter_base_w_mm` (SAG_A 523 mm); `lifter_angle_deg` (face angle); `plate_qty`; `plate_h_mm` (flat plate thickness) | CSV | Yes (re-read 2026-11-01) |
+| Plant design data (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`, attachment `ZBFFQY29`; updated 2026-11-01 21:32) | SAG_A-E at campaign start (2025-2026, new liners), the same liner state as the operational data windows. Columns: `inside_shell_diam_ft`; `ff_len_ft` (vendor flange-to-flange length); `egl_len_ft` (vendor EGL; SAG_A 17.21 ft); `lifter_qty`; `lifter_h_mm` (from the inside shell); `lifter_base_w_mm` (SAG_A 523 mm); `lifter_angle_deg` (face angle); `plate_qty`; `plate_h_mm` (flat plate thickness) | CSV | Yes (re-read 2026-11-01) |
 | Owen & Cleary 2015 | "a 3D slice of a generic SAG mill": shell inner diameter 8.4 m, slice length 0.6 m "along the cylindrical belly", 56 lifters, base width 320 mm, height 50-300 mm, face angle 15-25 deg; how the slice ends are treated is not stated | §3 and Table 1, PDF p2 / j.20 | Yes |
 | Owen & Cleary 2015 | Charge: balls 145 mm down to 30 mm, rocks 200 mm down to 25 mm (Table 3) -> slice = 4.1 top-ball diameters, 3.0 top-rock diameters | §3 and Table 3, PDF p3 / j.21 | Yes |
 | Govender 2015 | "Fig. 30(b) depicts the charge profile for a slice of 10% of length. We notice that the pattern is very similar to the full length of the mill. Clearly the effect of the axial direction cannot just be neglected as the 2D case cannot fully reproduce the dynamics." | §3.1, PDF p16 / j.167 | Yes |
@@ -96,7 +96,7 @@ Decided 2026-10-22.
 
 ### SAG_A-E design data and why SAG_A is typical
 
-Campaign start, 2026 H1, new liners. Lifter height is measured from the
+Campaign start (2025-2026), new liners. Lifter height is measured from the
 inside shell; plates are flat (SAG_A-D). D inside liners = D inside shell
 - 2 x plate thickness; N_c = 42.3 / sqrt(D - d_ball).
 

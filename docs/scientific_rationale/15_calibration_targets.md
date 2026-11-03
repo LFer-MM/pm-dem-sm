@@ -316,7 +316,7 @@ independent check (deviation reported in %)."
 
 To get (author, from plant data and reports):
 - **Time series** (decided 2026-10-30: all five mills, at two levels of
-  detail; period: the 2026 H1 campaign, which the design data describe,
+  detail; period: for each mill, a 2025-2026 campaign with new liners,
   and in particular its **first ~2 months after the reline**, while the
   plant's models still use the new-liner profiles; the same window for all
   five mills, so their values are comparable):
