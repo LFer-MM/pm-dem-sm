@@ -34,7 +34,7 @@
 | Cleary 2001 (2D) | Friction and restitution "relatively unimportant" (citing Cleary 1998a) | §9, PDF p22 / j.100 | Yes |
 | YADE source (`7c8d01e`) | With `en` given, the normal damping ratio is computed from "formula (B6) of [Thornton2013], written specifically for the Hertz-Mindlin model (no-slip solution) where the end of contact is considered to take place once the normal force is zero"; alpha from Eq. (B7); dashpot c_n = beta_n 2 sqrt(m* k_n) with the current Hertz stiffness k_n | `pkg/dem/HertzMindlin.hpp:90`; `HertzMindlin.cpp:184-207, 458-463` | Yes (source read) |
 | YADE source / docs 2021 | "If neither e_s nor beta_s is given, the value of en is used for es" | `HertzMindlin.hpp:97`; docs printed p. 562 (PDF p569) | Yes |
-| Thornton et al. 2013 | Origin of the e -> beta mapping (Eqs. B6-B7) | via the YADE source only | **No** (not read) |
+| Thornton et al. 2013 | Hertz-Mindlin + damper (HM + D): damping coefficient gamma = sqrt(1 / (1 - (1 + e_n)^2 exp(alpha)) - 1) (Eq. B6), alpha a polynomial in e_n (Eq. B7) with coefficients h1-h10 (Table 2: -6.918798, -16.41105, 146.8049, -796.4559, 2928.711, -7206.864, 11494.29, -11342.18, 6276.757, -1489.915) -- **identical** to the constants in YADE's `HertzMindlin.cpp`. The older relation (their Eq. 46, the one in YADE 2021/2022) "is incorrect since it is based on the assumption that the contact ends when the displacement ... first returns to zero"; for non-adhesive spheres the contact ends when the normal force first returns to zero | Appendix B and Table 2, PDF p16-17 / j.45-46 | Yes (2026-11-04) |
 | YADE releases 2021.01a and 2022.01a (source) | **Older mapping:** "If e_n is given, MindlinPhys.betan is computed using beta_n = -(log e_n) / sqrt(pi^2 + (log e_n)^2)" -- the linear-spring formula, which does not recover e exactly for a Hertzian contact; no "es = en" rule. The Thornton (B6) mapping is present from the 2023.02a release on, and in the build used (`7c8d01e`, 2026-01-15) | `pkg/dem/HertzMindlin.hpp:92` and `.cpp:77-91` at tag 2021.01a; tags 2022.01a / 2023.02a | Yes (source read, 2026-11-03) |
 
 ## PPT
@@ -96,8 +96,9 @@ fixed: tuning it would hide errors elsewhere (e.g. damping).
   surrogate's output. A restitution sensitivity check (Open items) covers
   this.
 - **YADE version floor.** The e -> beta mapping changed between releases:
-  2021 and 2022 used the linear-spring formula, 2023.02 onwards uses
-  Thornton's Hertz-specific relation. The method here therefore requires
+  2021 and 2022 used the linear-spring formula -- which Thornton et al.
+  (2013, App. B) show is incorrect for Hertzian contacts -- and 2023.02
+  onwards uses Thornton's Hertz-specific relation. The method here therefore requires
   **YADE >= 2023.02** (the build used is 2026-01-15); with an older release
   the same input e gives a different, velocity-dependent restitution.
   Citing the YADE manual's 3rd edition as "2021" is correct for its other

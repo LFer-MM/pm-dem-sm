@@ -46,9 +46,13 @@ YADE implementation: `Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`,
 | Wei et al. 2022 | Irregular lump materials (pellet, sinter, coke; 6-15 mm) as spheres: measured repose 24.7-27.4 deg on the same material, reproduced with rolling friction 0.2-0.3 (EDEM, Hertz-Mindlin with "RVD" rolling model) | Tables 4-5, §3.2 | Yes (online, open access) |
 | Engineering Toolbox | Angle of repose: "Ore, damp or fresh mined" 37 deg; "Ore, dry" 30 deg; "Stone, crushed" 30; "Gravel" 40 | "Angles of Repose" table | Yes (online; the table cites no primary source) |
 | PDHonline M344 (Primo, CEMA-based) | Flowability classes by angle of repose: 35-39 deg "General everyday material as for example bituminous coal and the majority of minerals" | p. "Belt Angle of Repose" table | Yes (online; course notes, secondary) |
-| Marin Perez et al. (Strathclyde, preprint 2024) | Bulk calibration tests "may not always lead to a single set of parameters on their own"; combining criteria narrows mu_s / mu_r to a feasible region | §1 | Yes (online preprint) |
-| Wensrich & Katterfeld 2012 | *Rolling friction as a technique for modelling particle shape in DEM*, Powder Technol. 217, 409-417, doi 10.1016/j.powtec.2011.10.057 | -- | **No** (paywalled; to obtain) |
-| Ai et al. 2011 | *Assessment of rolling resistance models in discrete element simulations*, Powder Technol. 206, 269-282, doi 10.1016/j.powtec.2010.09.030 (rolling stiffness and damping of elastic-plastic models) | -- | **No** (paywalled; to obtain) |
+| Marin Perez et al. 2024 (Particuology 92) | Calibration tests "are quite ambiguous and may not always lead to a single set of parameters on their own"; the draw down test with three aperture sizes and multi-sphere particles "can converge to a small feasible region in which a single combination of the friction coefficients can be selected" | §1, PDF p2; abstract, PDF p1 | Yes (2026-11-04) |
+| Wensrich & Katterfeld 2012 | "Shape is a computationally expensive property to model in DEM, and so rolling friction is often employed in order to simulate its effects"; in repose tests spheres with rolling friction vs clumped particles: "Some similarities were observed, however, quantitatively, there was a significant discrepancy" | Abstract, PDF p1 / j.409 | Yes (2026-11-04) |
+| Wensrich & Katterfeld 2012 | "a single angle of repose can be achieved from a wide range of parameters ... One bulk parameter from one type of test is entirely insufficient"; "Repeat simulations under the same conditions are extremely valuable" | §4.4, PDF p8 / j.416 | Yes |
+| Wensrich & Katterfeld 2012 | Rolling stiffness: "there is a desire to set the rolling stiffness as high as possible within the bounds of numerical stability"; with natural frequencies of the same order as the contact's "the calculation of the critical time step is unaffected"; "With higher levels of rolling stiffness, the shear damping is mobilised and additional rolling damping is not required" | §2, PDF p3 / j.411 | Yes |
+| Ai et al. 2011 | Four classes of rolling-resistance models: "a) directional constant torque models; b) viscous models; c) elastic-plastic spring-dashpot models; and d) contact-independent models" (YADE's Hertz-Mindlin moment law = class c without the dashpot) | §5, PDF p5 / j.273 | Yes (2026-11-04) |
+| Ai et al. 2011 | Class c without rolling damping: "If the damping coefficient is zero, the disk oscillates permanently at the final position" (single disk); larger rolling stiffness gives faster oscillation | §6, PDF p7-8 / j.275-276, Fig. 8 | Yes |
+| Ai et al. 2011 | Rolling stiffness rules: k_r = k_s R_r^2 (Iwashita & Oda, Eq. 7a); k_r = 3 k_n mu_r^2 R_r^2 (Eq. 7b); or via a mobilisation angle theta_r^m = mu_r / (2 J_n) (Eqs. 7c, 15); sandpile example with theta_r^m = 0.05 rad | §4.3, PDF p4-6 / j.272-274; §7, PDF p12 | Yes |
 
 ## PPT
 
@@ -75,8 +79,13 @@ No slide mentions rolling resistance. Slide 42 (structure map) lists
 - The mill papers that reach good agreement either use real shapes (Cleary
   & Morrison: super-quadrics) or media that really are spheres (Boemer:
   steel balls). Spheres standing in for rock is the case where DEM adds
-  rolling resistance as a shape surrogate (Wei et al. 2022 for lump
-  materials; Wensrich & Katterfeld 2012, to be read).
+  rolling resistance as a shape surrogate (Wensrich & Katterfeld 2012: "rolling
+  friction is often employed in order to simulate its effects"; Wei et al.
+  2022 for lump materials). Wensrich & Katterfeld also show that the
+  match is only qualitative -- spheres with rolling friction reproduced
+  clumped-particle repose angles with "a significant discrepancy" -- so
+  mu_r is an effective parameter fixed by a bulk test, not a shape
+  measurement.
 
 ### Uniform mu_r: verified limitation of base YADE
 
@@ -110,8 +119,11 @@ Consequences of a uniform mu_r:
   ([05](05_friction.md)); (3) recompute the heap with the calibrated mu_p;
   if the angle moves by more than ~2 deg, readjust mu_r and re-run the best
   grid points.
-- Repose alone does not identify mu_p and mu_r together (Marin Perez et al.,
-  §1); here mu_p is set by the mill, so the heap only has to fix mu_r.
+- Repose alone does not identify mu_p and mu_r together: "a single angle of
+  repose can be achieved from a wide range of parameters ... One bulk
+  parameter from one type of test is entirely insufficient" (Wensrich &
+  Katterfeld 2012, §4.4; also Marin Perez et al. 2024, §1). Here mu_p is set
+  by the mill, so the heap only has to fix mu_r.
 
 ### The repose target and the weight of its sources
 
@@ -131,18 +143,26 @@ of the handbook values.
 
 - `ktwist = 0`: the twisting moment has no plastic limit in this law, so any
   `ktwist > 0` stores unbounded elastic twist.
-- `krot` is one constant for all contacts. Two criteria fix it: (a) the
-  rolling oscillation period of the smallest rock sphere,
-  T_r = 2 pi sqrt(I / krot) with I = (2/5) m r^2, stays >= ~20 dt so it does
-  not limit the time step ([02](02_time_step.md)); (b) the rotation needed to
-  reach the plastic limit, theta_y = eta R |F_n| / krot, stays small
-  (~0.01 rad) at typical contact forces, so the moment is essentially
-  rigid-plastic. Ai et al. 2011 give a stiffness rule to compare with once
-  the paper is read.
+- `krot` is one constant for all contacts. YADE's moment law is Ai et al.'s
+  class c (elastic-plastic spring) **without** the dashpot. Wensrich &
+  Katterfeld's guidance (§2) fixes the approach: set the rolling stiffness
+  **as high as numerical stability allows** -- rotational natural frequency
+  of the same order as the contact's, so the critical time step is
+  unaffected -- because "with higher levels of rolling stiffness, the shear
+  damping is mobilised and additional rolling damping is not required".
+  The shear damping is present here (es = en, [07](07_restitution.md)).
+  Criteria: (a) the rolling oscillation period of the smallest rock sphere,
+  T_r = 2 pi sqrt(I / krot) with I = (2/5) m r^2, stays >= ~20 dt
+  ([02](02_time_step.md)), i.e. as short as the step resolves; (b) the
+  rotation to reach the plastic limit, theta_y = eta R |F_n| / krot, stays
+  well below Ai et al.'s mobilisation angle of 0.05 rad (§7) at typical
+  contact forces. For comparison, Ai et al.'s rules (§4.3): k_r = k_s R^2
+  (Iwashita & Oda) or k_r = 3 k_n mu_r^2 R^2.
 - There is no rolling dashpot, and numerical damping is 0
-  ([04](04_numerical_damping.md)). The elastic rolling stage can therefore
-  oscillate without dissipation below the plastic limit. A settling test
-  checks that a heap and a settled charge come to rest
+  ([04](04_numerical_damping.md)). Ai et al. (§6, Fig. 8) show that an
+  undamped class-c rolling spring keeps a single particle oscillating at
+  rest. The settling test (C06-4) checks that a heap and a settled charge
+  come to rest with the stiff krot and shear damping
   ([13](13_initial_conditions.md)).
 
 ## Verdict and how to defend it
@@ -162,8 +182,6 @@ band."
 
 ## Open items / validation
 
-- Obtain Wensrich & Katterfeld 2012 and Ai et al. 2011 (checklist in [README](README.md), "Pending Zotero additions"); compare the
-  krot criterion with Ai's rule; quote Wensrich only after reading it.
 - Search further for a measured repose angle of coarse SAG-feed or ROM ore
   (peer-reviewed or official CEMA 550 table).
 - Heap test design: rock-only spheres with the simulated rock size, rough

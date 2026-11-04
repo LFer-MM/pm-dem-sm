@@ -43,10 +43,12 @@ Friction and rolling resistance ([05](05_friction.md),
 [06](06_rolling_resistance.md)) are tuned until the simulated steady-state
 bulk toe and shoulder fall inside the acceptance band: **SAG_A's
 interquartile range, widened to the simulation's own replicate scatter
-(V12) if that is larger** (decided 2026-11-02). The current toe IQR is only
-~1.2 deg wide, which may be finer than a DEM measurement can resolve
-across seeds; the rule keeps a correct model from failing on the plant
-model's smoothness without changing the target values.
+(V12) if that is larger** (decided 2026-11-02). The toe IQR is only
+1.1 deg wide -- finer than the 95 % confidence (+-1.8-2.5 deg) of the toe
+measurements Maleki-Moghaddam et al. fitted their model to (§3.1.1), and
+possibly finer than a DEM measurement resolves across seeds; the rule keeps
+a correct model from failing on the plant model's smoothness without
+changing the target values.
 
 **Measurement in simulation:** the plant reports the **bulk** toe, so the
 simulated toe and shoulder are read from the boundary of the main charge
@@ -99,7 +101,10 @@ twice, neither time to choose parameters:
 | Govender 2015 | Los Bronces SAG: 10.12 m x 4.7 m, 10 rpm, 31 % ore + 10 % balls by volume (41 % fill); "The charge shoulder is nearly at 2 o'clock and the toe is between 7 and 8 o'clock points on the mill circle" (Fig. 26); parameters "tuned ... to match the charge profile obtained by Rajamani et al. (2011)" | §3, PDF p12 / j.163; PDF p14 / j.165 | Yes |
 | Morrell 1993 (via Toor et al. 2023) | Empirical toe angle theta_T = 2.5307 (1.2796 - J_t)(1 - exp(-19.42 (phi_c - phi))) + pi/2 (rad), phi_c = 0.35 (3.364 - J_t) away from centrifuging; coordinate system: 0 at 3 o'clock, counter-clockwise, toe in the third quadrant (= this convention); toe "only significantly affected by mill speeds" above 80 % CS or 40 % fill | Toor et al. 2023: Eq. (5)-(6), p9-10; Fig. 7 (coordinate system) and Fig. 8 (Morrell's lab data), p10 | Yes (secondary source; Morrell 1993 not in the library) |
 | Pural & Boylu 2025 | Same toe equation (Morrell C model), Eq. (1) | §2.1, PDF p3 | Yes (their shoulder Eq. (3) is misprinted: it repeats Eq. (2)) |
-| Maleki-Moghaddam et al. 2013 | Empirical relationships for toe, shoulder and impact point in industrial mills, correcting single-ball trajectory software (GMT); fitted to a 1 m transparent model mill with liners scaled from two industrial mills, 55 / 70 / 85 % CS, 10-30 % filling, angles read from photographs; checked against the Sarcheshmeh SAG mill liner (reported relative error 1.1 %) | Abstract (as indexed online) | **No** -- full text not yet read |
+| Maleki-Moghaddam et al. 2013 | Empirical toe / shoulder / toe-departure / impact-point relationships correcting single-ball trajectory software (GMT); 1 m x 21.5 cm model mill with a transparent end, polyurethane liners scaled from industrial liners, 55 / 70 / 85 % CS, 10-30 % filling; angles from > 20 photographs per test | Abstract, PDF p1 / j.157; §2, PDF p3-4 | Yes (2026-11-04) |
+| Maleki-Moghaddam et al. 2013 | Definitions: toe = "the highest point reached by the bulk of the charge in the toe region"; shoulder = "the point where the trajectories of the bulk particles near the lifters began to diverge from the mill shell"; angles "measured in degrees starting from the horizontal line passing the mill centre (i.e., 3 o'clock position) and moving counter clockwise" (= this convention); 95 % confidence of the measured toe +-2.5 / +-1.8 deg, shoulder +-4.0 / +-3.6 deg (two liners) | §3.1.1, §3.1.3, PDF p4-5 / j.160-161 | Yes |
+| Maleki-Moghaddam et al. 2013 | Toe: theta_T = (-1.01 J_t - 0.156 (c_s* - c_s) + 158.5)(1 - exp(-0.69 (c_s* - c_s))) + 90 (Eq. 3.1; J_t, c_s in %); c_s* = max(c_s, A), A = -0.5 J_t - 0.914 H_l + 148.9, H_l = lifter height / (0.001 D) (Eqs. 3.2a-c); shoulder: theta_S = 90 - (theta_T - 90)(-0.7 J_t - 0.57 c_s + 0.28 l_a + 103.7)/100, l_a = lifter face angle (Eq. 3.4). "The effect of liner type on the position of toe ... was not found to be significant"; the shoulder depends on the liner | §3.1.1-3.1.3, PDF p4-5 / j.160-161 | Yes |
+| Maleki-Moghaddam et al. 2013 | Validation on a 1:9 scaled model of the **Gol-E-Gohar iron ore AG mill**'s new liner in the same model mill: average relative error 1 %; shoulder, toe, toe departure and impact point predicted with relative errors of 5 %, 0.7 %, 2 % and 0.2 % | Abstract, PDF p1; §3.3, PDF p7; Conclusions, PDF p9 / j.165 | Yes |
 | Doll 2013 | Cone ends: "5% extra power should be added" instead of Austin's factor (based on Barratt, Brodie & Pfeifer 1999); Austin's factor at 15 deg = 0.17; Morrell's cone term 8-13 % of cylinder power in 13 surveys (Table 2); example 3,374 kW at the motor vs 3,190 kW at the mill shell; Morrell no-load estimate 265 kW of 3,349 kW | PDF p3, p5, p6, Table 2 p9 | Yes (online PDF) |
 | Cleary & Morrison 2016 | Power = torque applied to the mill by all particle contacts x rotation speed; must balance collisional dissipation within a few % | §2, PDF p3 / j.77 | Yes |
 
@@ -169,10 +174,14 @@ comparable case gives 226 deg and Morrell's correlation 235 deg. In
 Morrell's correlation 213.8 deg corresponds to J_t ~ 0.43, i.e. SAG_A's toe
 looks like that of a fuller mill (compare Govender's 41 % fill). That all
 five plant mills report 208.6-215.4 deg suggests a systematic feature, not
-noise in one mill: the plant angles come from Maleki-Moghaddam's model, which includes
-the lifter / liner geometry, whereas Morrell's correlation depends on
-filling and speed only; the difference is therefore partly model vs. model
-and partly liner design. It is taken as given (Decision); the consequence for
+noise in one mill. The reason is the model behind the plant angles:
+Maleki-Moghaddam's toe equation (Eq. 3.1), fitted to a model mill with
+scaled industrial liners, gives ~214 deg at SAG_A's fill and speed, ~21 deg
+below Morrell's correlation fitted to other laboratory data; the two
+empirical correlations differ, and the plant values follow Maleki-Moghaddam
+(claim 3: reproduced within 0.7 deg). The liner enters Maleki-Moghaddam's toe
+only through the centrifuging speed (lifter height, Eq. 3.2c), and its own
+data show no significant liner effect on the toe. It is taken as given (Decision); the consequence for
 calibration is that matching 213.8 deg at 27.6 % fill may require friction /
 rolling resistance at the upper end of the literature range. If the
 calibration cannot reach the toe within that range, this section is the
@@ -203,11 +212,17 @@ claims, each compared at matched conditions:
    reline**, while the plant's models still use the new-liner profiles
    (reline date and the dates of the profile updates needed). Target =
    median in that window; acceptance band = its interquartile range.
-3. **The angle model is published and reproducible.** The angles come from
-   Maleki-Moghaddam et al. (2013), an empirical model fitted to bulk toe /
-   shoulder in a model mill and checked on an industrial SAG liner.
-   Re-evaluating its equations with SAG_A's inputs and recovering the
-   reported angles verifies the plant implementation.
+3. **The angle model is published and reproducible** (checked 2026-11-04).
+   The angles come from Maleki-Moghaddam et al. (2013), an empirical model
+   fitted to bulk toe / shoulder photographed in a model mill with scaled
+   industrial liners (validated on a scaled model of the Gol-E-Gohar AG
+   liner: toe 0.7 %, shoulder 5 % relative error). Its published equations
+   with SAG_A's inputs (J_t 27.6 %, c_s 73 %, lifters 265 mm above the
+   plate, 35 deg faces, D 10.71 m) give **toe 214.5 deg** (plant 213.8 deg,
+   inside the IQR) and **shoulder 24.6 deg** (plant 26.6 deg); with the
+   395 mm height from the shell, 216.2 / 23.7 deg. The plant angles
+   therefore behave as Maleki-Moghaddam's model; the ~2 deg shoulder
+   difference reflects the plant's exact inputs or local calibration.
    Note: regressing the plant toe on Jc / speed only reproduces the model's
    own sensitivities, so it is **not** used as physical evidence.
 4. **Independent literature agrees at matched conditions.** One table in
@@ -215,8 +230,9 @@ claims, each compared at matched conditions:
    correlation and lab data (trend and level), Owen & Cleary's DEM cases,
    Govender's Los Bronces, and published plant measurements if found.
    SAG_A is compared with entries at similar fill and speed; any remaining
-   offset is quantified and explained (claim 3: liner geometry in Maleki,
-   not in Morrell).
+   offset is quantified and explained (claim 3: the plant angles follow
+   Maleki-Moghaddam's correlation, which sits ~21 deg below Morrell's for
+   the toe).
 
 ### Why the plant toe must be measured as a bulk toe in simulation
 
@@ -324,8 +340,9 @@ et al. 2015: ~30 deg). The toe lies within the plant range of the five SAG
 mills and of Govender's Los Bronces simulation (210-240 deg) and ~2 deg
 past Owen & Cleary's range (216-234 deg); it is higher than Morrell's
 empirical correlation predicts at 27.6 % fill (235 deg), a difference shared
-by all five plant mills and attributed to the liner geometry included in the
-Maleki-Moghaddam model. Power was not used as a calibration target, since it is
+by all five plant mills: the plant angles follow Maleki-Moghaddam et al.'s
+correlation (2013, Eqs. 3.1-3.4), which reproduces SAG_A's toe within
+0.7 deg and its shoulder within 2 deg. Power was not used as a calibration target, since it is
 insensitive to the contact parameters (Boemer & Ponthot 2017, §3.1.4); it
 was used to check the internal energy balance of the simulations and, after
 calibration, compared with the reference mill's plant power as an
@@ -354,10 +371,6 @@ Plant data (author):
   not subtracted; the basis of [12](12_charge_fill_and_particles.md).
 
 To do (Claude):
-- Get Maleki-Moghaddam, Yahyaei & Banisi 2013 (Minerals Engineering 46-47,
-  157-166, doi 10.1016/j.mineng.2013.04.013) into Zotero; verify its
-  equations, validation errors and angle convention; implement it to
-  reproduce SAG_A's angles (claim 3).
 - Build the claim 1-4 analysis once the data arrive; search the literature
   for published plant toe / shoulder measurements (e.g. Burns et al. 2018,
   Lihir, cited by Toor et al. 2023) for claim 4.
