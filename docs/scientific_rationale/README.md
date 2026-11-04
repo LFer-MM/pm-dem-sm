@@ -116,7 +116,9 @@ the Zotero database on 2026-10-19; item and file keys re-checked after the
 library was reorganised, 2026-10-26: all present). Library collections:
 `bppm_dem_sm/core` (Kishida 2025, with its supplementary PDF and video),
 `bppm_dem_sm/dem` (all other cited papers, books and the YADE docs),
-`bppm_dem_sm/unison` (the PPT and the university guidelines). New items from "Pending Zotero additions" go
+`bppm_dem_sm/unison` (the PPT and the university guidelines),
+`bppm_dem_sm/data` (`mill_dimensions`; `operational_data/{data, analysis,
+results}` -- plant data, kept out of the public repository). New items from "Pending Zotero additions" go
 into `bppm_dem_sm/dem`. "Item" is the Zotero item key, "File" the
 storage folder of the PDF actually read. Page references in these documents
 are to that PDF ("PDF p") and, where the PDF is the published version, to
@@ -161,37 +163,43 @@ Govender et al. 2016 (Blaze-DEMGPU framework, SoftwareX 5 (2016) 62-66,
 The Johnson PDF (`LECT8BKG`) is attached to the book record `PDKNRX4P`
 (created from the DOI via Crossref; verified 2026-10-19).
 
-### Pending Zotero additions (checklist, audited 2026-10-21)
+### Pending Zotero additions (checklist, audited 2026-11-03)
 
 Every source used as justification in docs 01-16 is either in the registry
 above (all 19 entries checked: Zotero item and attached file present) or in
-this list. Add each item and attach the file, then move its row to the
-registry with its item / file keys and page mapping.
+this list; none of the items below is in Zotero yet. Priority: **1** = the
+plant's angle model, needed for claim 3 of [15](15_calibration_targets.md);
+**2** = cited but **not read** (paywalled) -- the docs' statements must be
+checked against them; 3 = already read (open access or free PDF), to
+archive. New items go into `bppm_dem_sm/dem`. Add each item and attach the
+file, then move its row to the registry with its item / file keys and page
+mapping.
 
-| Key used in docs | Reference | DOI / source | Used in | Status in docs | Action |
-|---|---|---|---|---|---|
-| **Maleki-Moghaddam et al. 2013** | M. Maleki-Moghaddam, M. Yahyaei, S. Banisi, *A method to predict shape and trajectory of charge in industrial mills*, Miner. Eng. 46-47 (2013) 157-166 | 10.1016/j.mineng.2013.04.013 | [15](15_calibration_targets.md) | Abstract only (marked "No") | Add by DOI; PDF via library access. **Priority**: the plant angles come from this model |
-| **Toor et al. 2023** | P. Toor, W. Valery, S. Morrell, K. Duffy, *Real-Time Estimation of SAG Mill Charge Characteristics for Process Optimization*, SAG Conference, Vancouver, 2023 (page footers read "SAG CONFERENCE 2019 VANCOUVER \| June 18, 2023") | ceecthefuture.org publication 4122 (free PDF) | [11](11_mill_speed.md), [15](15_calibration_targets.md) | Read (PDF) | Add as conference paper; attach the free PDF |
-| **Pural & Boylu 2025** | Y.E. Pural, F. Boylu, *Prediction and visualization of charge shape and ball trajectory in tumbling mills: a python-based tool for liner design and operational optimizations*, Physicochem. Probl. Miner. Process. 61(3) (2025) 204533 | 10.37190/ppmp/204533 (open access) | [15](15_calibration_targets.md) | Read (PDF) | Add by DOI (Zotero fetches the PDF) |
-| **Wei et al. 2022** | S. Wei, H. Wei, H. Saxen, Y. Yu, *Numerical analysis of the relationship between friction coefficient and repose angle of blast furnace raw materials by discrete element method*, Materials 15(3) (2022) 903 | 10.3390/ma15030903 (open access) | [06](06_rolling_resistance.md) | Read (online full text) | Add by DOI (Zotero fetches the PDF) |
-| **Marin Perez et al. 2024** | J. Marin Perez, T. Comlekci, Y. Gorash, D. MacKenzie, *Calibration of the DEM sliding friction and rolling friction parameters of a cohesionless bulk material*, preprint, 28 May 2024 | strathprints.strath.ac.uk/89399 (free PDF) | [06](06_rolling_resistance.md) | Read (PDF) | Add as preprint; attach the PDF; check for a published version |
-| **Wensrich & Katterfeld 2012** | C.M. Wensrich, A. Katterfeld, *Rolling friction as a technique for modelling particle shape in DEM*, Powder Technol. 217 (2012) 409-417 | 10.1016/j.powtec.2011.10.057 | [06](06_rolling_resistance.md) | **Not read** (citation only) | Add by DOI; PDF via library access; then verify what doc 06 attributes to it |
-| **Ai et al. 2011** | J. Ai, J.-F. Chen, J.M. Rotter, J.Y. Ooi, *Assessment of rolling resistance models in discrete element simulations*, Powder Technol. 206 (2011) 269-282 | 10.1016/j.powtec.2010.09.030 | [06](06_rolling_resistance.md) | **Not read** (citation only) | Add by DOI; PDF via library access; then compare its krot rule with doc 06 |
-| **Engineering Toolbox** | *Angles of Repose* (table) | engineeringtoolbox.com/dumping-angles-d_1531.html | [06](06_rolling_resistance.md) | Read (web page) | Add as web page with a snapshot (accessed 2026-10-21) |
-| **PDHonline M344** | J. Primo, *Belt Conveyor for Bulk Materials -- Practical Calculations*, PDHonline course M344, 2026 | pdhonline.com/courses/m344/m344content.pdf | [06](06_rolling_resistance.md) | Read (PDF) | Add as document; attach the PDF (the edition changes yearly) |
-| **Thornton et al. 2013** | C. Thornton, S.J. Cummins, P.W. Cleary, *An investigation of the comparative behaviour of alternative contact force models during inelastic collisions*, Powder Technol. 233 (2013) 30-46 | 10.1016/j.powtec.2012.08.012 | [07](07_restitution.md) | **Not read** (cited through the YADE source) | Add by DOI; PDF via library; verify Eqs. B6-B7 |
-| **SMC gross power calculator** | SMC Testing, *Gross Power Calculator* help (model from Morrell 1993 thesis): definitions of inside-liner diameter, liner thickness, ball / total filling | smctesting.com/documents/gross_power_calculation_help.pdf | [12](12_charge_fill_and_particles.md) | Read (PDF, Fig. 4 rendered) | Add as document; attach the PDF |
-| **Hilden et al. 2021** | M.M. Hilden, M.S. Powell, M. Yahyaei, *An improved method for grinding mill filling measurement and the estimation of load volume and mass*, Miner. Eng. 160 (2021) 106638 | 10.1016/j.mineng.2020.106638 | [12](12_charge_fill_and_particles.md) | **Not read** (abstract / highlights via search) | Add by DOI; PDF via library; verify the smooth-cylinder statement |
-| **Doll 2013** | A.G. Doll, *A comparison of SAG mill power models*, Procemin 2013 (Santiago) | sagmilling.com, article 20 (free PDF) | [15](15_calibration_targets.md) (V15) | Read (PDF): cone allowance PDF p3; Meadowbank example p5 (motor vs shell power) and p6 (no-load 265 kW); Table 2 p9 | Add as conference paper; attach the PDF |
-| **YADE source** | YADE, source code at commit `7c8d01e` (the installed `yadedaily` 20260115 build), files `pkg/dem/HertzMindlin.{hpp,cpp}`, `ViscoelasticPM.*`, `CohesiveFrictionalContactLaw.*` | gitlab.com/yade-dev/trunk, commit 7c8d01e | [06](06_rolling_resistance.md) | Read (source) | Optional: add as "computer program" with the commit; line numbers are quoted in doc 06 |
+| Priority | Key used in docs | Reference | DOI / source | Used in | Status in docs | Action |
+|---|---|---|---|---|---|---|
+| **1** | **Maleki-Moghaddam et al. 2013** | M. Maleki-Moghaddam, M. Yahyaei, S. Banisi, *A method to predict shape and trajectory of charge in industrial mills*, Miner. Eng. 46-47 (2013) 157-166 | 10.1016/j.mineng.2013.04.013 | [15](15_calibration_targets.md) | Abstract only (marked "No") | Add by DOI; PDF via library access. **Priority**: the plant angles come from this model |
+| **2** | **Wensrich & Katterfeld 2012** | C.M. Wensrich, A. Katterfeld, *Rolling friction as a technique for modelling particle shape in DEM*, Powder Technol. 217 (2012) 409-417 | 10.1016/j.powtec.2011.10.057 | [06](06_rolling_resistance.md) | **Not read** (citation only) | Add by DOI; PDF via library access; then verify what doc 06 attributes to it |
+| **2** | **Ai et al. 2011** | J. Ai, J.-F. Chen, J.M. Rotter, J.Y. Ooi, *Assessment of rolling resistance models in discrete element simulations*, Powder Technol. 206 (2011) 269-282 | 10.1016/j.powtec.2010.09.030 | [06](06_rolling_resistance.md) | **Not read** (citation only) | Add by DOI; PDF via library access; then compare its krot rule with doc 06 |
+| **2** | **Thornton et al. 2013** | C. Thornton, S.J. Cummins, P.W. Cleary, *An investigation of the comparative behaviour of alternative contact force models during inelastic collisions*, Powder Technol. 233 (2013) 30-46 | 10.1016/j.powtec.2012.08.012 | [07](07_restitution.md) | **Not read** (cited through the YADE source) | Add by DOI; PDF via library; verify Eqs. B6-B7 |
+| **2** | **Hilden et al. 2021** | M.M. Hilden, M.S. Powell, M. Yahyaei, *An improved method for grinding mill filling measurement and the estimation of load volume and mass*, Miner. Eng. 160 (2021) 106638 | 10.1016/j.mineng.2020.106638 | [12](12_charge_fill_and_particles.md) | **Not read** (abstract / highlights via search) | Add by DOI; PDF via library; verify the smooth-cylinder statement |
+| 3 | **Toor et al. 2023** | P. Toor, W. Valery, S. Morrell, K. Duffy, *Real-Time Estimation of SAG Mill Charge Characteristics for Process Optimization*, SAG Conference, Vancouver, 2023 (page footers read "SAG CONFERENCE 2019 VANCOUVER \| June 18, 2023") | ceecthefuture.org publication 4122 (free PDF) | [11](11_mill_speed.md), [12](12_charge_fill_and_particles.md), [15](15_calibration_targets.md) | Read (PDF) | Add as conference paper; attach the free PDF |
+| 3 | **Pural & Boylu 2025** | Y.E. Pural, F. Boylu, *Prediction and visualization of charge shape and ball trajectory in tumbling mills: a python-based tool for liner design and operational optimizations*, Physicochem. Probl. Miner. Process. 61(3) (2025) 204533 | 10.37190/ppmp/204533 (open access) | [15](15_calibration_targets.md) | Read (PDF) | Add by DOI (Zotero fetches the PDF) |
+| 3 | **Wei et al. 2022** | S. Wei, H. Wei, H. Saxen, Y. Yu, *Numerical analysis of the relationship between friction coefficient and repose angle of blast furnace raw materials by discrete element method*, Materials 15(3) (2022) 903 | 10.3390/ma15030903 (open access) | [06](06_rolling_resistance.md) | Read (online full text) | Add by DOI (Zotero fetches the PDF) |
+| 3 | **Marin Perez et al. 2024** | J. Marin Perez, T. Comlekci, Y. Gorash, D. MacKenzie, *Calibration of the DEM sliding friction and rolling friction parameters of a cohesionless bulk material*, preprint, 28 May 2024 | strathprints.strath.ac.uk/89399 (free PDF) | [06](06_rolling_resistance.md) | Read (PDF) | Add as preprint; attach the PDF; check for a published version |
+| 3 | **Engineering Toolbox** | *Angles of Repose* (table) | engineeringtoolbox.com/dumping-angles-d_1531.html | [06](06_rolling_resistance.md) | Read (web page) | Add as web page with a snapshot (accessed 2026-10-21) |
+| 3 | **PDHonline M344** | J. Primo, *Belt Conveyor for Bulk Materials -- Practical Calculations*, PDHonline course M344, 2026 | pdhonline.com/courses/m344/m344content.pdf | [06](06_rolling_resistance.md) | Read (PDF) | Add as document; attach the PDF (the edition changes yearly) |
+| 3 | **SMC gross power calculator** | SMC Testing, *Gross Power Calculator* help (model from Morrell 1993 thesis): definitions of inside-liner diameter, liner thickness, ball / total filling | smctesting.com/documents/gross_power_calculation_help.pdf | [12](12_charge_fill_and_particles.md) | Read (PDF, Fig. 4 rendered) | Add as document; attach the PDF |
+| 3 | **Doll 2013** | A.G. Doll, *A comparison of SAG mill power models*, Procemin 2013 (Santiago) | sagmilling.com, article 20 (free PDF) | [15](15_calibration_targets.md) (V15) | Read (PDF): cone allowance PDF p3; Meadowbank example p5 (motor vs shell power) and p6 (no-load 265 kW); Table 2 p9 | Add as conference paper; attach the PDF |
+| optional | **YADE source** | YADE, source code at commit `7c8d01e` (the installed `yadedaily` 20260115 build), files `pkg/dem/HertzMindlin.{hpp,cpp}`, `ViscoelasticPM.*`, `CohesiveFrictionalContactLaw.*` | gitlab.com/yade-dev/trunk, commit 7c8d01e | [06](06_rolling_resistance.md) | Read (source) | Optional: add as "computer program" with the commit; line numbers are quoted in doc 06 |
 
 Cited only **through** another source (add only if you want to cite them
-directly): Morrell 1993, PhD thesis, University of Queensland (via Toor et
-al. 2023); Burns et al. 2018, Lihir toe measurement (via Toor et al. 2023,
-a lead for doc 15); Rajamani et al. 2011 (via Govender 2015); Raji 1999,
-PhD thesis, Newcastle (via Nan et al. 2022); Cleary 1998a (via Cleary
-2001). Optional strengthening for doc 06: the official CEMA 550 material
-table.
+directly): Morrell 1993, PhD thesis, University of Queensland, and Morrell
+1996a (via Toor et al. 2023 and the SMC help file); Burns et al. 2018,
+Lihir toe measurement (via Toor et al. 2023, a lead for doc 15); Barratt,
+Brodie & Pfeifer 1999 and Austin 1990 (via Doll 2013, cone-end allowance in
+V15); Rajamani et al. 2011 (via Govender 2015); Raji 1999, PhD thesis,
+Newcastle (via Nan et al. 2022); Cleary 1998a (via Cleary 2001). Optional
+strengthening for doc 06: the official CEMA 550 material table.
 
 ## Citation problems found in the PPT
 
