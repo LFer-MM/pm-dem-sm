@@ -343,10 +343,13 @@ Plant data (author):
 - **Mill design, SAG_A-E: complete** (`mill_dimensions.csv`,
   [10](10_mill_geometry.md)). Cone geometry not available (V15 uses the
   5 % allowance).
-- Still to confirm: the plant's toe / shoulder angle convention and the
-  rotation direction (the data are consistent with this convention: toe
-  in the third quadrant, shoulder in the first); that Jb / Jc are % of the
-  cylindrical volume inside liners.
+- **Angle convention of the plant data** (author, 2026-11-03): the same as
+  here -- 0 deg at 3 o'clock, counter-clockwise -- consistent with the
+  values of all five mills (toe 208-215 deg, shoulder 23-36 deg). Rotation
+  direction is not needed: the lifters are symmetric, so it only matters
+  for converting angles, and none is required.
+- Still to confirm: that Jb / Jc are % of the cylindrical volume inside
+  liners (Morrell's convention; the values are consistent with it).
 
 To do (Claude):
 - Get Maleki-Moghaddam, Yahyaei & Banisi 2013 (Minerals Engineering 46-47,

@@ -99,7 +99,7 @@ topics' open items.
 
 | # | Item | Details | Used in |
 |---|---|---|---|
-| A1 | Plant time series, SAG_A-E | **Received and analysed 2026-11-02** (Zotero `bppm_dem_sm/data/operational_data`: data, analysis `.py` / `.ipynb`, results). Still to confirm: the plant's angle convention and rotation direction (data consistent with ours); Jb / Jc as % of the cylindrical volume inside liners | [15](15_calibration_targets.md) claims 1-2, V15 |
+| A1 | Plant time series, SAG_A-E | **Received and analysed 2026-11-02** (Zotero `bppm_dem_sm/data/operational_data`: data, analysis `.py` / `.ipynb`, results). Plant angles in this convention (0 deg at 3 o'clock, CCW; author 2026-11-03). Still to confirm: Jb / Jc as % of the cylindrical volume inside liners | [15](15_calibration_targets.md) claims 1-2, V15 |
 | A2 | Mill design data, SAG_A-E | **Complete for the model** (`mill_dimensions.csv`, Zotero `bppm_dem_sm/data/mill_dimensions`; plates flat 130 mm; lifters 395 mm from the shell, base 523 mm, vertical through the plate then 35 deg faces, top 152 mm; belly length 5,244 mm, used only by V15). SAG_B-E complete | [10](10_mill_geometry.md), [15](15_calibration_targets.md) |
 | A3 | Plant Maleki-model inputs | **Resolved 2026-11-01:** the plant's toe / shoulder (Maleki) and Jb / Jc models start each campaign with the new-liner profiles (the design CSV) and update them for wear ~3 times per ~6-month campaign, so the first ~2 months match the simulated geometry | [15](15_calibration_targets.md) claims 2-3 |
 | A4 | Mill generator code | **Received 2026-11-02** (`create_stl.py`); reviewed, issues and the parametric-generator plan recorded in [10](10_mill_geometry.md) for the implementation phase (C10-4) | [10](10_mill_geometry.md) C10-4 |
