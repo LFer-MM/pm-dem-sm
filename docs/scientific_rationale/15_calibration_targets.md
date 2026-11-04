@@ -33,7 +33,11 @@ the window +-0.2 rpm, +-1.5 % Jc, +-0.5 % Jb around it (239 h):
 Cleaning (usable data): running (> 6 rpm, power > 0), power < 30,000 kW
 (drops sensor error codes), model outputs present and not frozen (identical
 for >= 30 min; 39 % of SAG_B's running time), >= 60 min after a start,
-speed standard deviation <= 0.2 rpm over 30 min.
+speed standard deviation <= 0.2 rpm over 30 min. Usable share of each
+mill's ~2-month period (each 10 s sample counted once): SAG_A 67 %
+(869 h), SAG_B 55 % (777 h), SAG_C 64 % (1,048 h), SAG_D 60 % (900 h),
+SAG_E 29 % (417 h); the rest is mostly stopped time, start-up / unsteady
+speed, and missing (SAG_D, SAG_E) or frozen (SAG_B) model outputs.
 
 Friction and rolling resistance ([05](05_friction.md),
 [06](06_rolling_resistance.md)) are tuned until the simulated steady-state
