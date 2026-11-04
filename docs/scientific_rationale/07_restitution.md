@@ -35,6 +35,7 @@
 | YADE source (`7c8d01e`) | With `en` given, the normal damping ratio is computed from "formula (B6) of [Thornton2013], written specifically for the Hertz-Mindlin model (no-slip solution) where the end of contact is considered to take place once the normal force is zero"; alpha from Eq. (B7); dashpot c_n = beta_n 2 sqrt(m* k_n) with the current Hertz stiffness k_n | `pkg/dem/HertzMindlin.hpp:90`; `HertzMindlin.cpp:184-207, 458-463` | Yes (source read) |
 | YADE source / docs 2021 | "If neither e_s nor beta_s is given, the value of en is used for es" | `HertzMindlin.hpp:97`; docs printed p. 562 (PDF p569) | Yes |
 | Thornton et al. 2013 | Origin of the e -> beta mapping (Eqs. B6-B7) | via the YADE source only | **No** (not read) |
+| YADE releases 2021.01a and 2022.01a (source) | **Older mapping:** "If e_n is given, MindlinPhys.betan is computed using beta_n = -(log e_n) / sqrt(pi^2 + (log e_n)^2)" -- the linear-spring formula, which does not recover e exactly for a Hertzian contact; no "es = en" rule. The Thornton (B6) mapping is present from the 2023.02a release on, and in the build used (`7c8d01e`, 2026-01-15) | `pkg/dem/HertzMindlin.hpp:92` and `.cpp:77-91` at tag 2021.01a; tags 2022.01a / 2023.02a | Yes (source read, 2026-11-03) |
 
 ## PPT
 
@@ -94,6 +95,14 @@ fixed: tuning it would hide errors elsewhere (e.g. damping).
   starts. None of the sources tests e against **segregation**, the
   surrogate's output. A restitution sensitivity check (Open items) covers
   this.
+- **YADE version floor.** The e -> beta mapping changed between releases:
+  2021 and 2022 used the linear-spring formula, 2023.02 onwards uses
+  Thornton's Hertz-specific relation. The method here therefore requires
+  **YADE >= 2023.02** (the build used is 2026-01-15); with an older release
+  the same input e gives a different, velocity-dependent restitution.
+  Citing the YADE manual's 3rd edition as "2021" is correct for its other
+  statements used here, but not for this one, which must be cited to the
+  build used (README source registry).
 - **Velocity independence.** YADE's Hertz-Mindlin maps e to a damping ratio
   with Thornton et al.'s formula for Hertzian contacts and scales the dashpot
   with the current stiffness, so the input e should be recovered at any
@@ -133,3 +142,4 @@ et al. (2013), so the coefficient holds at all impact velocities."
 |---|---|---|---|
 | C07-1 | Add liner-steel 0.8 and liner-rock 0.5 to `RESTITUTION_COEFFICIENTS` (with C05-3) | Steel / rock pairs only | Before calibration |
 | C07-2 | Delete the unused id-based `config.restitution_matchmaker()` | `config.py:482-499` | Any time |
+| C07-3 | At start-up, record the YADE version and refuse releases older than 2023.02 (e -> beta mapping, see Analysis) | Version recorded in the manifest only | Before calibration |
