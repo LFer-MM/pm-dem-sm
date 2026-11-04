@@ -176,6 +176,46 @@ removes the dependency on an external file. With new liners, the plant
 target window for toe / shoulder must come from the period just after a
 reline ([15](15_calibration_targets.md), claim 2).
 
+### Mill generator: the author's script and the plan (2026-11-03)
+
+The author's `create_stl.py` (received 2026-11-02) takes a liner profile
+(arc length vs depth from a CSV), repeats it around the mill, extrudes it
+to the slice depth and writes the triangles as an STL with `numpy-stl`.
+The approach is kept; the script does not run as it stands:
+
+| Issue | Where |
+|---|---|
+| `y` is never assigned (`x` is assigned twice), so the profile points fail | lines 57-58 |
+| The inner loop appends whole arrays once per profile point instead of one point per step | lines 52-61 |
+| The gap points between liners use the **diameter** as radius, placing them at twice the mill radius | line 67 |
+| Points are converted to an array, closed, extruded, meshed and saved **inside** the per-liner loop, so the second liner fails | lines 78-111 |
+| The parameter `arc_length_per_liner_mm` is ignored (the global `arclength_per_liner_mm` is used); `csv_path` is a placeholder; the function is never called | lines 22, 30, 19 |
+| The liner count is derived from an arc length, whereas the design data give the counts (36 lifters, 36 plates) | line 30 |
+
+**Plan for the implementation phase (C10-4):** a parametric generator
+built from the script's structure, replacing the profile CSV with the
+design parameters:
+- Inputs: inside-shell diameter, number of lifters, lifter base width (at
+  the shell), lifter height (from the shell), face angle (both faces),
+  plate thickness, slice depth.
+- Profile per pitch (360 deg / n): flat plate surface at radius
+  R_shell - t; lifter with vertical sides through the plate, then faces at
+  the face angle up to a flat top at R_shell - LH (top width
+  base - 2 (LH - t) tan(angle) = 152 mm for SAG_A; rounded corners
+  ignored).
+- Extrude to the slice depth; triangulate the quads between the two
+  profiles; output YADE facets directly and, optionally, an STL for
+  viewing. End walls are added by the simulation (frictionless,
+  [10](10_mill_geometry.md)).
+- Record the input parameters (and a hash of the mesh) in each run
+  manifest.
+- Tests: number of lifters, radii of plate surface and lifter tops, top
+  width, face angle, closed profile; the net cross-section area against
+  the analytic value (cylinder area minus plates minus lifters). The
+  lifter volume it gives turns the provisional "at most" particle counts
+  of [12](12_charge_fill_and_particles.md) into estimates.
+
+
 ## Verdict and how to defend it
 
 "The mill is modelled as a 0.6 m slice of SAG_A, generated from its design
@@ -212,4 +252,4 @@ reported separately because it has no counterpart in the real mill."
 | C10-1 | `MILL_DIAMETER_M` = SAG_A diameter inside liners, 10.7128 m | 11.0 (`config.py:72`) | Before any production run |
 | C10-2 | Default `end_walls = "frictionless"` | `"liner"` (`scenario.py:85`) | Before calibration |
 | C10-3 | Default `depth_m = 0.6` | 0.375 (`scenario.py:77`) | Before calibration |
-| C10-4 | Geometry from parameters (SAG_A: 36 lifters, base 523 mm at the shell, vertical sides through the plate, 35 deg faces above it, top 152 mm, 395 mm high from the inside shell; alternating with 36 flat 130 mm plates). The repo's `initialize_parametric_mill` (`stl.py:49`) builds trapezoidal lifters on a shell but has no plates and no face-angle input: extend it, or add the author's generator if it covers plates; geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |
+| C10-4 | Parametric generator (plan above, from the author's `create_stl.py`): SAG_A: 36 lifters, base 523 mm at the shell, vertical sides through the plate, 35 deg faces above it, top 152 mm, 395 mm high from the inside shell; alternating with 36 flat 130 mm plates. The repo's `initialize_parametric_mill` (`stl.py:49`) builds trapezoidal lifters on a shell but has no plates and no face-angle input: extend it, or add the author's generator if it covers plates; geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |
