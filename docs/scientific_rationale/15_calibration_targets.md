@@ -348,8 +348,9 @@ Plant data (author):
   values of all five mills (toe 208-215 deg, shoulder 23-36 deg). Rotation
   direction is not needed: the lifters are symmetric, so it only matters
   for converting angles, and none is required.
-- Still to confirm: that Jb / Jc are % of the cylindrical volume inside
-  liners (Morrell's convention; the values are consistent with it).
+- **Jb / Jc basis** (confirmed by the author, 2026-11-03): Morrell's --
+  bulk filling (including voids) of the cylinder inside the liners, lifters
+  not subtracted; the basis of [12](12_charge_fill_and_particles.md).
 
 To do (Claude):
 - Get Maleki-Moghaddam, Yahyaei & Banisi 2013 (Minerals Engineering 46-47,
