@@ -52,9 +52,9 @@ No spin-up stage before recording: spinning up first would destroy the IC.
 
 | Where | What |
 |---|---|
-| `config.py:188, 193, 194` | `start_frame = 66`, `dt0 = 4.05`, `dt_step = 0.05` (prediction seeded at ~3.3-4.05 s, from the old dataset) |
-| `config.py:236-237`, `configs/pipeline_example.json` | `MetricsOptions.cell_size = 0.3` (C14-2, commit `5c194ab`), `min_particles_per_cell = 15` |
-| `scenario.py:32`, `run_simulation.py:282-294` | Stages `build, fill, settle, spinup, record`: recording only **after** spin-up -- right for calibration runs, wrong for SIC / RMIC datasets (record from rest) |
+| `config.py:199, 204, 205` | `start_frame = 66`, `dt0 = 4.05`, `dt_step = 0.05` (prediction seeded at ~3.3-4.05 s, from the old dataset) |
+| `config.py:247-248`, `configs/pipeline_example.json` | `MetricsOptions.cell_size = 0.3` (C14-2, commit `5c194ab`), `min_particles_per_cell = 15` |
+| `scenario.py:33`, `run_simulation.py:279-291` | Stages `build, fill, settle, spinup, record`: recording only **after** spin-up -- right for calibration runs, wrong for SIC / RMIC datasets (record from rest) |
 | `capture.py:71, 129` | One CSV per frame; `data_processing` converts to parquet afterwards |
 | Existing dataset | Charge centre-of-mass angle: 0 deg (t = 0), 22 deg (2 s), 38 deg (4 s), 54 deg (10 s), 60 deg (20 s) -- still rising at 3-4 s |
 

@@ -120,7 +120,7 @@ between the smoke test and the full mill):
 |---|---|
 | `engines.py:87` | `NewtonIntegrator` created with `damping=0` |
 | `scenario.py` (`FillOptions`, `SettleOptions`) | No damping fields any more: a scenario JSON with `fill.damping` or `settle.damping` is rejected (C04-1, commit `5c194ab`) |
-| `run_simulation.py:190, 203, 235, 252, 285` | `NUMERICAL_DAMPING = 0.0` set explicitly at build and at the start of fill, settle, spin-up and recording. The smoke test (`configs/simulation/smoke_test.json`) fills, settles, spins up and records with it, with no escapes |
+| `run_simulation.py:189, 202, 232, 249, 282` | `NUMERICAL_DAMPING = 0.0` set explicitly at build and at the start of fill, settle, spin-up and recording. The smoke test (`configs/simulation/smoke_test.json`) fills, settles, spins up and records with it, with no escapes |
 | Existing `sic_dataset_20s_dt0p0001` | Generated with 0.2 according to slide 19 (old code) |
 
 ## Analysis

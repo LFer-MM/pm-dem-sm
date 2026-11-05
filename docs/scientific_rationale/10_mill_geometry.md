@@ -60,14 +60,12 @@ Decided 2026-10-22.
 
 | Where | What |
 |---|---|
-| `config.py:68` | `SAGMILL_STL_PATH = "sag_mill_40ft_m.stl"`; the file is not in the repo |
-| `config.py:72` | `MILL_DIAMETER_M = 10.7128` (SAG_A inside liners), the default `MillGeometry.diameter_m`, which sizes the fill boxes and derived checks (C10-1, commit `5c194ab`). `MetricsOptions.cell_size` no longer derives from it: 0.3 m ([14](14_dataset_runs_and_recording.md), C14-2) |
-| `configs/pipeline_example.json:32` | `cell_size = 0.3` |
-| `scenario.py:115` | `depth_m = 0.6` (C10-3, commit `5c194ab`) |
-| `scenario.py:123` | `end_walls = "frictionless"` (default, C10-2, commit `5c194ab`); `scenario.contact_tables()`: end-wall material derived from the liner, friction 0, restitution copied from the liner |
-| `scenario.py:827-831` | Warns when the slice is < 4 large diameters deep with frictional end walls |
-| `scenario.py:81-123`, `stl.py` | Parametric shell + trapezoidal lifters exist as an alternative source (`source = "parametric"`) |
-| `configs/simulation/sag_slice_lifters.json` | SAG_A diameter / 0.6 m slice / 9.5 rpm, with SAG_A's 36 lifters but the old trapezoidal placeholder shape (0.25 m high, no plates) until C10-4. The old `sag_slice_stl.json` (40 ft STL, file not in the repo) was deleted |
+| `config.py` (`SHELL_DIAMETER_M` ... `LIFTER_FACE_ANGLE_DEG`) | SAG_A's liner design: 10.9728 m inside shell, 36 lifters, 523 mm base, 395 mm from the shell, 35 deg faces, 130 mm plates. `MILL_DIAMETER_M` = shell - 2 x plate = 10.7128 m (C10-1, commit `5c194ab`; derived since C10-4). `MetricsOptions.cell_size` does not derive from it: 0.3 m ([14](14_dataset_runs_and_recording.md), C14-2) |
+| `simulation/scenario.py` (`MillGeometry`) | The design parameters are the scenario inputs (`shell_diameter_m`, `n_lifters`, `lifter_base_width_m`, `lifter_height_m`, `lifter_face_angle_deg`, `plate_thickness_m`, `plate_segments`), defaulting to SAG_A. `diameter_m` (inside liners), `lifter_top_width_m` (151.9 mm) and `lifter_top_radius_m` are read-only properties derived from them. Validation rejects zero lifters, overlapping lifters, faces that meet below the top, and a plate thicker than the lifter height. `depth_m = 0.6` (C10-3) and `end_walls = "frictionless"` (C10-2, commit `5c194ab`); `contact_tables()` derives the end-wall material from the liner (friction 0, restitution copied from the liner). The STL input is gone: `source`, `stl_path`, `config.SAGMILL_STL_PATH` and the YADE STL loader were removed, so `sag_mill_40ft_m.stl` is retired (C10-4, commit `d73d750`) |
+| `simulation/mill_geometry.py` | The generator (C10-4, commit `d73d750`), following the plan below, stdlib-only. `liner_profile()` returns the closed counter-clockwise profile: plate arcs at R_shell - t (each split into `plate_segments` straight facets, vertices on the circle), then each lifter's leading face from where it meets the plate circle, the flat top at R_shell - 395 mm, and the trailing face. The vertical sides through the plate lie behind the plate surface and are not generated. `liner_triangles()` extrudes the profile to the slice depth (SAG_A: 36 x 11 edges, 792 triangles). Also: `exposed_lifter_area()` (exact, see below), `net_cross_section()`, `plate_gap()`, `mesh_hash()` (SHA-256), `geometry_summary()` and `write_stl()` |
+| `simulation/yade_dem/stl.py` (`initialize_parametric_mill`), `run_simulation.py` (build stage) | The liner triangles become YADE facets (liner material) plus the two end walls (796 facets for SAG_A). The run manifest records `mill_geometry`: every input, the derived radii, width and areas, the triangle count and the mesh hash. `<run-dir>/mill_liner.stl` is written for viewing. Fill boxes stay inside the lifter-top radius |
+| `simulation/scenario.py` (`warnings()`) | Warns when the slice is < 4 large diameters deep with frictional end walls, and when the free plate gap is under two ball diameters (SAG_A: 0.420 m = 3.0 d) |
+| `configs/simulation/sag_slice_lifters.json` | SAG_A's liner design, 0.6 m slice, 9.5 rpm. The old `sag_slice_stl.json` (40 ft STL, file not in the repo) was deleted |
 | Existing dataset | Particle centres reach 5.88 m from the axis, consistent with the old 40 ft STL (inside radius 5.92 m), not with SAG_A |
 
 ## Analysis
@@ -218,6 +216,29 @@ design parameters:
   also checks the lifter correction of the provisional particle counts
   in [12](12_charge_fill_and_particles.md).
 
+**As implemented (C10-4, 2026-11-04).** The plan was applied as written.
+One detail follows from the curved plate surface: a 35 deg face drawn
+from the 523 mm base meets the plate circle (radius 5.3564 m) about
+13 mm before it reaches the flat plane at R_shell - t. So the exposed
+lifter section is the quadrilateral up to the plate circle plus a thin
+circular segment:
+
+- Exposed lifter section: **0.08834 m^2**, 1.2 % below the flat-base
+  trapezoid 0.0894 m^2 quoted above and in
+  [12](12_charge_fill_and_particles.md).
+- Free plate arc between lifters: **0.420 m** = 3.0 ball diameters (0.412
+  m with the flat-base width).
+- Net free cross-section: pi x 5.3564^2 - 36 x 0.08834 = **86.955 m^2**.
+  The generated profile (8 straight segments per plate) is within 7.5e-6 of
+  it.
+
+The tests in `tests/simulation/test_mill_geometry.py` check lifter count
+and spacing, plate and top radii, top width, both face angles, the closed
+counter-clockwise profile, the exact exposed area (against an independently
+refined one-lifter polygon) and the net cross-section. The 1.2 %
+difference is negligible for the provisional counts in 12, which the
+grind-out procedure (C12-3) replaces anyway.
+
 
 ## Verdict and how to defend it
 
@@ -242,8 +263,9 @@ reported separately because it has no counterpart in the real mill."
   length 5,244 mm between the cone junctions). Cone angle / trunnion diameter will not
   be available: V15 runs belly-only with that caveat. The CSV in Zotero was
   updated 2026-11-01 (no plate-angle column); SAG_B-E rows are complete.
-- Mill generator: implement C10-4 (plan above) as the primary geometry
-  source, with its parameters and a mesh hash in each run manifest.
+- ~~Mill generator: implement C10-4 (plan above) as the primary geometry
+  source, with its parameters and a mesh hash in each run manifest.~~ Done
+  (C10-4, commit `d73d750`).
 - V11 end-wall check ([16](16_validation_checks.md)): frictionless vs liner
   friction, 3 revolutions each; compare toe, shoulder, power and
   segregation.
@@ -255,4 +277,4 @@ reported separately because it has no counterpart in the real mill."
 | C10-1 | `MILL_DIAMETER_M` = SAG_A diameter inside liners, 10.7128 m | Done (`5c194ab`) | Before any production run |
 | C10-2 | Default `end_walls = "frictionless"` | Done (`5c194ab`) | Before calibration |
 | C10-3 | Default `depth_m = 0.6` | Done (`5c194ab`) | Before calibration |
-| C10-4 | Parametric generator (plan above, from the author's `create_stl.py`): SAG_A: 36 lifters, base 523 mm at the shell, vertical sides through the plate, 35 deg faces above it, top 152 mm, 395 mm high from the inside shell; alternating with 36 flat 130 mm plates. The repo's `initialize_parametric_mill` (`stl.py:49`) builds trapezoidal lifters on a shell but has no plates and no face-angle input: extend it, or add the author's generator if it covers plates; geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |
+| C10-4 | Parametric generator (plan above, from the author's `create_stl.py`): SAG_A: 36 lifters, base 523 mm at the shell, vertical sides through the plate, 35 deg faces above it, top 152 mm, 395 mm high from the inside shell; alternating with 36 flat 130 mm plates. The repo's `initialize_parametric_mill` (`stl.py:49`) builds trapezoidal lifters on a shell but has no plates and no face-angle input: extend it, or add the author's generator if it covers plates; geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | Done (`d73d750`): STL input removed; liner generated from the design parameters | Before calibration |

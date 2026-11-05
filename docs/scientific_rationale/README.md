@@ -75,7 +75,8 @@ dependencies and tests). Status: phase 1 (defaults and clean-up, 15 items)
 done 2026-11-04 in commit `5c194ab`; phase 2 (contact physics: C05-2,
 C05-3, C06-1, C06-2, C07-1, with C01-1 and C01-2 merged into them) done
 2026-11-04 in commit `4bb17e4`, with mu_r still provisional until C06-3;
-C15-2 done earlier outside the repository; everything else pending.
+phase 3 (mill geometry, C10-4) done 2026-11-04 in commit `d73d750`; C15-2
+done earlier outside the repository; everything else pending.
 
 | Topic | IDs | Must be done before any production run | Done |
 |---|---|---|---|
@@ -87,7 +88,7 @@ C15-2 done earlier outside the repository; everything else pending.
 | [06](06_rolling_resistance.md) | C06-1 ... C06-4 | **C06-1**, C06-2, **C06-3** | C06-1, C06-2 |
 | [07](07_restitution.md) | C07-1 ... C07-3 | **C07-1**, **C07-3** | C07-1, C07-2, C07-3 |
 | [08](08_density.md) | C08-1 | **C08-1** | C08-1 |
-| [10](10_mill_geometry.md) | C10-1 ... C10-4 | **C10-1**, **C10-2**, **C10-3**, **C10-4** | C10-1, C10-2, C10-3 |
+| [10](10_mill_geometry.md) | C10-1 ... C10-4 | **C10-1**, **C10-2**, **C10-3**, **C10-4** | C10-1, C10-2, C10-3, C10-4 |
 | [11](11_mill_speed.md) | C11-1 | **C11-1** | C11-1 |
 | [12](12_charge_fill_and_particles.md) | C12-1 ... C12-3 | **C12-1**, **C12-2**, **C12-3** | C12-1 |
 | [14](14_dataset_runs_and_recording.md) | C14-1 ... C14-5 | **C14-1**, C14-2, **C14-3** | C14-2 |
@@ -258,7 +259,8 @@ doc compares with the PPT's slide-12 set (33.16e9 / 2.868e9), it says so.
 "Current state" sections refer to the `pm_dem_sm` package on `main` of
 `LFer-MM/pm-dem-sm` as re-reviewed on 2026-11-04 (commit `5084426`), with
 paths relative to `pm_dem_sm/` unless stated, updated for the phase-1
-changes (commit `5c194ab`) and the phase-2 changes (commit `4bb17e4`). The existing datasets
+changes (commit `5c194ab`), the phase-2 changes (commit `4bb17e4`) and the
+phase-3 changes (commit `d73d750`). The existing datasets
 (`data/raw/...`) were produced by older code, before the repository was
 renamed (pre-rename `main`, commit `bb04dfd`), with the friction and
 damping issues described in [04](04_numerical_damping.md) and

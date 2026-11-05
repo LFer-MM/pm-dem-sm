@@ -52,7 +52,7 @@
 | `simulation/yade_dem/materials.py` | `pair_matchmaker(pairs)` builds the MatchMaker (restitution, and friction since C05-2) from material **labels** (fixed since the old review); the pairs come from `SimulationScenario.contact_tables()`, which also gives the frictionless end walls the liner's restitution; the old id-based `config.build_yade_material_interactions()` and its BlazeDEM placeholder were removed (C07-2, commit `5c194ab`) |
 | `simulation/scenario.py` (`validate()`) | Validation: every particle-particle and particle-liner pair must have an e, otherwise the scenario fails (liner-liner is not needed: facets do not touch each other) |
 | `simulation/scenario.py` (`contact_tables()`), `run_simulation.py` (build stage) | End-wall material derives from the liner (friction 0); its restitution pairs copy the liner's |
-| `simulation/yade_dem/version.py`, `run_simulation.py:99-100` | At start-up `run()` parses `yade.config.version` (releases `2023.02a`, daily builds `20260115-...`) and refuses anything older than 2023.02 or unparseable; the version goes into the manifest (C07-3, commit `5c194ab`). The build used here, `20260115-8983~7c8d01e~noble1`, passes |
+| `simulation/yade_dem/version.py`, `run_simulation.py:103-104` | At start-up `run()` parses `yade.config.version` (releases `2023.02a`, daily builds `20260115-...`) and refuses anything older than 2023.02 or unparseable; the version goes into the manifest (C07-3, commit `5c194ab`). The build used here, `20260115-8983~7c8d01e~noble1`, passes |
 
 ## Analysis
 

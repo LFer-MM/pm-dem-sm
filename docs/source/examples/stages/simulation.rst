@@ -28,8 +28,9 @@ ship in ``configs/simulation/``, both with mu_r = 0.25:
    Use it to check the pipeline, not the physics.
 ``sag_slice_lifters.json``
    The SAG_A slice (10.7128 m inside liners, 0.6 m deep, 9.5 rpm) with the
-   provisional charge (14,650 rocks, 3,750 steel balls), 36 placeholder
-   lifters and frictionless slice end walls.
+   provisional charge (14,650 rocks, 3,750 steel balls), SAG_A's new
+   liner (36 lifters of 395 mm at 35 deg alternating with 130 mm plates)
+   and frictionless slice end walls.
 
 Check a scenario before spending DEM time on it:
 
@@ -47,7 +48,9 @@ Stages
 ``run_simulation.py`` runs five stages and writes a checkpoint after each;
 numerical damping is 0 in all of them:
 
-1. ``build`` -- materials, mill (STL or parametric shell with lifters), end
+1. ``build`` -- materials, mill liner generated from the design parameters
+   (:mod:`~pm_dem_sm.simulation.mill_geometry`; parameters and a mesh hash
+   go into the manifest, ``mill_liner.stl`` into the run directory), end
    walls, Hertz-Mindlin engines with per-pair restitution and friction and
    a rolling moment (``eta`` = mu_r, ``krot`` from the time step), and
    ``dt = solver.dt_s`` (2.5e-5 s by default).
