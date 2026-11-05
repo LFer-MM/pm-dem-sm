@@ -41,8 +41,8 @@ The liner is symmetric, so the orientation is a free choice in simulation.
 
 | Where | What |
 |---|---|
-| `scenario.py:116` | `speed_rpm = 9.5` (positive = counter-clockwise seen from +Z), also in `sag_slice_*.json` (C11-1, commit `5c194ab`) |
-| `scenario.py:697-707, 800-834` | `critical_speed_rpm()` and `fraction_critical` use `mill.diameter_m`, now 10.7128 m (C10-1): the defaults report N_c = 13.01 rpm and 73.0 % of critical |
+| `scenario.py:118` | `speed_rpm = 9.5` (positive = counter-clockwise seen from +Z), also in `sag_slice_*.json` (C11-1, commit `5c194ab`) |
+| `scenario.py:716-726, 819-853` | `critical_speed_rpm()` and `fraction_critical` use `mill.diameter_m`, now 10.7128 m (C10-1): the defaults report N_c = 13.01 rpm and 73.0 % of critical |
 | Existing dataset (old 40 ft STL, run at 9 rpm) | Shell-contact particles move at ~8.7 rpm |
 
 ## Analysis

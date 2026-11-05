@@ -44,7 +44,7 @@ by the mill papers.
 
 | Where | What |
 |---|---|
-| `simulation/yade_dem/engines.py:72-88` | Hertz-Mindlin: `Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`, `Ip2_FrictMat_FrictMat_MindlinPhys(en=..., frictAngle=..., eta=mu_r, krot=..., ktwist=0)` with per-pair restitution and friction `MatchMaker`s built from material labels, `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` (C01-1 / C05-2 and C01-2 / C06-1, commit `4bb17e4`) |
+| `simulation/yade_dem/engines.py:60-82` | Hertz-Mindlin: `Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`, `Ip2_FrictMat_FrictMat_MindlinPhys(en=..., frictAngle=..., eta=mu_r, krot=..., ktwist=0)` with per-pair restitution and friction `MatchMaker`s built from material labels, `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` (C01-1 / C05-2 and C01-2 / C06-1, commit `4bb17e4`) |
 | `engines.py`, `scenario.CONTACT_MODELS` | Hertz-Mindlin is the only contact model; the `cundall_strack` option was removed (C01-3, commit `5c194ab`) and a scenario asking for it fails validation |
 | `simulation/yade_dem/materials.py:39` | Restitution MatchMaker built from material labels (used); the old id-based `config.build_yade_material_interactions()` was removed (C07-2, commit `5c194ab`) |
 

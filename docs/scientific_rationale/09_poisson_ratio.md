@@ -36,7 +36,7 @@
 
 ## Current state
 
-`pm_dem_sm/config.py:119, 125`: 0.292 / 0.25 -- matches the decision.
+`pm_dem_sm/config.py:124, 130`: 0.292 / 0.25 -- matches the decision.
 
 ## Analysis
 

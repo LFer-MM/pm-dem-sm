@@ -82,9 +82,9 @@ diameter. The papers quote overlap relative to the **diameter**.
 
 | Where | What |
 |---|---|
-| `config.py:118` | steel young = 207e9 Pa (physical value) |
-| `config.py:124` | rock young = 55e9 Pa (physical value) |
-| `scenario.py:68, 196` | `solver.young_scale` defaults to `YOUNG_SCALE = 1/26` and multiplies every modulus when the scene is built (C03-1, commit `5c194ab`): 7.96 / 2.115 GPa in the contacts; every `configs/simulation/*.json` sets it explicitly; `warnings()` flags any other value |
+| `config.py:123` | steel young = 207e9 Pa (physical value) |
+| `config.py:129` | rock young = 55e9 Pa (physical value) |
+| `scenario.py:69, 200` | `solver.young_scale` defaults to `YOUNG_SCALE = 1/26` and multiplies every modulus when the scene is built (C03-1, commit `5c194ab`): 7.96 / 2.115 GPa in the contacts; every `configs/simulation/*.json` sets it explicitly; `warnings()` flags any other value |
 
 ## Analysis
 

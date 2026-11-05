@@ -13,6 +13,7 @@ Decided 2026-10-23.
 | Filling convention | **Morrell's**: J = bulk charge volume (incl. voids) / pi/4 D^2 L of the cylindrical section, with **D = diameter inside liners** (inside shell minus 2 x liner plate thickness); lifter volume **not** subtracted | SMC gross power calculator (Morrell model); plant Jc / Jb come from a model of this kind |
 | How the counts are set | **Simulated grind-out and crash stop** (below), matching the charge **surface**, not an assumed packing | this doc |
 | Packing fraction phi | a **result** of that procedure, not an input | -- |
+| **Counts (result, 2026-11-05)** | **3,437 balls + 16,082 rocks** (19,519) | Grind-out / crash stop at mu_r = 0.13, 3 seeds: J = 0.1883 +- 0.0006 (balls) and 0.2766 +- 0.0006 (full charge); phi = 0.515 (ball bed) and 0.548 (full charge). Provisional until rerun with the calibrated friction (step 5 below); results under "Procedure results" |
 
 **Diameter naming.** "Effective diameter" is not used: it means the
 inside-liner diameter in some documents and a volume-equivalent diameter
@@ -45,8 +46,49 @@ stages run in the 0.6 m slice ([10](10_mill_geometry.md)) with damping 0
 5. Run provisionally with the generated SAG_A geometry (C10-4), then again
    after calibration (friction and rolling resistance change the packing).
 
-**Provisional counts** (SAG_A, 0.6 m slice, D inside liners 10.7128 m,
-cylinder 54.08 m^3, Jb 18.8 %, Jc 27.6 %, phi = 0.5617 from the PPT):
+**Procedure results (C12-3, 2026-11-05).** Setup:
+- `yade_dem/grind_out.py` with the generated SAG_A liner (C10-4) and the
+  0.6 m slice.
+- mu_p = mu_w = 0.5, mu_r = 0.13 ([06](06_rolling_resistance.md)), damping
+  0, dt 2.5e-5 s.
+- Each cycle: fill, 2 revolutions at 9.5 rpm, crash stop, settle by the
+  geometric rule (all stops: stationary after 3.6-3.9 s, 0 escapes), then J
+  measured from the stopped surface (`checks.fill_level`).
+- Seed 0 started from 3,437 balls (the ball result of a first attempt
+  with mu_r = 0.25, stopped once the heap fixed 0.13) and 14,650 rocks;
+  each later seed started from the previous seed's counts.
+
+| Seed | Ball stage: balls -> J | Mixed stage: rocks -> J | phi balls / full |
+|---|---|---|---|
+| 0 | 3,437 -> 0.1879 | 14,650 -> 0.2682; **16,082 -> 0.2769** | 0.515 / 0.547 |
+| 1 | 3,437 -> 0.1880 | 16,082 -> 0.2769 | 0.515 / 0.548 |
+| 2 | 3,437 -> 0.1890 | 16,082 -> 0.2760 | 0.514 / 0.550 |
+| **Mean +- SD** | **0.1883 +- 0.0006** | **0.2766 +- 0.0006** | **0.5146 +- 0.0008 / 0.5482 +- 0.0016** |
+
+**Counts: 3,437 balls + 16,082 rocks (19,519).** Seeds 1 and 2 hit both
+targets on the first try with seed 0's counts, so the seed scatter shows
+in J at fixed counts. It is +-0.06 points, about a tenth of the +-0.5-point
+tolerance.
+
+Against the provisional estimate below, the procedure gives 8 % fewer
+balls, 10 % more rocks and 6 % more particles. The balls make up 0.631 of
+the solid volume (estimate ~0.64).
+
+Packing: the ball bed packs looser (phi 0.515) than the mixed bed (0.548),
+where the small rocks fill the gaps between balls; the PPT's single 0.5617
+lies close to the mixed value.
+
+Cost per cycle (16 threads): ~15 min for a ball cycle; ~2-2.5 h for a mixed
+cycle (fill 42-58 min, settle 13-15 min, 2 revolutions 56-69 min).
+
+Data (not in git): `data/raw/validation/results/grind_out/final_mur013/`,
+see [`scripts/validation/README.md`](../../scripts/validation/README.md).
+The counts are the scenario defaults (`PROVISIONAL_ROCK_COUNT` /
+`PROVISIONAL_BALL_COUNT`, `sag_slice_lifters.json`; commit `4ac94bb`).
+
+**Provisional counts** (the estimate before the procedure ran; SAG_A,
+0.6 m slice, D inside liners 10.7128 m, cylinder 54.08 m^3, Jb 18.8 %,
+Jc 27.6 %, phi = 0.5617 from the PPT):
 **~3,750 balls + ~14,650 rocks (~18,400)**. Without the lifters the
 same beds would hold ~4,000 + ~14,980; the lifters under each bed
 (~12 of 36 under the 18.8 % ball bed, ~14 under the 27.6 % bed; each
@@ -89,10 +131,10 @@ estimate.
 | Where | What |
 |---|---|
 | `config.py` | `ROCK_COUNT` / `BALL_COUNT` removed (C12-1, commit `5c194ab`): counts are `Species.count` scenario inputs only |
-| `scenario.py:72-73` | Default species carry the provisional SAG_A counts above, `PROVISIONAL_ROCK_COUNT = 14650` and `PROVISIONAL_BALL_COUNT = 3750`, until C12-3 produces them; `sag_slice_lifters.json` uses them too. Both JSONs use r_rock = 0.034925 m |
+| `scenario.py` (`PROVISIONAL_ROCK_COUNT`, `PROVISIONAL_BALL_COUNT`), `configs/simulation/sag_slice_lifters.json` | Default species carry the grind-out counts, 16,082 rocks + 3,437 balls (C12-3, commit `4ac94bb`), provisional until the procedure is rerun with the calibrated friction |
 | `config.py:87, 90` | `ROCK_DIAM_M = 0.06985`, `BALL_DIAM_M = 0.1397` -- match |
-| `scenario.py:709-720` | `fill_fraction(packing=0.6)`: gross cylinder pi R^2 L (Morrell-consistent denominator) but an **assumed** packing 0.6 and the solid volume of all particles, so it reports J of a lifter-free, perfectly packed charge |
-| `scenario.py:324` | Species counts are scenario inputs (no derivation from Jc / Jb) |
+| `scenario.py:728-739` | `fill_fraction(packing=0.6)`: gross cylinder pi R^2 L (Morrell-consistent denominator) but an **assumed** packing 0.6 and the solid volume of all particles, so it reports J of a lifter-free, perfectly packed charge |
+| `scenario.py:343` | Species counts are scenario inputs (no derivation from Jc / Jb) |
 | Existing `sic_dataset_20s_dt0p0001` | 11,581 rocks with **r = 0.0381 m** (3 in) + 3,195 balls -- matches neither the slides nor this procedure |
 
 ## Analysis
@@ -154,9 +196,10 @@ Zhang 2008) because of the walls and lifters."
 
 ## Open items / validation
 
-- Run the procedure provisionally with the generated SAG_A geometry
-  (C10-4, 0.6 m slice), then after calibration; record counts, J, phi and
-  seeds in the scenario.
+- ~~Run the procedure provisionally with the generated SAG_A geometry
+  (C10-4, 0.6 m slice)~~ -- done 2026-11-05 ("Procedure results"). Rerun it
+  after calibration (friction and mu_r change the packing); record counts, J,
+  phi and seeds in the scenario.
 - Regenerate the datasets (the existing one uses 3 in rock and other
   counts).
 
@@ -166,4 +209,4 @@ Zhang 2008) because of the walls and lifters."
 |---|---|---|---|
 | C12-1 | Remove the hard-coded `ROCK_COUNT` / `BALL_COUNT`; counts come from the scenario, produced by C12-3 | Done (`5c194ab`): provisional counts as scenario defaults | Before calibration |
 | C12-2 | `fill_fraction` measured from the settled surface profile (Morrell convention), not from an assumed packing | Done (`494c1f3`): `checks.fill_level` (top sphere per column across the section, area of the inside-liner circle below the surface; with the liner profile also the free bulk area and phi), unit-tested on flat beds against the circular-segment formula; `scenario.fill_fraction` stays as the pre-run estimate | With C12-3 |
-| C12-3 | Grind-out / crash-stop script: ball stage then mixed stage, iterate counts to Jb / Jc +-0.5, 3 seeds, writes counts and phi to the scenario | Slides 13-15 procedure (manual, with damping) | Before calibration |
+| C12-3 | Grind-out / crash-stop script: ball stage then mixed stage, iterate counts to Jb / Jc +-0.5, 3 seeds, writes counts and phi to the scenario | Done (`494c1f3`; run 2026-11-05): `yade_dem/grind_out.py`; 3,437 balls + 16,082 rocks, phi 0.515 / 0.548 ("Procedure results"); counts written to the scenario defaults in `4ac94bb` | Before calibration |

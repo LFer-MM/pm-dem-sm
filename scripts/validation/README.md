@@ -74,7 +74,7 @@ and the one-off sensitivity studies).
 | `data/raw/validation/results/heap/heap2_*`, `heap3_*` | `9959f69` (`heap.py` as committed there) | Fit redone with the cell-top method by `heap_refit.py`; `heap2_0.0` is the uncapped eta = 0 run (excluded from the fit) |
 | `data/raw/validation/results/heap/batch1_ring_fit/` | `494c1f3` | First 5 heaps, fitted with the superseded ring-max statistic, no positions saved; not used for the mu_r table |
 | `data/raw/validation/results/grind_out/attempt_mur025/` | `494c1f3` | First grind-out attempt with mu_r = 0.25, stopped when the heap fixed mu_r = 0.13 (ball stage: 3437 balls -> J 0.1897) |
-| `data/raw/validation/results/grind_out/` (final) | `9959f69` | mu_r = 0.13, 3 seeds; added when the run finishes |
+| `data/raw/validation/results/grind_out/final_mur013/` | `9959f69` (run), counts written in `4ac94bb` | mu_r = 0.13, 3 seeds, 2026-11-05 01:35-12:50: 3437 balls + 16082 rocks, J 0.1883 / 0.2766, phi 0.515 / 0.548 |
 
 ## Files
 

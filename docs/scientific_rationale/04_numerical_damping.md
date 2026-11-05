@@ -118,7 +118,7 @@ between the smoke test and the full mill):
 
 | Where | What |
 |---|---|
-| `engines.py:87` | `NewtonIntegrator` created with `damping=0` |
+| `engines.py:80` | `NewtonIntegrator` created with `damping=0` |
 | `scenario.py` (`FillOptions`, `SettleOptions`) | No damping fields any more: a scenario JSON with `fill.damping` or `settle.damping` is rejected (C04-1, commit `5c194ab`) |
 | `run_simulation.py` (`run`, `_stage_checks`) | `NUMERICAL_DAMPING = 0.0` set explicitly at build and at the start of every stage, then **asserted** by `engines.assert_no_damping()` (V5, C04-2, commit `494c1f3`); each stage's `checks` in the manifest records the value. After every stage the V14 escape count (`diagnostics.count_escapes`: centre outside the shell radius or the slice depth) is recorded, and the run stops if it is not 0. Before the first step of every fill batch, `diagnostics.check_new_batch` checks the new spheres against each other, every other sphere, the liner triangles and the end walls (V13); the run stops on any overlap, and the counts go to the fill stage's `v13_initial_overlaps` (C04-4, commit `494c1f3`). The smoke test (`configs/simulation/smoke_test.json`) passes all of them: 11 batches, 360 spheres, 0 overlaps, 0 escapes |
 | `monitor.py` (`run_until_settled`), `run_simulation._stage_settle`, `state.settle_and_save` | Settle stop = the geometric rule of [13](13_initial_conditions.md) (pure logic in `checks.settle_stop`, unit-tested); `run_until_forces_balanced` and the unbalanced-force fields are gone. The manifest records the stop reason (`stationary` or `time_cap`), the window's angle / height changes and the mean speed (C04-5, commit `494c1f3`). `state.settle_and_save` (IC helper) uses the same rule and zeroes all velocities before saving |
