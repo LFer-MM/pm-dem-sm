@@ -15,18 +15,17 @@ A run is described by one JSON file, loaded into a
 :class:`~pm_dem_sm.simulation.scenario.SimulationScenario`: mill geometry
 and speed, the two particle species, materials and restitution, contact
 law, time step, and the settings of each stage. Keys left out keep their
-defaults (which come from :mod:`pm_dem_sm.config`). Three scenarios ship in
+defaults (which come from :mod:`pm_dem_sm.config` and the decisions in
+``docs/scientific_rationale/``). Two scenarios ship in
 ``configs/simulation/``:
 
 ``smoke_test.json``
-   A 2 m mill with 360 soft particles; runs every stage in under a minute.
+   A 2 m mill with 360 particles; runs every stage in about a minute.
    Use it to check the pipeline, not the physics.
-``sag_slice_stl.json``
-   The 11.9 m STL mill slice with the bidisperse rock/steel charge of the
-   existing ``sic_dataset`` (11,581 rock, 3,195 steel balls).
 ``sag_slice_lifters.json``
-   Same charge in a parametric mill with 64 lifters and frictionless slice
-   end walls.
+   The SAG_A slice (10.7128 m inside liners, 0.6 m deep, 9.5 rpm) with the
+   provisional charge (14,650 rocks, 3,750 steel balls), 36 placeholder
+   lifters and frictionless slice end walls.
 
 Check a scenario before spending DEM time on it:
 
@@ -35,19 +34,21 @@ Check a scenario before spending DEM time on it:
    from pm_dem_sm.simulation.scenario import load_scenario
 
    s = load_scenario("configs/simulation/sag_slice_lifters.json")
-   print(s.checks())    # critical speed, fill level J, Rayleigh dt, lifter gap, ...
-   print(s.warnings())  # e.g. dt above the Rayleigh step, speed outside 60-85% critical
+   print(s.checks())    # critical speed, fill level J, steps per collision, lifter gap, ...
+   print(s.warnings())  # e.g. < 20 steps per collision, speed outside 60-85% critical
 
 Stages
 ------
 
-``run_simulation.py`` runs five stages and writes a checkpoint after each:
+``run_simulation.py`` runs five stages and writes a checkpoint after each;
+numerical damping is 0 in all of them:
 
 1. ``build`` -- materials, mill (STL or parametric shell with lifters), end
-   walls, Hertz-Mindlin engines, and ``dt = dt_safety x`` the Rayleigh step.
-2. ``fill`` -- the charge is poured in chord-box batches (damped).
-3. ``settle`` -- damped settling until the unbalanced force is small.
-4. ``spinup`` -- undamped rotation from rest until the charge
+   walls, Hertz-Mindlin engines, and ``dt = solver.dt_s`` (2.5e-5 s by
+   default).
+2. ``fill`` -- the charge is poured in chord-box batches.
+3. ``settle`` -- settling until the unbalanced force is small.
+4. ``spinup`` -- rotation from rest until the charge
    centre-of-mass angle and the drive power stop changing between
    consecutive windows (steady state).
 5. ``record`` -- frame CSVs every ``record.frame_interval_s`` for

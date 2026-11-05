@@ -67,7 +67,7 @@ Decided 2026-10-22.
 | `scenario.py:100` | `end_walls = "frictionless"` (default, C10-2, commit `5c194ab`); `run_simulation.py:161-170`: friction 0, restitution copied from the liner |
 | `scenario.py:545-549` | Warns when the slice is < 4 large diameters deep with frictional end walls |
 | `scenario.py:61-100`, `stl.py` | Parametric shell + trapezoidal lifters exist as an alternative source (`source = "parametric"`) |
-| `configs/simulation/sag_slice_lifters.json` | SAG_A diameter / 0.6 m slice / 9.5 rpm, with SAG_A's 36 lifters but the old trapezoidal placeholder shape (0.25 m high, no plates) until C10-4. `sag_slice_stl.json` keeps 11.9 m / 0.375 m, because those must match the old 40 ft STL file, which C10-4 retires |
+| `configs/simulation/sag_slice_lifters.json` | SAG_A diameter / 0.6 m slice / 9.5 rpm, with SAG_A's 36 lifters but the old trapezoidal placeholder shape (0.25 m high, no plates) until C10-4. The old `sag_slice_stl.json` (40 ft STL, file not in the repo) was deleted |
 | Existing dataset | Particle centres reach 5.88 m from the axis, consistent with the old 40 ft STL (inside radius 5.92 m), not with SAG_A |
 
 ## Analysis

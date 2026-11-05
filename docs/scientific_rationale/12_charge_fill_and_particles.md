@@ -88,7 +88,7 @@ estimate.
 | Where | What |
 |---|---|
 | `config.py` | `ROCK_COUNT` / `BALL_COUNT` removed (C12-1, commit `5c194ab`): counts are `Species.count` scenario inputs only |
-| `scenario.py:53-54` | Default species carry the provisional SAG_A counts above, `PROVISIONAL_ROCK_COUNT = 14650` and `PROVISIONAL_BALL_COUNT = 3750`, until C12-3 produces them; `sag_slice_lifters.json` uses them too. `sag_slice_stl.json` (old 40 ft STL, 0.375 m slice) uses slide 16's 11,171 + 2,638 for that geometry. All three JSONs use r_rock = 0.034925 m |
+| `scenario.py:53-54` | Default species carry the provisional SAG_A counts above, `PROVISIONAL_ROCK_COUNT = 14650` and `PROVISIONAL_BALL_COUNT = 3750`, until C12-3 produces them; `sag_slice_lifters.json` uses them too. Both JSONs use r_rock = 0.034925 m |
 | `config.py:77, 80` | `ROCK_DIAM_M = 0.06985`, `BALL_DIAM_M = 0.1397` -- match |
 | `scenario.py:399-410` | `fill_fraction(packing=0.6)`: gross cylinder pi R^2 L (Morrell-consistent denominator) but an **assumed** packing 0.6 and the solid volume of all particles, so it reports J of a lifter-free, perfectly packed charge |
 | `scenario.py:264` | Species counts are scenario inputs (no derivation from Jc / Jb) |
