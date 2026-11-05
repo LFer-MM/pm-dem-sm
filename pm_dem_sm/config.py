@@ -96,6 +96,11 @@ PARTICLE_FRICTION = 0.5
 #: Particle-liner friction coefficient mu_w (shell and lifters): the
 #: calibration baseline (docs/scientific_rationale/05_friction.md).
 WALL_FRICTION = 0.5
+#: Rolling-resistance coefficient mu_r (YADE ``eta``): 0.13 reproduces the
+#: 37 deg repose angle in the heap test at mu_p = 0.5 (C06-3, 33 / 41 deg at
+#: 0.08 / 0.19; docs/scientific_rationale/06_rolling_resistance.md).
+#: Re-checked after the mill calibration fixes mu_p.
+ROLLING_RESISTANCE = 0.13
 #: Owen & Cleary (2015, Table 4) particle-pair friction, run once as a
 #: sensitivity case (``ContactOptions.particle_friction_set = "owen"``;
 #: docs/scientific_rationale/05_friction.md).

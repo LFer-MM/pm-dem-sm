@@ -41,9 +41,11 @@ def test_defaults_round_trip_through_dict():
     assert SimulationScenario.from_dict(s.to_dict()).to_dict() == s.to_dict()
 
 
-def test_rolling_resistance_is_required():
+def test_rolling_resistance_default_and_validation():
+    # Default from the heap test (C06-3); null is rejected.
+    assert SimulationScenario.from_dict({}).contact.rolling_resistance == 0.13
     with pytest.raises(ValueError, match="rolling_resistance"):
-        SimulationScenario.from_dict({})
+        SimulationScenario.from_dict({"contact": {"rolling_resistance": None}})
     with pytest.raises(ValueError, match=">= 0"):
         _from({"contact": {"rolling_resistance": -0.1}})
 
@@ -160,7 +162,7 @@ def test_defaults_match_decisions():
     assert s.contact.particle_friction == 0.5
     assert s.contact.wall_friction == 0.5
     assert s.contact.particle_friction_set == "uniform"
-    assert s.contact.rolling_resistance is None
+    assert s.contact.rolling_resistance == 0.13
     assert s.mill.liner_material == "liner"
     liner, steel = s.materials["liner"], s.materials["steel"]
     assert {k: liner[k] for k in ("density", "young", "poisson")} == {

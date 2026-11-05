@@ -330,40 +330,44 @@ def repose_angle(
 ) -> dict:
     """Return the angle of repose of a conical heap from its surface particles (deg).
 
-    The heap axis is vertical (``+Z``) through ``centre``. Particles are
-    binned by horizontal distance from the axis; the top of each bin is the
-    highest sphere top. The heap edge is the outermost bin whose top stands
-    more than one particle diameter above ``base_z``; a straight line is
-    fitted to the bin tops between ``fit_range`` fractions of that radius
-    (excluding the rounded top and the toe).
+    The heap axis is vertical (``+Z``) through ``centre``. The surface is
+    found per horizontal ``bin_width x bin_width`` cell: the top of each
+    cell is its highest sphere top, placed at the horizontal distance of
+    that sphere from the axis. (Taking the highest sphere of a whole radial
+    ring instead would bias the outer rings, which hold more particles,
+    upwards.) The heap edge is the 98th percentile of the distances of the
+    cells whose top stands more than one particle diameter above
+    ``base_z``. A straight line ``top = h0 - tan(angle) rho`` is fitted to
+    the cell tops between ``fit_range`` fractions of that radius (excluding
+    the rounded top and the toe).
 
     Args:
         spheres: ``(x, y, z, r)`` tuples (z up).
         centre: Heap axis ``(x, y)``.
         base_z: Height of the base surface.
-        bin_width: Radial bin width (m); one mean diameter by default.
+        bin_width: Horizontal cell size (m); one mean diameter by default.
         fit_range: Fraction of the heap radius over which the slope is fitted.
 
     Returns:
         dict: ``angle_deg``, ``radius_m`` (heap edge), ``height_m`` (top),
-        ``n_bins_fitted``, ``r2`` of the fit.
+        ``n_bins_fitted`` (cells in the fit), ``r2`` of the fit.
     """
     a = np.asarray(spheres, dtype=float).reshape(-1, 4)
-    rho = np.hypot(a[:, 0] - centre[0], a[:, 1] - centre[1])
     top = a[:, 2] + a[:, 3]
     d = 2.0 * a[:, 3].mean()
     w = bin_width or d
-    idx = np.floor(rho / w).astype(int)
-    tops = {}
-    for i, t in zip(idx, top):
-        tops[i] = max(tops.get(i, -np.inf), t)
-    bins = np.array(sorted(tops))
-    heights = np.array([tops[i] for i in bins])
-    covered = bins[heights > base_z + d]
-    edge = (covered.max() + 1) * w if covered.size else 0.0
-    centres = (bins + 0.5) * w
-    sel = (centres >= fit_range[0] * edge) & (centres <= fit_range[1] * edge)
-    x, y = centres[sel], heights[sel]
+    keys = np.floor((a[:, :2] - np.asarray(centre)) / w).astype(int)
+    best: dict[tuple, int] = {}
+    for i, k in enumerate(map(tuple, keys)):
+        if k not in best or top[i] > top[best[k]]:
+            best[k] = i
+    cell = np.array(list(best.values()))
+    rho = np.hypot(a[cell, 0] - centre[0], a[cell, 1] - centre[1])
+    heights = top[cell]
+    covered = rho[heights > base_z + d]
+    edge = float(np.percentile(covered, 98)) if covered.size else 0.0
+    sel = (rho >= fit_range[0] * edge) & (rho <= fit_range[1] * edge)
+    x, y = rho[sel], heights[sel]
     if x.size < 3:
         return {
             "angle_deg": float("nan"),
@@ -381,6 +385,37 @@ def repose_angle(
         "height_m": float(heights.max()),
         "n_bins_fitted": int(x.size),
         "r2": float(r2),
+    }
+
+
+def repose_angle_sectors(spheres, sectors: int = 8, centre=(0.0, 0.0), **kwargs) -> dict:
+    """Return the repose angle fitted separately in ``sectors`` azimuthal sectors.
+
+    Each sector is fitted with :func:`repose_angle` (same keyword arguments);
+    the spread over sectors measures how irregular one heap is.
+
+    Args:
+        spheres: ``(x, y, z, r)`` tuples (z up).
+        sectors: Number of equal azimuthal sectors.
+        centre: Heap axis ``(x, y)``.
+        **kwargs: Passed to :func:`repose_angle`.
+
+    Returns:
+        dict: ``angles_deg`` (one per sector, ``nan`` if too few bins),
+        ``mean_deg`` and ``sd_deg`` over the valid sectors.
+    """
+    a = np.asarray(spheres, dtype=float).reshape(-1, 4)
+    phi = np.mod(np.arctan2(a[:, 1] - centre[1], a[:, 0] - centre[0]), 2 * np.pi)
+    k = np.floor(phi / (2 * np.pi / sectors)).astype(int)
+    angles = [
+        repose_angle(a[k == s], centre, **kwargs)["angle_deg"] if (k == s).any() else float("nan")
+        for s in range(sectors)
+    ]
+    valid = [x for x in angles if not math.isnan(x)]
+    return {
+        "angles_deg": angles,
+        "mean_deg": float(np.mean(valid)) if valid else float("nan"),
+        "sd_deg": float(np.std(valid, ddof=1)) if len(valid) > 1 else float("nan"),
     }
 
 

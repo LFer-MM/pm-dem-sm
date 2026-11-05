@@ -70,7 +70,12 @@ def initialize_engines(contact_model, contact_model_params, rotation_engine=Fals
                 krot=contact_model_params["rolling_stiffness"],
                 ktwist=0.0,
             )],
-            [Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True, calcEnergy=True)]
+            # eta = 0 would leave the rolling spring uncapped (YADE applies the
+            # cap only if eta R |F_n| > 0), i.e. unlimited rolling resistance:
+            # mu_r = 0 switches the moment law off instead.
+            [Law2_ScGeom_MindlinPhys_Mindlin(
+                includeMoment=contact_model_params["rolling_resistance"] > 0, calcEnergy=True
+            )]
         ),
         NewtonIntegrator(damping=0, gravity=(0,-9.81,0), label="newton_integrator"),
     ]

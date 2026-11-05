@@ -60,6 +60,8 @@ RSA_FRACTION = 0.30
 LIFT_SPEED_M_S = 0.05
 #: Facet segments around the cylinder.
 CYLINDER_SEGMENTS = 48
+#: Azimuthal sectors fitted separately (spread of one heap).
+SECTORS = 8
 #: Settling time cap (s).
 SETTLE_MAX_S = 15.0
 
@@ -211,12 +213,18 @@ def run_heap(scenario, mu_r, seed=0, lift_speed=LIFT_SPEED_M_S, n_rocks=N_ROCKS)
     on_base = [
         s for s in rocks if math.hypot(s[0], s[1]) <= BASE_RADIUS_D * d and s[2] > base_top - r
     ]
-    fit = checks.repose_angle(on_base, base_z=base_top)
+    # Whole-heap fit (half-diameter bins) plus per-sector fits for the spread.
+    fit = checks.repose_angle(on_base, base_z=base_top, bin_width=r)
+    sectors = checks.repose_angle_sectors(on_base, SECTORS, base_z=base_top, bin_width=r)
     speeds = [b.state.vel.norm() for b in _free_rocks()]
     return {
         "mu_r": mu_r,
         "seed": seed,
         **fit,
+        "sector_angles_deg": sectors["angles_deg"],
+        "sector_mean_deg": sectors["mean_deg"],
+        "sector_sd_deg": sectors["sd_deg"],
+        "spheres": [[round(v, 5) for v in s] for s in rocks],
         "n_rocks": len(rocks),
         "n_off_base": len(rocks) - len(on_base),
         "final_mean_speed_m_s": sum(speeds) / len(speeds),
@@ -319,7 +327,10 @@ if __name__ == "__main__":
     for _seed in _args.seeds:
         for _mu in _args.mu_r or []:
             _res = run_heap(_scenario, _mu, _seed)
-            print(f"[heap] mu_r = {_mu} seed {_seed}: {_res['angle_deg']:.2f} deg")
+            print(
+                f"[heap] mu_r = {_mu} seed {_seed}: {_res['angle_deg']:.2f} deg, sectors "
+                f"{_res['sector_mean_deg']:.2f} +- {_res['sector_sd_deg']:.2f} deg"
+            )
             _out["results"].append(_res)
         for _target in _args.target or []:
             _out["results"].append(find_mu_r(_scenario, _target, hi=_args.hi, seed=_seed))

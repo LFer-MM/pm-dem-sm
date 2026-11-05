@@ -17,7 +17,7 @@
     {"name": "rock", "material": "rock", "radius_m": 0.03, "count": 300, "color": [1, 0, 0]},
     {"name": "ball", "material": "steel", "radius_m": 0.05, "count": 60, "color": [0, 0, 1]}
   ],
-  "contact": {"rolling_resistance": 0.25},
+  "contact": {"rolling_resistance": 0.13},
   "solver": {"dt_s": 2.5e-5, "young_scale": 0.038461538461538464},
   "fill": {"box_height_m": 0.3, "settle_steps": 11000},
   "settle": {"max_time_s": 10.0},

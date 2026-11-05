@@ -198,6 +198,20 @@ def test_repose_angle_of_a_synthetic_cone():
     assert res["r2"] > 0.95
 
 
+def test_repose_angle_sectors_of_a_synthetic_cone():
+    rng = np.random.default_rng(1)
+    r = 0.035
+    pts = []
+    for _ in range(40000):
+        rho, phi = 1.0 * math.sqrt(rng.random()), 2 * math.pi * rng.random()
+        h = (1.0 - rho) * math.tan(math.radians(30.0))
+        pts.append((rho * math.cos(phi), rho * math.sin(phi), h + r * rng.random() - r, r))
+    res = checks.repose_angle_sectors(pts, sectors=8, base_z=0.0, bin_width=r)
+    assert len(res["angles_deg"]) == 8
+    assert res["mean_deg"] == pytest.approx(30.0, abs=1.0)
+    assert res["sd_deg"] < 1.5
+
+
 def test_boundary_radius_of_circle_and_liner():
     circle = [(2 * math.cos(a), 2 * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 3601)[:-1]]
     th = np.linspace(-3, 3, 7)

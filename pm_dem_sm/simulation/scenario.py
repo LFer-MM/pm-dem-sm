@@ -51,8 +51,9 @@ TYPICAL_PACKING = 0.6
 #: Scenario fields with no sourced value yet; runs record them as provisional.
 PROVISIONAL_PARAMETERS = {
     "contact.rolling_resistance": (
-        "mu_r has no sourced value until the heap test (C06-3) fixes it for a 37 deg "
-        "repose angle (docs/scientific_rationale/06_rolling_resistance.md)"
+        "mu_r = 0.13 reproduces the 37 deg repose angle in the heap test at mu_p = 0.5 "
+        "(C06-3); to be re-checked with the calibrated mu_p "
+        "(docs/scientific_rationale/06_rolling_resistance.md)"
     ),
 }
 #: Valid ``FillOptions.method`` values.
@@ -161,16 +162,18 @@ class ContactOptions:
             steel-rock / rock-rock 0.4 / 0.5 / 0.8, the sensitivity case).
         rolling_resistance: mu_r, YADE's ``eta`` (plastic rolling moment
             ``mu_r R_mean |F_n|``), one value for all contacts
-            (docs/scientific_rationale/06_rolling_resistance.md). **Required**:
-            there is no default until the heap test (C06-3) fixes it, and runs
-            record it as provisional.
+            (docs/scientific_rationale/06_rolling_resistance.md). Default
+            :data:`pm_dem_sm.config.ROLLING_RESISTANCE` = 0.13 (37 deg in the
+            heap test, C06-3); ``0`` switches the rolling moment off. Runs
+            record it as provisional until the heap is re-checked with the
+            calibrated mu_p.
     """
 
     model: str = "hertz_mindlin"
     particle_friction: float = config.PARTICLE_FRICTION
     wall_friction: float = config.WALL_FRICTION
     particle_friction_set: str = "uniform"
-    rolling_resistance: float | None = None
+    rolling_resistance: float | None = config.ROLLING_RESISTANCE
 
 
 @dataclass
