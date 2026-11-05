@@ -1,4 +1,4 @@
-"""Save/load particle positions as CSV snapshots, and settle-then-save (YADE)."""
+"""Save/load particle positions as CSV snapshots, and settle-zero-save of initial conditions (YADE)."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from yade import Sphere, Vector3
 from yade.utils import sphere
 from yade.wrapper import O
 
-from . import engines, materials
+from . import engines, materials, monitor
 
 
 def save_particle_positions(csv_path, include_velocity=True, include_ang_vel=True):
@@ -124,14 +124,31 @@ def load_particle_positions(csv_path, *, set_vel_zero = True, set_ang_vel_zero =
     return created_ids
 
 
-def settle_balance_save(gravity_damping, csv_path):
-    """Set damping, run until forces balance, then save particle positions.
+def settle_and_save(csv_path, d_small, r_split, max_time_s, **tolerances):
+    """Settle undamped by the geometric stop rule, zero all velocities, and save positions.
+
+    The initial-condition protocol of
+    docs/scientific_rationale/13_initial_conditions.md (steps 3-5): damping 0
+    (checked, V5), settle until the bed geometry is stationary or the time
+    cap, then all particles at rest.
 
     Args:
-        gravity_damping: Damping passed to
-            :func:`pm_dem_sm.simulation.yade_dem.engines.set_gravity_damping`.
         csv_path: Destination CSV for :func:`save_particle_positions`.
+        d_small: Small-particle diameter (m).
+        r_split: Radius threshold separating small from large spheres (m).
+        max_time_s: Settling time cap (s).
+        **tolerances: Overrides passed to
+            :func:`~pm_dem_sm.simulation.yade_dem.monitor.run_until_settled`.
+
+    Returns:
+        dict: The settle result (stop reason, window changes, settle time).
     """
-    engines.set_gravity_damping(gravity_damping)
-    engines.run_until_forces_balanced()
+    engines.set_gravity_damping(0.0)
+    engines.assert_no_damping()
+    result = monitor.run_until_settled(d_small, max_time_s, r_split, **tolerances)
+    for b in O.bodies:
+        if b and isinstance(b.shape, Sphere):
+            b.state.vel = Vector3(0, 0, 0)
+            b.state.angVel = Vector3(0, 0, 0)
     save_particle_positions(csv_path)
+    return result

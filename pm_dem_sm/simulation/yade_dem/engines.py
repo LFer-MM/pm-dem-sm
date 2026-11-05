@@ -1,16 +1,14 @@
-"""Contact model, dt/damping, mill rotation, and force-balance settling (YADE).
+"""Contact model, dt, numerical damping (and its V5 check), and mill rotation (YADE).
 
-``PyRunner`` command strings below (e.g. ``"engines._balance_check()"``) are
-evaluated by YADE in the top-level running script's global namespace, so
-``yade_dem/run_simulation.py`` must import this module unaliased
-(``from . import engines``) for the name ``engines`` to resolve there.
+Settling is in :func:`pm_dem_sm.simulation.yade_dem.monitor.run_until_settled`
+(geometric stop rule).
 """
 
 from __future__ import annotations
 
 from math import pi
 
-from yade.utils import PWaveTimeStep, unbalancedForce
+from yade.utils import PWaveTimeStep
 from yade.wrapper import (
     Bo1_Facet_Aabb,
     Bo1_Sphere_Aabb,
@@ -23,22 +21,10 @@ from yade.wrapper import (
     Law2_ScGeom_MindlinPhys_Mindlin,
     NewtonIntegrator,
     O,
-    PyRunner,
     RotationEngine,
 )
 
 from . import stl
-
-# --- Module state ------------------------------------------------------------
-
-#: Shared state for the force-balance monitor (:func:`run_until_forces_balanced`).
-BALANCE_STATE = {
-    "done": False,
-    "threshold": 1e-3,
-    "label": "balance_monitor",
-    "last_unb": None,
-}
-
 
 # --- Public functions --------------------------------------------------------
 
@@ -49,7 +35,9 @@ def initialize_engines(contact_model, contact_model_params, rotation_engine=Fals
     6-DOF geometry (``ScGeom6D``) and ``Law2_ScGeom_MindlinPhys_Mindlin``
     with ``includeMoment=True``: a rolling moment with stiffness ``krot``
     capped at ``eta R_mean |F_n|``, no twisting moment (``ktwist = 0``)
-    (docs/scientific_rationale/06_rolling_resistance.md).
+    (docs/scientific_rationale/06_rolling_resistance.md). Energy tracking is
+    on (``O.trackEnergy`` and the law's ``calcEnergy``) for the V4 balance
+    (docs/scientific_rationale/04_numerical_damping.md).
 
     Args:
         contact_model: ``"hertz_mindlin"``, the only supported law (YADE's
@@ -82,10 +70,11 @@ def initialize_engines(contact_model, contact_model_params, rotation_engine=Fals
                 krot=contact_model_params["rolling_stiffness"],
                 ktwist=0.0,
             )],
-            [Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)]
+            [Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True, calcEnergy=True)]
         ),
         NewtonIntegrator(damping=0, gravity=(0,-9.81,0), label="newton_integrator"),
     ]
+    O.trackEnergy = True
 
     if rotation_engine:
         O.engines += [RotationEngine(rotateAroundZero=True, zeroPoint=(0,0,0), rotationAxis=(0,0,1), angularVelocity=0, ids=stl.SAG_MILL_SLICE_BODY_GROUP, label="rotation_engine")]
@@ -120,40 +109,22 @@ def set_gravity_damping(new_gravity_damping):
     print("Newton Integrator Gravity Damping set to: ", newton_integrator.damping)
 
 
-def run_until_forces_balanced(threshold=0.001, interval=1000, motion_start_steps=20, wait_chunk=1000, max_chunks=5000):
-    """Run until ``unbalancedForce`` falls below ``threshold``.
+def assert_no_damping():
+    """Raise unless ``NewtonIntegrator.damping`` is exactly 0 (V5).
 
-    Installs a ``PyRunner`` that calls ``_balance_check`` every
-    ``interval`` iterations. Returns early when ``BALANCE_STATE["done"]``.
-
-    Args:
-        threshold: Maximum unbalanced force ratio considered balanced.
-        interval: ``PyRunner`` iteration period for balance checks.
-        motion_start_steps: Steps to run before installing the monitor.
-        wait_chunk: Steps per wait loop iteration.
-        max_chunks: Maximum wait-loop iterations before giving up.
+    docs/scientific_rationale/04_numerical_damping.md: no artificial damping
+    in any stage. Called at the start of every stage.
 
     Returns:
-        bool | None: ``True`` if balanced; ``None`` if ``max_chunks`` is
-        exhausted without meeting the threshold.
+        float: The damping value (0.0).
+
+    Raises:
+        RuntimeError: If the damping is not 0.
     """
-    print("Starting balanced forces monitoring ...")
-
-    BALANCE_STATE["done"] = False
-    BALANCE_STATE["threshold"] = threshold
-
-    for e in list(O.engines):
-        if getattr(e, "label", None) == BALANCE_STATE["label"]:
-            O.engines.remove(e)
-
-    O.run(motion_start_steps, True)
-
-    O.engines += [PyRunner(iterPeriod=interval, command="engines._balance_check()", label=BALANCE_STATE["label"])]
-
-    for k in range(max_chunks):
-        if BALANCE_STATE["done"]:
-            return True
-        O.run(wait_chunk, True)
+    newton = next(e for e in O.engines if getattr(e, "label", None) == "newton_integrator")
+    if newton.damping != 0.0:
+        raise RuntimeError(f"V5 failed: NewtonIntegrator.damping = {newton.damping}, not 0")
+    return float(newton.damping)
 
 
 def rotate_mill_indefinitely(speed_rpm=9):
@@ -225,25 +196,3 @@ def _get_rotation_engine(label="rotation_engine"):
         StopIteration: If no engine with that label exists.
     """
     return next(e for e in O.engines if getattr(e, "label", None) == label)
-
-
-def _balance_check():
-    """Pause the simulation once ``unbalancedForce`` is below threshold (``PyRunner`` hook).
-
-    Updates ``BALANCE_STATE``, removes the monitor engine, and calls
-    ``O.pause()`` when balanced.
-    """
-    unb = unbalancedForce()
-    print("UNBALANCED FORCES:", unb)
-    BALANCE_STATE["last_unb"] = unb
-
-    if unb < BALANCE_STATE["threshold"]:
-        print(f"[balance] BALANCED at iter {O.iter}. UNBALANCED FORCES: {unb:.6g}")
-        BALANCE_STATE["done"] = True
-
-        for e in list(O.engines):
-            if getattr(e, "label", None) == BALANCE_STATE["label"]:
-                O.engines.remove(e)
-                break
-
-        O.pause()

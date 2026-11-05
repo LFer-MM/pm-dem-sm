@@ -1,11 +1,23 @@
-"""Mill-state log and steady-state detection during a run (YADE).
+"""Mill-state log, contact diagnostics and settling / steady-state detection (YADE).
 
 A ``PyRunner`` appends one row to ``mill_log.csv`` every monitor interval
 (``revolutions`` counts from the start of the current stage):
-the charge centre-of-mass angle (all particles and per species), kinetic
-energy, the torque the charge exerts on the mill and the matching drive
-power, and the largest sphere-sphere overlap. Spin-up uses the in-memory
-copy of that log to decide when the charge has reached steady state.
+
+- the charge centre-of-mass angle (all particles and per species) and height,
+  the mean particle speed and the kinetic energy;
+- the torque the charge exerts on the mill and the matching drive power;
+- overlap mean / P99 / max relative to the smaller **diameter**
+  (docs/scientific_rationale/03_stiffness_young_modulus.md, V3);
+- the P99 normal relative speed of contacts that formed during the last
+  step, a sample of impact speeds (docs/scientific_rationale/02_time_step.md,
+  V2); all such samples of a stage are kept for its summary;
+- the energy terms of the V4 balance: gravitational potential
+  (``O.energy["gravWork"]``), elastic energy and cumulative contact
+  dissipation of the Hertz-Mindlin law (``calcEnergy``);
+- YADE's unbalanced-force ratio (information only).
+
+Spin-up uses the in-memory copy of the log to decide when the charge has
+reached steady state; the settle stage uses :func:`run_until_settled`.
 
 Angles are measured from straight down (``-Y``), positive toward ``+X``: a
 mill turning counter-clockwise seen from ``+Z`` lifts its charge to positive
@@ -25,20 +37,40 @@ from yade import Sphere
 from yade.utils import kineticEnergy, unbalancedForce
 from yade.wrapper import O, PyRunner
 
+from .. import checks
+
 # --- Constants ---------------------------------------------------------------
 
 #: Columns of ``mill_log.csv``, in order.
 LOG_COLUMNS = [
-    "time", "iter", "stage", "revolutions", "angle_all_deg", "angle_small_deg",
-    "angle_large_deg", "kinetic_J", "torque_Nm", "power_kW", "max_overlap_rel",
+    "time",
+    "iter",
+    "stage",
+    "revolutions",
+    "angle_all_deg",
+    "angle_small_deg",
+    "angle_large_deg",
+    "com_height_m",
+    "mean_speed_m_s",
+    "kinetic_J",
+    "torque_Nm",
+    "power_kW",
+    "overlap_mean_rel_d",
+    "overlap_p99_rel_d",
+    "overlap_max_rel_d",
+    "impact_v_p99_m_s",
+    "potential_J",
+    "elastic_J",
+    "dissipated_J",
+    "rolling_dissipated_J",
     "unbalanced",
 ]
 
 
 # --- Module state ------------------------------------------------------------
 
-#: Monitor configuration and the in-memory log rows.
-MONITOR_STATE = {"rows": []}
+#: Monitor configuration, the in-memory log rows and the stage's impact speeds.
+MONITOR_STATE = {"rows": [], "impact_speeds": []}
 
 
 # --- Public functions --------------------------------------------------------
@@ -62,37 +94,37 @@ def start_monitor(log_path, interval, mill_ids, r_split, omega, stage, runner_la
         PyRunner: The appended runner.
     """
     stop_monitor(runner_label)
-    MONITOR_STATE.update({
-        "path": str(log_path), "mill_ids": list(mill_ids), "r_split": float(r_split),
-        "omega": float(omega), "stage": stage, "rows": [], "t0": float(O.time),
-    })
+    MONITOR_STATE.update(
+        {
+            "path": str(log_path),
+            "mill_ids": list(mill_ids),
+            "r_split": float(r_split),
+            "omega": float(omega),
+            "stage": stage,
+            "rows": [],
+            "impact_speeds": [],
+            "rolling_J": 0.0,
+            "t0": float(O.time),
+        }
+    )
+    MONITOR_STATE.pop("rolling_last", None)
     try:
         with open(log_path, newline="") as f:
-            has_header = bool(f.readline())
+            header = f.readline().strip()
     except FileNotFoundError:
-        has_header = False
-    if not has_header:
-        with open(log_path, "w", newline="") as f:
+        header = ""
+    if header != ",".join(LOG_COLUMNS):
+        if header:
+            # An older log with other columns: start a fresh one beside it.
+            MONITOR_STATE["path"] = str(log_path).replace(".csv", "_v2.csv")
+        with open(MONITOR_STATE["path"], "w", newline="") as f:
             csv.writer(f).writerow(LOG_COLUMNS)
 
-    runner = PyRunner(command="monitor._log_row()", virtPeriod=float(interval),
-                      initRun=True, label=runner_label)
+    runner = PyRunner(
+        command="monitor._log_row()", virtPeriod=float(interval), initRun=True, label=runner_label
+    )
     O.engines += [runner]
     return runner
-
-
-def set_stage(stage, omega=None):
-    """Change the stage name (and optionally the mill speed) written to the log.
-
-    Args:
-        stage: Stage name for subsequent rows.
-        omega: New mill angular velocity (rad/s), or ``None`` to keep it.
-    """
-    MONITOR_STATE["stage"] = stage
-    if omega is not None:
-        MONITOR_STATE["omega"] = float(omega)
-    MONITOR_STATE["rows"] = []
-    MONITOR_STATE["t0"] = float(O.time)
 
 
 def stop_monitor(runner_label="monitor"):
@@ -128,23 +160,28 @@ def steady_state(window_s, angle_tol_deg, power_rel_tol):
     p1, p0 = _mean(last, "power_kW"), _mean(prev, "power_kW")
     d_power = abs(p1 - p0) / max(abs(p0), 1e-9)
     return {
-        "time": t_end, "angle_deg": a1, "angle_change_deg": a1 - a0, "power_kW": p1,
+        "time": t_end,
+        "angle_deg": a1,
+        "angle_change_deg": a1 - a0,
+        "power_kW": p1,
         "power_rel_change": d_power,
         "steady": abs(a1 - a0) < angle_tol_deg and d_power < power_rel_tol,
     }
 
 
-def charge_angles(r_split):
-    """Return the charge centre-of-mass angle of all, small, and large spheres (deg).
+def bed_state(r_split):
+    """Return the charge's centre-of-mass angles and height and its mean speed.
 
     Args:
         r_split: Radius threshold separating small from large spheres (m).
 
     Returns:
-        tuple[float, float, float]: ``(all, small, large)``; ``nan`` for an
-        empty group.
+        dict: ``angle_all_deg``, ``angle_small_deg``, ``angle_large_deg``
+        (``nan`` for an empty group), ``com_height_m`` and
+        ``mean_speed_m_s``.
     """
     sums = {"all": [0.0, 0.0, 0.0], "small": [0.0, 0.0, 0.0], "large": [0.0, 0.0, 0.0]}
+    speed, n = 0.0, 0
     for b in O.bodies:
         if not b or not isinstance(b.shape, Sphere):
             continue
@@ -155,10 +192,33 @@ def charge_angles(r_split):
             s[0] += m * p[0]
             s[1] += m * p[1]
             s[2] += m
-    return tuple(
+        speed += b.state.vel.norm()
+        n += 1
+    angles = [
         math.degrees(math.atan2(s[0], -s[1])) if s[2] else float("nan")
         for s in (sums["all"], sums["small"], sums["large"])
-    )
+    ]
+    s = sums["all"]
+    return {
+        "angle_all_deg": angles[0],
+        "angle_small_deg": angles[1],
+        "angle_large_deg": angles[2],
+        "com_height_m": s[1] / s[2] if s[2] else float("nan"),
+        "mean_speed_m_s": speed / n if n else float("nan"),
+    }
+
+
+def charge_angles(r_split):
+    """Return the charge centre-of-mass angle of all, small, and large spheres (deg).
+
+    Args:
+        r_split: Radius threshold separating small from large spheres (m).
+
+    Returns:
+        tuple[float, float, float]: ``(all, small, large)``.
+    """
+    s = bed_state(r_split)
+    return s["angle_all_deg"], s["angle_small_deg"], s["angle_large_deg"]
 
 
 def mill_torque(mill_ids):
@@ -178,20 +238,159 @@ def mill_torque(mill_ids):
     return tz
 
 
-def max_overlap():
-    """Return the largest sphere-sphere penetration depth relative to the smaller radius."""
-    worst = 0.0
+def contact_samples(r_split, fresh_steps=1):
+    """Return overlap samples of all real contacts and the normal speeds of new ones.
+
+    Args:
+        r_split: Radius threshold separating small from large spheres (m).
+        fresh_steps: A contact counts as an impact if it became real within
+            this many steps.
+
+    Returns:
+        tuple[list, list]: ``[(pair_type, overlap / smaller diameter), ...]``
+        and the normal relative speeds (m/s) of the fresh contacts.
+    """
+    overlaps, speeds = [], []
+    it = int(O.iter)
     for i in O.interactions:
         if not i.isReal:
             continue
-        s1, s2 = O.bodies[i.id1].shape, O.bodies[i.id2].shape
-        if not isinstance(s1, Sphere) or not isinstance(s2, Sphere):
+        b1, b2 = O.bodies[i.id1], O.bodies[i.id2]
+        r1 = b1.shape.radius if isinstance(b1.shape, Sphere) else None
+        r2 = b2.shape.radius if isinstance(b2.shape, Sphere) else None
+        if r1 is None and r2 is None:
             continue
-        worst = max(worst, i.geom.penetrationDepth / min(s1.radius, s2.radius))
-    return worst
+        d = 2.0 * min(r for r in (r1, r2) if r is not None)
+        overlaps.append((checks.pair_type(r1, r2, r_split), i.geom.penetrationDepth / d))
+        if it - i.iterMadeReal <= fresh_steps:
+            c, n = i.geom.contactPoint, i.geom.normal
+            v1 = b1.state.vel + b1.state.angVel.cross(c - b1.state.pos)
+            v2 = b2.state.vel + b2.state.angVel.cross(c - b2.state.pos)
+            speeds.append(abs((v2 - v1).dot(n)))
+    return overlaps, speeds
+
+
+def max_overlap():
+    """Return the largest contact overlap relative to the smaller diameter."""
+    overlaps, _ = contact_samples(r_split=0.0)
+    return max((rel for _, rel in overlaps), default=0.0)
+
+
+def stage_summary():
+    """Return the current stage's contact statistics for the run manifest.
+
+    Returns:
+        dict: ``overlap`` (per pair type, from the contacts now, see
+        :func:`pm_dem_sm.simulation.checks.overlap_stats`), the largest
+        logged overall P99 and max overlaps, and the stage's impact-speed
+        sample size and P99.
+    """
+    st = MONITOR_STATE
+    overlaps, _ = contact_samples(st.get("r_split", 0.0))
+    rows = st["rows"]
+    speeds = st["impact_speeds"]
+    return {
+        "overlap_now": checks.overlap_stats(overlaps) if overlaps else {},
+        "overlap_p99_rel_d_max": max((r["overlap_p99_rel_d"] for r in rows), default=None),
+        "overlap_max_rel_d_max": max((r["overlap_max_rel_d"] for r in rows), default=None),
+        "impact_speed_samples": len(speeds),
+        "impact_v_p99_m_s": checks.percentile(speeds, 99) if speeds else None,
+    }
+
+
+def energy_terms():
+    """Return the potential, elastic and cumulative dissipated energy (J).
+
+    Requires ``O.trackEnergy`` and the Mindlin law's ``calcEnergy``
+    (:func:`~pm_dem_sm.simulation.yade_dem.engines.initialize_engines` sets
+    both); ``nan`` otherwise.
+    """
+    law = _mindlin_law()
+    if law is None or not law.calcEnergy:
+        return {
+            "potential_J": float("nan"),
+            "elastic_J": float("nan"),
+            "dissipated_J": float("nan"),
+        }
+    potential = dict(O.energy.items()).get("gravWork", 0.0)
+    return {
+        "potential_J": float(potential),
+        "elastic_J": float(law.normElastEnergy() + law.shearEnergy),
+        "dissipated_J": float(law.normDampDissip + law.shearDampDissip + law.frictionDissipation),
+    }
+
+
+def rolling_dissipation_rate():
+    """Return the current plastic dissipation rate of the rolling moments (W).
+
+    YADE does not track it. Contacts whose bending moment is at the plastic
+    cap ``maxBendPl |F_n|`` (``eta R_mean |F_n|``) dissipate
+    ``|M_bend| x |relative angular velocity normal to the contact|``;
+    elastic contacts only store energy. The monitor integrates this rate
+    between rows (a sampled estimate) for the V4 balance.
+    """
+    rate = 0.0
+    for i in O.interactions:
+        if not i.isReal or not hasattr(i.phys, "maxBendPl"):
+            continue
+        cap = i.phys.maxBendPl * i.phys.normalForce.norm()
+        m = i.phys.momentBend.norm()
+        if cap <= 0.0 or m < 0.999 * cap:
+            continue
+        n = i.geom.normal
+        w = O.bodies[i.id2].state.angVel - O.bodies[i.id1].state.angVel
+        rate += m * (w - n * w.dot(n)).norm()
+    return rate
+
+
+def run_until_settled(d_small, max_time_s, r_split, sample_s=0.05, **tolerances):
+    """Run the scene until the bed geometry is stationary (or the time cap).
+
+    Samples the bed every ``sample_s`` of simulated time and applies
+    :func:`pm_dem_sm.simulation.checks.settle_stop` (geometric rule of
+    docs/scientific_rationale/13_initial_conditions.md). Independent of the
+    logging ``PyRunner``.
+
+    Args:
+        d_small: Small-particle diameter (m).
+        max_time_s: Time cap (s).
+        r_split: Radius threshold separating small from large spheres (m).
+        sample_s: Simulated time between samples (s).
+        **tolerances: Overrides of the rule's ``window_s``,
+            ``angle_tol_deg``, ``height_tol_rel_d``, ``speed_tol_m_s``.
+
+    Returns:
+        dict: The final :func:`~pm_dem_sm.simulation.checks.settle_stop`
+        result plus ``settle_time_s``.
+    """
+    t0 = float(O.time)
+    steps = max(1, round(sample_s / O.dt))
+    samples = [{"time": t0, **bed_state(r_split)}]
+    while True:
+        O.run(steps, True)
+        samples.append({"time": float(O.time), **bed_state(r_split)})
+        result = checks.settle_stop(samples, d_small, t0, max_time_s, **tolerances)
+        if result["stop"]:
+            result["settle_time_s"] = float(O.time) - t0
+            print(
+                f"[settle] {result['reason']} after {result['settle_time_s']:.2f} s: "
+                f"angle change {result['angle_change_deg']}, height change "
+                f"{result['height_change_m']}, mean speed {result['mean_speed_m_s']}"
+            )
+            return result
 
 
 # --- Private helper functions ------------------------------------------------
+
+
+def _mindlin_law():
+    """Return the ``Law2_ScGeom_MindlinPhys_Mindlin`` functor of the scene, if any."""
+    for e in O.engines:
+        if type(e).__name__ == "InteractionLoop":
+            for f in e.lawDispatcher.functors:
+                if type(f).__name__ == "Law2_ScGeom_MindlinPhys_Mindlin":
+                    return f
+    return None
 
 
 def _log_row():
@@ -199,22 +398,33 @@ def _log_row():
     st = MONITOR_STATE
     if "path" not in st:
         return
-    a_all, a_small, a_large = charge_angles(st["r_split"])
+    bed = bed_state(st["r_split"])
     torque = mill_torque(st["mill_ids"])
     omega = st["omega"]
+    overlaps, speeds = contact_samples(st["r_split"])
+    st["impact_speeds"].extend(speeds)
+    rels = [rel for _, rel in overlaps]
+    t, rate = float(O.time), rolling_dissipation_rate()
+    if "rolling_last" in st:
+        t_prev, rate_prev = st["rolling_last"]
+        st["rolling_J"] += 0.5 * (rate + rate_prev) * (t - t_prev)
+    st["rolling_last"] = (t, rate)
     row = {
         "time": float(O.time),
         "iter": int(O.iter),
         "stage": st["stage"],
         "revolutions": (float(O.time) - st["t0"]) * abs(omega) / (2 * math.pi),
-        "angle_all_deg": a_all,
-        "angle_small_deg": a_small,
-        "angle_large_deg": a_large,
+        **bed,
         "kinetic_J": kineticEnergy(),
         "torque_Nm": torque,
         # The drive supplies the opposite of the charge's torque on the mill.
         "power_kW": -torque * omega / 1000.0,
-        "max_overlap_rel": max_overlap(),
+        "overlap_mean_rel_d": sum(rels) / len(rels) if rels else 0.0,
+        "overlap_p99_rel_d": checks.percentile(rels, 99) if rels else 0.0,
+        "overlap_max_rel_d": max(rels, default=0.0),
+        "impact_v_p99_m_s": checks.percentile(speeds, 99) if speeds else float("nan"),
+        **energy_terms(),
+        "rolling_dissipated_J": st["rolling_J"],
         "unbalanced": unbalancedForce(),
     }
     st["rows"].append(row)

@@ -30,11 +30,11 @@ def load_particle_positions(csv_path, *, set_vel_zero=True, set_ang_vel_zero=Tru
     raise NotImplementedError("BlazeDEM backend not yet implemented")
 
 
-def settle_balance_save(gravity_damping, csv_path):
+def settle_and_save(csv_path, d_small, r_split, max_time_s, **tolerances):
     """Raise ``NotImplementedError`` (BlazeDEM placeholder).
 
     Reserves the signature of
-    :func:`pm_dem_sm.simulation.yade_dem.state.settle_balance_save`.
+    :func:`pm_dem_sm.simulation.yade_dem.state.settle_and_save`.
 
     Raises:
         NotImplementedError: Always; the BlazeDEM backend is not implemented yet.

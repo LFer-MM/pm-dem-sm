@@ -5,7 +5,8 @@ Runs the stages of :data:`pm_dem_sm.simulation.scenario.STAGES` in order:
 1. ``build``  -- materials, mill liner (plates + lifters generated from the design
    parameters, see :mod:`~pm_dem_sm.simulation.mill_geometry`), engines, dt.
 2. ``fill``   -- chord-box ingress of the bidisperse charge.
-3. ``settle`` -- settling until the unbalanced force is small.
+3. ``settle`` -- settling until the bed geometry is stationary (geometric stop
+   rule of docs/scientific_rationale/13_initial_conditions.md) or the time cap.
 4. ``spinup`` -- rotation from rest until the charge angle and drive power
    stop changing (steady state), or ``max_revolutions``.
 5. ``record`` -- frame CSVs every ``frame_interval_s`` for ``duration_s``.
@@ -32,9 +33,15 @@ Run it with YADE, normally through
 
 YADE executes this file as a script, so it puts the repository root on
 ``sys.path`` itself. It imports every concern module unaliased so the
-``PyRunner`` command strings (``engines._balance_check()``,
-``capture._record_frame()``, ``monitor._log_row()``) resolve in this
-script's global namespace.
+``PyRunner`` command strings (``capture._record_frame()``,
+``monitor._log_row()``) resolve in this script's global namespace.
+
+Checks written to each stage's ``checks`` in the manifest
+(docs/scientific_rationale/16_validation_checks.md): damping 0 at the start
+of every stage (V5), no overlaps before each fill batch (V13, aborts), no
+particle outside the mill after each stage (V14, aborts), overlap
+statistics relative to the smaller diameter (V3), impact-speed P99 and the
+steps per collision at that speed (V2), and the energy balance (V4).
 """
 
 from pathlib import Path
@@ -55,7 +62,7 @@ import time
 import yade
 from yade.wrapper import O
 
-from pm_dem_sm.simulation import mill_geometry
+from pm_dem_sm.simulation import checks, mill_geometry
 from pm_dem_sm.simulation.scenario import STAGES, load_scenario
 from pm_dem_sm.simulation.yade_dem import (  # noqa: F401
     capture,
@@ -142,7 +149,12 @@ def run(scenario_path=None, run_dir=None, from_stage="build", to_stage="record",
         print(f"\n=== Stage: {name} ===")
         t_wall = time.time()
         t_sim, it0 = float(O.time), int(O.iter)
+        if name != "build":
+            # V5: damping set explicitly and checked at the start of every stage.
+            engines.set_gravity_damping(NUMERICAL_DAMPING)
+            engines.assert_no_damping()
         outcome = _stage_function(name)(scenario, run_dir, manifest) or {}
+        stage_checks = _stage_checks(scenario, name)
         O.save(str(run_dir / "checkpoints" / f"{name}.yade.gz"))
         manifest["stages"][name] = {
             "wall_s": time.time() - t_wall,
@@ -150,9 +162,14 @@ def run(scenario_path=None, run_dir=None, from_stage="build", to_stage="record",
             "sim_time_end_s": float(O.time),
             "iterations": int(O.iter) - it0,
             **outcome,
+            "checks": stage_checks,
         }
         _write_manifest(run_dir, manifest)
         print(f"=== {name} done in {manifest['stages'][name]['wall_s']:.1f} s wall ===")
+        if stage_checks["escaped"]:
+            raise RuntimeError(
+                f"V14 failed: {stage_checks['escaped']} particles outside the mill after {name}"
+            )
 
     return manifest
 
@@ -187,6 +204,7 @@ def _stage_build(scenario, run_dir, manifest):
     )
     engines.set_dt(new_dt=scenario.time_step_s())
     engines.set_gravity_damping(NUMERICAL_DAMPING)
+    engines.assert_no_damping()
 
     manifest["mill_body_ids"] = list(mill_ids)
     manifest["dt_s"] = O.dt
@@ -197,15 +215,24 @@ def _stage_build(scenario, run_dir, manifest):
 
 
 def _stage_fill(scenario, run_dir, manifest):
-    """Pour the bidisperse charge in chord-box batches."""
+    """Pour the bidisperse charge in chord-box batches, checking every batch for overlaps (V13)."""
     _start_monitor(scenario, run_dir, manifest, "fill", omega=0.0)
-    engines.set_gravity_damping(NUMERICAL_DAMPING)
     small, large = scenario.small, scenario.large
     # Keep fill boxes inside the lifter tops, clear by one large radius.
     inner_d = 2.0 * (scenario.mill.lifter_top_radius_m - large.radius_m)
     ingress = particles.ingress_random if scenario.fill.method == "random" else (
         particles.ingress_segregated
     )
+    liner = mill_geometry.liner_triangles(scenario.mill)
+    v13 = {"batches": 0, "spheres": 0, "overlaps": 0}
+
+    def check_batch(ids):
+        r = diagnostics.check_new_batch(
+            ids, liner, scenario.mill.depth_m, scenario.mill.lifter_top_radius_m
+        )
+        v13["batches"] += 1
+        v13["spheres"] += r["spheres"]
+
     ingress(
         diameter=inner_d,
         depth=scenario.mill.depth_m,
@@ -220,33 +247,32 @@ def _stage_fill(scenario, run_dir, manifest):
         color_large=tuple(large.color),
         settle_steps=scenario.fill.settle_steps,
         seed=scenario.seed,
+        check_batch=check_batch,
     )
     inv = diagnostics.get_particle_inventory(small.radius_m, large.radius_m)
-    return {"inventory": inv}
+    return {"inventory": inv, "v13_initial_overlaps": v13}
 
 
 def _stage_settle(scenario, run_dir, manifest):
-    """Let the charge come to rest, undamped, before the mill starts turning."""
+    """Let the charge come to rest, undamped, by the geometric stop rule (V18)."""
     _start_monitor(scenario, run_dir, manifest, "settle", omega=0.0)
     opts = scenario.settle
-    engines.set_gravity_damping(NUMERICAL_DAMPING)
-    balanced = engines.run_until_forces_balanced(
-        threshold=opts.unbalanced_force,
-        interval=opts.check_every,
-        wait_chunk=opts.check_every,
-        max_chunks=max(1, opts.max_steps // opts.check_every),
+    result = monitor.run_until_settled(
+        d_small=2.0 * scenario.small.radius_m,
+        max_time_s=opts.max_time_s,
+        r_split=_r_split(scenario),
+        sample_s=opts.sample_s,
+        window_s=opts.window_s,
+        angle_tol_deg=opts.angle_tol_deg,
+        height_tol_rel_d=opts.height_tol_rel_d,
+        speed_tol_m_s=opts.speed_tol_m_s,
     )
-    return {
-        "balanced": bool(balanced),
-        "unbalanced_force": engines.BALANCE_STATE["last_unb"],
-        "max_overlap_rel": monitor.max_overlap(),
-    }
+    return {"settle": result}
 
 
 def _stage_spinup(scenario, run_dir, manifest):
     """Rotate from rest until the mill log reaches steady state."""
     omega = _omega(scenario)
-    engines.set_gravity_damping(NUMERICAL_DAMPING)
     engines._get_rotation_engine().angularVelocity = omega
     _start_monitor(scenario, run_dir, manifest, "spinup", omega=omega)
 
@@ -279,7 +305,6 @@ def _stage_spinup(scenario, run_dir, manifest):
 def _stage_record(scenario, run_dir, manifest):
     """Write frames at steady state for ``record.duration_s``."""
     omega = _omega(scenario)
-    engines.set_gravity_damping(NUMERICAL_DAMPING)
     engines._get_rotation_engine().angularVelocity = omega
     _start_monitor(scenario, run_dir, manifest, "record", omega=omega)
 
@@ -293,11 +318,46 @@ def _stage_record(scenario, run_dir, manifest):
 
 def _start_monitor(scenario, run_dir, manifest, stage, omega):
     """(Re)start the mill-state log for ``stage``."""
-    r_split = 0.5 * (scenario.small.radius_m + scenario.large.radius_m)
     monitor.start_monitor(
         run_dir / "mill_log.csv", scenario.record.monitor_interval_s,
-        manifest["mill_body_ids"], r_split, omega, stage,
+        manifest["mill_body_ids"], _r_split(scenario), omega, stage,
     )
+
+
+def _r_split(scenario):
+    """Return the radius separating small from large spheres (m)."""
+    return 0.5 * (scenario.small.radius_m + scenario.large.radius_m)
+
+
+def _stage_checks(scenario, stage):
+    """Return the end-of-stage checks for the manifest.
+
+    V14 escape count; for monitored stages also the contact statistics
+    (overlaps relative to the smaller diameter, V3; impact-speed P99 and the
+    steps per collision at that speed, V2) and the energy balance over the
+    stage (V4, :func:`pm_dem_sm.simulation.checks.energy_balance`).
+    """
+    out = {
+        "damping": engines.assert_no_damping(),
+        "escaped": diagnostics.count_escapes(
+            scenario.mill.shell_diameter_m / 2.0, scenario.mill.depth_m
+        ),
+    }
+    if stage == "build":
+        return out
+    summary = monitor.stage_summary()
+    v99 = summary["impact_v_p99_m_s"]
+    if v99:
+        dt = scenario.time_step_s()
+        out["steps_per_collision_at_p99"] = min(
+            scenario.contact_time_s(a, b, v99) / dt
+            for i, a in enumerate(scenario.species) for b in scenario.species[i:]
+        )
+    rows = monitor.MONITOR_STATE["rows"]
+    if len(rows) >= 2:
+        out["energy_balance"] = checks.energy_balance(rows)
+    out.update(summary)
+    return out
 
 
 def _omega(scenario):
@@ -312,7 +372,7 @@ def _load_checkpoint(run_dir, stage, manifest):
     O.load(str(path))
     materials.rebuild_materials_map()
     stl.SAG_MILL_SLICE_BODY_GROUP = list(manifest["mill_body_ids"])
-    for label in ("monitor", "recorder", engines.BALANCE_STATE["label"]):
+    for label in ("monitor", "recorder"):
         O.engines = [e for e in O.engines if getattr(e, "label", None) != label]
 
 

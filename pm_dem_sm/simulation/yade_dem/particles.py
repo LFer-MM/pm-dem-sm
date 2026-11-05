@@ -118,7 +118,8 @@ def load_all_particles(particle_diam_m, particle_count):
 
 def ingress_random(diameter, depth, r_small, r_large, n_small, n_large, box_height,
                    material_small, material_large, color_small, color_large,
-                   settle_steps=10000, padding=0.1, verbose=True, seed=None):
+                   settle_steps=10000, padding=0.1, verbose=True, seed=None,
+                   check_batch=None):
     """Ingress bidisperse particles in random mixed batches via chord boxes.
 
     Each batch packs spheres at ``r_large``, then randomly shrinks a subset to
@@ -142,6 +143,8 @@ def ingress_random(diameter, depth, r_small, r_large, n_small, n_large, box_heig
         verbose: If ``True``, print batch progress.
         seed: RNG seed for placement and species assignment; ``None`` draws
             a fresh one each run.
+        check_batch: Called with the new body ids of every batch before its
+            first step (the V13 overlap check); ``None`` skips it.
     """
     rng = random.Random(seed)
     remaining_small, remaining_large = n_small, n_large
@@ -187,6 +190,8 @@ def ingress_random(diameter, depth, r_small, r_large, n_small, n_large, box_heig
         remaining_large -= n_l
         if verbose:
             print(f"[batch {batch_idx}] +{n_s}s +{n_l}L  remaining: ({remaining_small}s, {remaining_large}L)")
+        if check_batch is not None:
+            check_batch(new_ids)
         O.run(settle_steps, True)
 
     if verbose:
@@ -195,7 +200,8 @@ def ingress_random(diameter, depth, r_small, r_large, n_small, n_large, box_heig
 
 def ingress_segregated(diameter, depth, r_small, r_large, n_small, n_large, box_height,
                        material_small, material_large, color_small, color_large,
-                       settle_steps=10000, padding=0.1, verbose=True, seed=None):
+                       settle_steps=10000, padding=0.1, verbose=True, seed=None,
+                       check_batch=None):
     """Ingress all small particles first, then all large.
 
     Same chord-box batching as :func:`ingress_random`, but species are poured
@@ -219,6 +225,8 @@ def ingress_segregated(diameter, depth, r_small, r_large, n_small, n_large, box_
         verbose: If ``True``, print batch progress.
         seed: RNG seed for placement and species assignment; ``None`` draws
             a fresh one each run.
+        check_batch: Called with the new body ids of every batch before its
+            first step (the V13 overlap check); ``None`` skips it.
     """
     rng = random.Random(seed)
     for size_label, r, n_target, material, color in (
@@ -249,6 +257,8 @@ def ingress_segregated(diameter, depth, r_small, r_large, n_small, n_large, box_
             remaining -= len(new_ids)
             if verbose:
                 print(f"[{size_label} batch {batch_idx}] +{len(new_ids)}  remaining: {remaining}")
+            if check_batch is not None:
+                check_batch(list(new_ids))
             O.run(settle_steps, True)
 
         if verbose:

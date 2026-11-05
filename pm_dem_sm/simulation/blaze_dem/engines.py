@@ -1,20 +1,9 @@
-"""Contact model, dt/damping, rotation, and force-balance settling (BlazeDEM placeholder).
+"""Contact model, dt, damping and its V5 check, and rotation (BlazeDEM placeholder).
 
 Mirrors :mod:`pm_dem_sm.simulation.yade_dem.engines`'s public API.
 """
 
 from __future__ import annotations
-
-# --- Module state ------------------------------------------------------------
-
-#: Mirrors :data:`pm_dem_sm.simulation.yade_dem.engines.BALANCE_STATE`.
-BALANCE_STATE = {
-    "done": False,
-    "threshold": 1e-3,
-    "label": "balance_monitor",
-    "last_unb": None,
-}
-
 
 # --- Public functions --------------------------------------------------------
 
@@ -55,11 +44,13 @@ def set_gravity_damping(new_gravity_damping):
     raise NotImplementedError("BlazeDEM backend not yet implemented")
 
 
-def run_until_forces_balanced(threshold=0.001, interval=1000, motion_start_steps=20, wait_chunk=1000, max_chunks=5000):
+
+
+def assert_no_damping():
     """Raise ``NotImplementedError`` (BlazeDEM placeholder).
 
     Reserves the signature of
-    :func:`pm_dem_sm.simulation.yade_dem.engines.run_until_forces_balanced`.
+    :func:`pm_dem_sm.simulation.yade_dem.engines.assert_no_damping`.
 
     Raises:
         NotImplementedError: Always; the BlazeDEM backend is not implemented yet.
@@ -111,18 +102,6 @@ def _get_rotation_engine(label="rotation_engine"):
 
     Reserves the signature of
     ``pm_dem_sm.simulation.yade_dem.engines._get_rotation_engine``.
-
-    Raises:
-        NotImplementedError: Always; the BlazeDEM backend is not implemented yet.
-    """
-    raise NotImplementedError("BlazeDEM backend not yet implemented")
-
-
-def _balance_check():
-    """Raise ``NotImplementedError`` (BlazeDEM placeholder).
-
-    Reserves the signature of
-    ``pm_dem_sm.simulation.yade_dem.engines._balance_check``.
 
     Raises:
         NotImplementedError: Always; the BlazeDEM backend is not implemented yet.

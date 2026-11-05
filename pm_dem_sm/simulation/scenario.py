@@ -220,15 +220,30 @@ class FillOptions:
 class SettleOptions:
     """Static settling before rotation (stage ``settle``), undamped.
 
+    Geometric stop rule (docs/scientific_rationale/13_initial_conditions.md,
+    thresholds provisional until the first full-scale IC): the bed is
+    settled when, over the last ``window_s``, the charge centre-of-mass
+    angle changes by less than ``angle_tol_deg``, its height by less than
+    ``height_tol_rel_d`` small-particle diameters, and the mean particle
+    speed is below ``speed_tol_m_s``; otherwise the stage ends at
+    ``max_time_s``. The manifest records which condition ended it.
+
     Attributes:
-        unbalanced_force: Stop once YADE's unbalanced-force ratio is below this.
-        check_every: Steps between unbalanced-force checks.
-        max_steps: Give up (and continue) after this many steps.
+        window_s: Stationarity window (s).
+        angle_tol_deg: Largest charge-angle change in the window (deg).
+        height_tol_rel_d: Largest centre-of-mass height change, in
+            small-particle diameters.
+        speed_tol_m_s: Largest mean particle speed (m/s).
+        max_time_s: Time cap (s).
+        sample_s: Simulated time between bed samples (s).
     """
 
-    unbalanced_force: float = 0.01
-    check_every: int = 1000
-    max_steps: int = 200_000
+    window_s: float = 1.0
+    angle_tol_deg: float = 0.5
+    height_tol_rel_d: float = 0.01
+    speed_tol_m_s: float = 0.01
+    max_time_s: float = 20.0
+    sample_s: float = 0.05
 
 
 @dataclass
