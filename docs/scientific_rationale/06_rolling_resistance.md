@@ -63,7 +63,7 @@ No slide mentions rolling resistance. Slide 42 (structure map) lists
 
 | Where | What |
 |---|---|
-| Branch `engines.py:64, 76-77` | `Ig2_Sphere_Sphere_ScGeom`, `Ig2_Facet_Sphere_ScGeom` (no 6-DOF); `includeMoment` not set: **no rolling resistance** |
+| `engines.py:68-69, 73` | `Ig2_Sphere_Sphere_ScGeom`, `Ig2_Facet_Sphere_ScGeom` (no 6-DOF); `includeMoment` not set: **no rolling resistance** |
 
 ## Analysis
 
@@ -198,7 +198,7 @@ band."
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C06-1 | 6-DOF geometry functors and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)`; `Ip2_FrictMat_FrictMat_MindlinPhys(eta=mu_r, krot=..., ktwist=0)` from config (this is C01-2 with values) | `ScGeom`, no moment law (`engines.py:64, 76-77`) | Before calibration |
+| C06-1 | 6-DOF geometry functors and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)`; `Ip2_FrictMat_FrictMat_MindlinPhys(eta=mu_r, krot=..., ktwist=0)` from config (this is C01-2 with values) | `ScGeom`, no moment law (`engines.py:68-69, 73`) | Before calibration |
 | C06-2 | `krot` helper: from the smallest rock sphere, dt and a typical contact force, return krot meeting the T_r >= 20 dt and theta_y ~ 0.01 rad (<< 0.05 rad, Ai et al.) criteria; assert at build | None | With C06-1 |
 | C06-3 | Heap (angle-of-repose) script: rock-only pile, slope fit, returns the angle for given (mu_p, mu_r) | None | Before calibration |
 | C06-4 | Settling test with rolling resistance and damping 0: heap and charge reach rest (mean speed below the [13](13_initial_conditions.md) threshold) | None | With C06-1 and C04-5 |

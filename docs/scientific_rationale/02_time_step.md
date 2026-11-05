@@ -118,8 +118,9 @@ changes run time.
 
 | Where | What |
 |---|---|
-| `simulation/yade_dem/run_simulation.py:172` | `dt = solver.dt_s or solver.dt_safety x Rayleigh step`; default `dt_safety = 0.3` (`scenario.py:116-117`) -- not the decided 2.5e-5 s (C02-1) |
-| `config.py:91, 98` | Moduli 155.7 GPa / 13.47 GPa (the dt_crit = 1.5e-5 row of slide 11), scaled by `solver.young_scale` (default 1.0, `scenario.py:118`) |
+| `simulation/scenario.py:134` | Default `solver.dt_s = 2.5e-5` s, also set explicitly in every `configs/simulation/*.json` (C02-1, commit `5c194ab`); `SimulationScenario.time_step_s()` falls back to `dt_safety` x Rayleigh step only if `dt_s` is `None`; `run_simulation.py:188` sets it |
+| `simulation/scenario.py:431-484, 519-555` | `steps_per_collision()`: Hertz contact time (Johnson Eq. 11.24) at `impact_speed_m_s()` = sqrt(2 g D) over dt for every species pair; `warnings()` flags any pair below `MIN_STEPS_PER_COLLISION = 20`, and `checks()` records `min_steps_per_collision` in the run manifest (C02-2). With the defaults it reproduces the table below (rock-rock 20.9, steel-rock 21.3, steel-steel 36.6); dt = 1e-4 s is flagged. Particle-wall pairs are not checked |
+| `config.py:96, 103` | Physical moduli 207 GPa / 55 GPa, scaled by `solver.young_scale` (default 1/26, `scenario.py:136`) ([03](03_stiffness_young_modulus.md)) |
 | `data/raw/sic_dataset_20s_dt0p0001_csv.zip` | Existing dataset, generated at dt = 1e-4 s with the old code |
 
 ## Analysis
@@ -265,6 +266,6 @@ surrogate model (Kishida et al. 2025, §3)."
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C02-1 | **Default dt = 2.5e-5 s** (explicit `solver.dt_s` in the scenario defaults and JSONs) | Default is 0.3 x Rayleigh step: with the f = 26 moduli that is 6.6e-5 s, only ~8 steps per collision | Before any production run |
-| C02-2 | Replace the scenario warning `dt / dt_R > 0.5` by the governing check: Hertz contact time (Johnson Eq. 11.24) at sqrt(2 g D) gives >= 20 steps for every pair | Only the Rayleigh-ratio warning (`scenario.warnings`) | With C02-1 |
+| C02-1 | **Default dt = 2.5e-5 s** (explicit `solver.dt_s` in the scenario defaults and JSONs) | Done (`5c194ab`) | Before any production run |
+| C02-2 | Replace the scenario warning `dt / dt_R > 0.5` by the governing check: Hertz contact time (Johnson Eq. 11.24) at sqrt(2 g D) gives >= 20 steps for every pair | Done (`5c194ab`): every species pair; particle-wall pairs not checked | With C02-1 |
 | C02-3 | Log the impact-velocity distribution (P99 of normal relative velocity at contact) in the monitor | Not logged | With the run-type split |

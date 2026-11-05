@@ -39,8 +39,8 @@
 
 ## Current state
 
-`pm_dem_sm/config.py:90, 97`: 7850 / 2650 -- rock must change to 2850
-(C08-1).
+`pm_dem_sm/config.py:95, 102`: 7850 / 2850 -- matches the decision (C08-1,
+commit `5c194ab`).
 
 ## Analysis
 
@@ -128,4 +128,4 @@ ratio that drives segregation, a run with 2650 kg/m^3 (Cleary & Morrison
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C08-1 | Rock `density` 2650 -> **2850** in `MATERIALS` | `config.py:97` | Before calibration |
+| C08-1 | Rock `density` 2650 -> **2850** in `MATERIALS` | Done (`5c194ab`) | Before calibration |

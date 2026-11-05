@@ -118,10 +118,9 @@ between the smoke test and the full mill):
 
 | Where | What |
 |---|---|
-| `engines.py:68, 83` | `NewtonIntegrator` created with `damping=0` |
-| `scenario.py:137, 151` | Defaults `fill.damping = 0.2`, `settle.damping = 0.2` |
-| `run_simulation.py:174, 185, 217` | Damping set to those values during fill and settle |
-| `run_simulation.py:234, 267` | Damping set to 0 for spin-up and recording |
+| `engines.py:75` | `NewtonIntegrator` created with `damping=0` |
+| `scenario.py` (`FillOptions`, `SettleOptions`) | No damping fields any more: a scenario JSON with `fill.damping` or `settle.damping` is rejected (C04-1, commit `5c194ab`) |
+| `run_simulation.py:189, 200, 232, 249, 282` | `NUMERICAL_DAMPING = 0.0` set explicitly at build and at the start of fill, settle, spin-up and recording. The smoke test (`configs/simulation/smoke_test.json`) fills, settles, spins up and records with it, with no escapes |
 | Existing `sic_dataset_20s_dt0p0001` | Generated with 0.2 according to slide 19 (old code) |
 
 ## Analysis
@@ -181,11 +180,19 @@ the packing fraction."
 - Energy balance per run (V4): integral of power (torque x omega) vs. the
   sum of contact dissipation (YADE energy tracker `O.trackEnergy = True`); see
   [16](16_validation_checks.md).
-- V5: assert `NewtonIntegrator.damping == 0` in every stage, set
-  explicitly in the code (see C04-1 / C04-2 below; the scenario still has
-  `fill.damping` / `settle.damping` = 0.2 defaults).
+- V5: assert `NewtonIntegrator.damping == 0` in every stage (C04-2). The
+  value is already set explicitly in every stage (C04-1); the assertion
+  is still to come.
 - V13 (new): zero sphere-sphere and sphere-facet overlaps before the first
-  step of every fill batch; abort otherwise.
+  step of every fill batch; abort otherwise. Seen in the phase-1 smoke run
+  (2026-11-04): `fill.settle_steps` is a step count, so with dt = 2.5e-5 s
+  the old 1,500 steps gave only 0.04 s of fall time per batch. Batches
+  stacked up to the top of the mill, the chord box there had zero width,
+  `stl.chord_box_3d` clamped it at y = R, and spheres were placed outside
+  the shell, and the charge blew up. On `main` the old dt made the same
+  1,500 steps 0.28 s, so it never happened there. Fixed in the smoke JSON
+  by keeping the old simulated time (11,000 steps); the general guard
+  belongs to V13 / V14 (C04-4).
 - Confirm on the first full-scale IC that the charge settles without escapes
   and within an acceptable time (the smoke test covers the physics; the
   dimensionless dt / dt_R is what transfers).
@@ -199,7 +206,7 @@ the packing fraction."
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C04-1 | **Damping = 0 in every stage**, set explicitly (drop the `fill.damping` / `settle.damping` fields or default them to 0) | `scenario.py` defaults `fill.damping = settle.damping = 0.2` | Before any production run |
+| C04-1 | **Damping = 0 in every stage**, set explicitly (drop the `fill.damping` / `settle.damping` fields or default them to 0) Done (`5c194ab`): fields removed | Before any production run |
 | C04-2 | V5 assertion at the start of every stage | None | With C04-1 |
 | C04-3 | Energy tracking (`O.trackEnergy = True`, `Law2...calcEnergy = True`) and the V4 energy balance (mill work vs contact dissipation) | Monitor logs power and kinetic energy only | With the run-type split |
 | C04-4 | V13 overlap check before each fill batch; V14 escape check after each stage | None | With C04-1 |

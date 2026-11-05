@@ -52,9 +52,9 @@ No spin-up stage before recording: spinning up first would destroy the IC.
 
 | Where | What |
 |---|---|
-| `config.py:164, 169, 170` | `start_frame = 66`, `dt0 = 4.05`, `dt_step = 0.05` (prediction seeded at ~3.3-4.05 s, from the old dataset) |
-| `config.py:209-210` | `MetricsOptions.cell_size = 0.04 * MILL_DIAMETER_M` (0.44 m with the wrong 11.0 m), `min_particles_per_cell = 15` |
-| `scenario.py:31`, `run_simulation.py:272` | Stages `build, fill, settle, spinup, record`: recording only **after** spin-up -- right for calibration runs, wrong for SIC / RMIC datasets (record from rest) |
+| `config.py:170, 175, 176` | `start_frame = 66`, `dt0 = 4.05`, `dt_step = 0.05` (prediction seeded at ~3.3-4.05 s, from the old dataset) |
+| `config.py:218-219`, `configs/pipeline_example.json` | `MetricsOptions.cell_size = 0.3` (C14-2, commit `5c194ab`), `min_particles_per_cell = 15` |
+| `scenario.py:32`, `run_simulation.py:279-291` | Stages `build, fill, settle, spinup, record`: recording only **after** spin-up -- right for calibration runs, wrong for SIC / RMIC datasets (record from rest) |
 | `capture.py:71, 129` | One CSV per frame; `data_processing` converts to parquet afterwards |
 | Existing dataset | Charge centre-of-mass angle: 0 deg (t = 0), 22 deg (2 s), 38 deg (4 s), 54 deg (10 s), 60 deg (20 s) -- still rising at 3-4 s |
 
@@ -137,7 +137,7 @@ state of kinetic energy, the criterion used by Kishida et al. (§3, Fig. S1)."
 | ID | Change | Current code | When |
 |---|---|---|---|
 | C14-1 | Run types: `dataset` (load IC, start from rest, record from t = 0 for 20 / 35 s), `calibrate` (spin-up, then record), `make_ic` | One pipeline with spin-up before recording | Before datasets |
-| C14-2 | `MetricsOptions.cell_size = 0.3` | `0.04 * MILL_DIAMETER_M` | With C14-3 |
+| C14-2 | `MetricsOptions.cell_size = 0.3` | Done (`5c194ab`) | With C14-3 |
 | C14-3 | Radial large-particle fraction (result) and axial profile with near-wall vs centre layers (artefact check) | Not computed | Before datasets |
 | C14-4 | Frames to parquet float32 at the end of each run; drop the per-frame CSVs | CSV per frame, converted later | Any time |
 | C14-5 | `start_frame` / `dt0` from the pilot's quasi-steady time | 66 / 4.05 (old dataset) | After the pilot |

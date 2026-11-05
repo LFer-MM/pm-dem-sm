@@ -7,7 +7,7 @@
     "depth_m": 0.6,
     "speed_rpm": 9.5,
     "n_shell_segments": 192,
-    "n_lifters": 64,
+    "n_lifters": 36,
     "lifter_height_m": 0.25,
     "lifter_base_width_m": 0.30,
     "lifter_top_width_m": 0.15,

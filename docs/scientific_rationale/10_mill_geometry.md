@@ -60,13 +60,14 @@ Decided 2026-10-22.
 
 | Where | What |
 |---|---|
-| `config.py:68` | `SAGMILL_STL_PATH = "sag_mill_40ft_m.stl"`; the file is not in the repo |
-| `config.py:72` | `MILL_DIAMETER_M = 11.0` -- **wrong**: it is the default `MillGeometry.diameter_m` (`scenario.py:76`), which sizes the fill boxes and derived checks, and it sets `MetricsOptions.cell_size` (`config.py:209`, 0.44 m instead of SAG_A's 0.4285 m) |
-| `configs/pipeline_example.json:32` | `cell_size = 0.4732` (old 40 ft STL; SAG_A: 0.4285) |
-| `scenario.py:77` | `depth_m = 0.375` |
-| `scenario.py:85` | `end_walls = "liner"` (default); `"frictionless"` available (`run_simulation.py:145-154`: friction 0, restitution copied from the liner) |
-| `scenario.py:467-470` | Warns when the slice is < 4 large diameters deep with frictional end walls |
-| `scenario.py:53-70`, `stl.py` | Parametric shell + trapezoidal lifters exist as an alternative source (`source = "parametric"`) |
+| `config.py:69` | `SAGMILL_STL_PATH = "sag_mill_40ft_m.stl"`; the file is not in the repo |
+| `config.py:73` | `MILL_DIAMETER_M = 10.7128` (SAG_A inside liners), the default `MillGeometry.diameter_m`, which sizes the fill boxes and derived checks (C10-1, commit `5c194ab`). `MetricsOptions.cell_size` no longer derives from it: 0.3 m ([14](14_dataset_runs_and_recording.md), C14-2) |
+| `configs/pipeline_example.json:32` | `cell_size = 0.3` |
+| `scenario.py:92` | `depth_m = 0.6` (C10-3, commit `5c194ab`) |
+| `scenario.py:100` | `end_walls = "frictionless"` (default, C10-2, commit `5c194ab`); `run_simulation.py:161-170`: friction 0, restitution copied from the liner |
+| `scenario.py:545-549` | Warns when the slice is < 4 large diameters deep with frictional end walls |
+| `scenario.py:61-100`, `stl.py` | Parametric shell + trapezoidal lifters exist as an alternative source (`source = "parametric"`) |
+| `configs/simulation/sag_slice_lifters.json` | SAG_A diameter / 0.6 m slice / 9.5 rpm, with SAG_A's 36 lifters but the old trapezoidal placeholder shape (0.25 m high, no plates) until C10-4. `sag_slice_stl.json` keeps 11.9 m / 0.375 m, because those must match the old 40 ft STL file, which C10-4 retires |
 | Existing dataset | Particle centres reach 5.88 m from the axis, consistent with the old 40 ft STL (inside radius 5.92 m), not with SAG_A |
 
 ## Analysis
@@ -251,7 +252,7 @@ reported separately because it has no counterpart in the real mill."
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C10-1 | `MILL_DIAMETER_M` = SAG_A diameter inside liners, 10.7128 m | 11.0 (`config.py:72`) | Before any production run |
-| C10-2 | Default `end_walls = "frictionless"` | `"liner"` (`scenario.py:85`) | Before calibration |
-| C10-3 | Default `depth_m = 0.6` | 0.375 (`scenario.py:77`) | Before calibration |
+| C10-1 | `MILL_DIAMETER_M` = SAG_A diameter inside liners, 10.7128 m | Done (`5c194ab`) | Before any production run |
+| C10-2 | Default `end_walls = "frictionless"` | Done (`5c194ab`) | Before calibration |
+| C10-3 | Default `depth_m = 0.6` | Done (`5c194ab`) | Before calibration |
 | C10-4 | Parametric generator (plan above, from the author's `create_stl.py`): SAG_A: 36 lifters, base 523 mm at the shell, vertical sides through the plate, 35 deg faces above it, top 152 mm, 395 mm high from the inside shell; alternating with 36 flat 130 mm plates. The repo's `initialize_parametric_mill` (`stl.py:49`) builds trapezoidal lifters on a shell but has no plates and no face-angle input: extend it, or add the author's generator if it covers plates; geometry parameters in the run manifest; drop the STL input and retire `sag_mill_40ft_m.stl` | `source = "stl"` with an external file | Before calibration |

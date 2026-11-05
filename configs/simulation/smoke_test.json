@@ -18,8 +18,8 @@
     {"name": "ball", "material": "steel", "radius_m": 0.05, "count": 60, "color": [0, 0, 1]}
   ],
   "solver": {"dt_s": 2.5e-5, "young_scale": 0.038461538461538464},
-  "fill": {"box_height_m": 0.3, "settle_steps": 1500},
-  "settle": {"unbalanced_force": 0.05, "check_every": 500, "max_steps": 30000},
+  "fill": {"box_height_m": 0.3, "settle_steps": 11000},
+  "settle": {"unbalanced_force": 0.05, "check_every": 3700, "max_steps": 220000},
   "spinup": {
     "min_revolutions": 1.0,
     "max_revolutions": 3.0,

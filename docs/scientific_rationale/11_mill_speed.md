@@ -41,8 +41,8 @@ The liner is symmetric, so the orientation is a free choice in simulation.
 
 | Where | What |
 |---|---|
-| `scenario.py:78` | `speed_rpm = 9.0` (positive = counter-clockwise seen from +Z): direction matches, **value does not** (decision 9.5 rpm, C11-1) |
-| `scenario.py:370-434` | `critical_speed_rpm()` and `fraction_critical` use `mill.diameter_m`, still defaulting to 11.0 m, so the reported fraction is wrong (74.0 % instead of 73.0 % at 9.5 rpm) until C10-1 ([10](10_mill_geometry.md)) |
+| `scenario.py:93` | `speed_rpm = 9.5` (positive = counter-clockwise seen from +Z), also in `sag_slice_*.json` (C11-1, commit `5c194ab`) |
+| `scenario.py:387-397, 490-517` | `critical_speed_rpm()` and `fraction_critical` use `mill.diameter_m`, now 10.7128 m (C10-1): the defaults report N_c = 13.01 rpm and 73.0 % of critical |
 | Existing dataset (old 40 ft STL, run at 9 rpm) | Shell-contact particles move at ~8.7 rpm |
 
 ## Analysis
@@ -92,4 +92,4 @@ of Owen & Cleary and Govender et al."
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C11-1 | Default `speed_rpm = 9.5` (SAG_A median) in `MillGeometry` and the scenario JSONs | 9.0 (`scenario.py:78`) | Before calibration |
+| C11-1 | Default `speed_rpm = 9.5` (SAG_A median) in `MillGeometry` and the scenario JSONs | Done (`5c194ab`) | Before calibration |

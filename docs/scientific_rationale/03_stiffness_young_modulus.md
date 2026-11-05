@@ -82,10 +82,9 @@ diameter. The papers quote overlap relative to the **diameter**.
 
 | Where | What |
 |---|---|
-| `config.py:91` | steel young = 155,709,722,558 Pa (slide 11, dt_crit = 1.5e-5 row) |
-| `config.py:98` | rock young = 13,468,135,026 Pa (same row) |
-| `scenario.py:118` | `solver.young_scale` (default 1.0) multiplies every modulus -- the hook for f = 26 (C03-1) |
-| -- | Neither slide 12 nor the f = 26 set is in the code yet |
+| `config.py:96` | steel young = 207e9 Pa (physical value) |
+| `config.py:103` | rock young = 55e9 Pa (physical value) |
+| `scenario.py:49, 136` | `solver.young_scale` defaults to `YOUNG_SCALE = 1/26` and multiplies every modulus when the scene is built (C03-1, commit `5c194ab`): 7.96 / 2.115 GPa in the contacts; every `configs/simulation/*.json` sets it explicitly; `warnings()` flags any other value |
 
 ## Analysis
 
@@ -212,12 +211,12 @@ scaling with particle size in coarse-grained DEM, not softening for dt.
   both materials together, 3 revolutions each, same dt = 2.5e-5 s (E x 2
   still gets >= 15.4 steps per collision); toe, shoulder, power and charge
   angle must stay within the replicate scatter (V12).
-- Update `config.MATERIALS` and `young_scale`: see C03-1 below.
+- ~~Update `config.MATERIALS` and `young_scale`~~ -- done (C03-1, commit `5c194ab`).
 
 ## Pending code changes
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C03-1 | Store the **physical** moduli in `config.MATERIALS` (steel 207e9, rock 55e9 Pa) and set `solver.young_scale = 1/26` in the scenario, so the provenance stays visible | `config.py`: 155.7e9 / 13.47e9 Pa (PPT slide-11 row), `young_scale` default 1.0 | Before any production run |
+| C03-1 | Store the **physical** moduli in `config.MATERIALS` (steel 207e9, rock 55e9 Pa) and set `solver.young_scale = 1/26` in the scenario, so the provenance stays visible Done (`5c194ab`) | Before any production run |
 | C03-2 | Overlap statistics relative to the smaller **diameter**, per pair type (mean, P99, max) in the monitor | `monitor.max_overlap()` divides by the smaller **radius** (2x the literature convention) and reports the max only; same in `diagnostics.check_overlaps()` | With C03-1 |
 | C03-3 | V10 scenarios: `young_scale` = 1/52 and 1/13 | None | After C03-1 |

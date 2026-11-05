@@ -71,7 +71,7 @@ therefore never reached; a geometric criterion is.
 |---|---|
 | `particles.py:196` | `ingress_segregated` pours **small first, then large** -> rock at the bottom, balls on top (matches the decision) |
 | `particles.py:119, 182, 261-273` | `ingress_random`; mass and inertia recomputed from radius and density after resizing (the old steel-ball-mass bug is fixed) |
-| `run_simulation.py:7, 214-222`; `state.py:136` | Settle stage (and the IC-saving helper) still "damped settling until the unbalanced force is small" (`run_until_forces_balanced`) -- to be replaced by the geometric stop rule (C04-5, [04](04_numerical_damping.md)) |
+| `run_simulation.py:7, 228-243`; `state.py:136` | Settle stage (undamped since C04-1) and the IC-saving helper still stop on "the unbalanced force is small" (`run_until_forces_balanced`) -- to be replaced by the geometric stop rule (C04-5, [04](04_numerical_damping.md)) |
 | Existing SIC dataset, frame 0 | ore_rock mean y = -4.42 m, ball_steel mean y = -2.10 m -> rock bottom, balls top (opposite of Kishida's S-IC) |
 
 ## Analysis
