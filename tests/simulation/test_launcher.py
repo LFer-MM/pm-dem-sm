@@ -130,6 +130,6 @@ def test_launch_simulation_validates_scenario_and_uses_its_threads(monkeypatch, 
     dem_launcher.launch_simulation(scenario=scenario)
     assert captured["cmd"][3:5] == ["-j", "6"]
 
-    scenario.write_text('{"mill": {"source": "cad"}}', encoding="utf-8")
-    with pytest.raises(ValueError, match="mill.source"):
+    scenario.write_text('{"mill": {"end_walls": "cad"}}', encoding="utf-8")
+    with pytest.raises(ValueError, match="mill.end_walls"):
         dem_launcher.launch_simulation(scenario=scenario)

@@ -2,7 +2,8 @@ r"""Staged, headless DEM run of the SAG mill slice from a scenario JSON (YADE).
 
 Runs the stages of :data:`pm_dem_sm.simulation.scenario.STAGES` in order:
 
-1. ``build``  -- materials, mill (STL or parametric with lifters), engines, dt.
+1. ``build``  -- materials, mill liner (plates + lifters generated from the design
+   parameters, see :mod:`~pm_dem_sm.simulation.mill_geometry`), engines, dt.
 2. ``fill``   -- chord-box ingress of the bidisperse charge.
 3. ``settle`` -- settling until the unbalanced force is small.
 4. ``spinup`` -- rotation from rest until the charge angle and drive power
@@ -16,10 +17,12 @@ YADE releases older than 2023.02 are refused at start-up
 
 Each stage ends with a checkpoint ``<run-dir>/checkpoints/<stage>.yade.gz``
 and an update of ``<run-dir>/manifest.json`` (scenario, derived checks, dt,
-YADE version, per-stage wall time and outcome), so a run can resume from any
-stage with ``--from-stage``. ``<run-dir>/mill_log.csv`` logs the mill state
-throughout (see :mod:`~pm_dem_sm.simulation.yade_dem.monitor`) and
-``<run-dir>/frames/`` holds the frames ``data_processing`` converts.
+mill geometry with a mesh hash, YADE version, per-stage wall time and
+outcome), so a run can resume from any stage with ``--from-stage``.
+``<run-dir>/mill_log.csv`` logs the mill state throughout (see
+:mod:`~pm_dem_sm.simulation.yade_dem.monitor`), ``<run-dir>/mill_liner.stl``
+holds the liner for viewing, and ``<run-dir>/frames/`` holds the frames
+``data_processing`` converts.
 
 Run it with YADE, normally through
 :func:`pm_dem_sm.simulation.launcher.launch_simulation`::
@@ -52,6 +55,7 @@ import time
 import yade
 from yade.wrapper import O
 
+from pm_dem_sm.simulation import mill_geometry
 from pm_dem_sm.simulation.scenario import STAGES, load_scenario
 from pm_dem_sm.simulation.yade_dem import (  # noqa: F401
     capture,
@@ -166,15 +170,10 @@ def _stage_build(scenario, run_dir, manifest):
     krot = scenario.rolling_stiffness()
     scenario.check_rolling_stiffness(krot)
 
-    if scenario.mill.source == "stl":
-        stl_path = Path(scenario.mill.stl_path)
-        if not stl_path.is_absolute():
-            stl_path = Path(_REPO_ROOT) / stl_path
-        mill_ids = stl.initialize_sag_mill_slice(
-            stl_path, material=scenario.mill.liner_material, cap_material=cap_material,
-        )
-    else:
-        mill_ids = stl.initialize_parametric_mill(scenario.mill, cap_material)
+    liner = mill_geometry.liner_triangles(scenario.mill)
+    mill_ids = stl.initialize_parametric_mill(scenario.mill, cap_material, liner)
+    manifest["mill_geometry"] = mill_geometry.geometry_summary(scenario.mill, liner)
+    mill_geometry.write_stl(liner, run_dir / "mill_liner.stl")
 
     engines.initialize_engines(
         contact_model=scenario.contact.model,
@@ -202,10 +201,8 @@ def _stage_fill(scenario, run_dir, manifest):
     _start_monitor(scenario, run_dir, manifest, "fill", omega=0.0)
     engines.set_gravity_damping(NUMERICAL_DAMPING)
     small, large = scenario.small, scenario.large
-    # Keep fill boxes clear of the lifters and the liner.
-    inner_d = scenario.mill.diameter_m - 2 * (
-        (scenario.mill.lifter_height_m if scenario.mill.n_lifters else 0.0) + large.radius_m
-    )
+    # Keep fill boxes inside the lifter tops, clear by one large radius.
+    inner_d = 2.0 * (scenario.mill.lifter_top_radius_m - large.radius_m)
     ingress = particles.ingress_random if scenario.fill.method == "random" else (
         particles.ingress_segregated
     )

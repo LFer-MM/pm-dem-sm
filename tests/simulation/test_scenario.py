@@ -75,8 +75,15 @@ def test_unknown_key_raises():
 
 
 def test_bad_choice_raises():
-    with pytest.raises(ValueError, match="mill.source"):
-        SimulationScenario.from_dict({"mill": {"source": "cad"}})
+    with pytest.raises(ValueError, match="mill.end_walls"):
+        SimulationScenario.from_dict({"mill": {"end_walls": "cad"}})
+
+
+@pytest.mark.parametrize("key", ["source", "stl_path", "diameter_m", "n_shell_segments"])
+def test_retired_mill_keys_raise(key):
+    # The STL input is retired and the diameter inside liners is derived.
+    with pytest.raises(ValueError, match="Unknown"):
+        _from({"mill": {key: 1}})
 
 
 def test_species_material_must_exist():
@@ -88,10 +95,31 @@ def test_species_material_must_exist():
 
 def test_overlapping_lifters_raise():
     with pytest.raises(ValueError, match="Lifters overlap"):
-        _from(
-            {"mill": {"source": "parametric", "diameter_m": 1.0, "n_lifters": 40,
-                      "lifter_base_width_m": 0.2}}
-        )
+        _from({"mill": {"n_lifters": 80}})
+
+
+@pytest.mark.parametrize(
+    ("mill", "match"),
+    [
+        ({"n_lifters": 0}, "n_lifters"),
+        ({"plate_segments": 0}, "plate_segments"),
+        ({"lifter_face_angle_deg": 90.0}, "face_angle"),
+        ({"plate_thickness_m": 0.4}, "plate_thickness_m"),
+        ({"lifter_face_angle_deg": 50.0}, "top width"),
+    ],
+)
+def test_invalid_liner_raises(mill, match):
+    with pytest.raises(ValueError, match=match):
+        _from({"mill": mill})
+
+
+def test_mill_derived_values():
+    m = _valid().mill
+    assert m.diameter_m == pytest.approx(10.9728 - 2 * 0.130)
+    assert m.lifter_top_radius_m == pytest.approx(10.9728 / 2 - 0.395)
+    assert m.lifter_top_width_m == pytest.approx(
+        0.523 - 2 * 0.265 * math.tan(math.radians(35.0))
+    )
 
 
 def test_small_and_large_species():
@@ -105,7 +133,7 @@ def test_restitution_lookup_is_order_independent():
 
 
 def test_critical_speed_matches_classic_formula():
-    s = _from({"mill": {"diameter_m": 11.9}})
+    s = _from({"mill": {"shell_diameter_m": 11.9 + 2 * 0.130}})
     d_large = 2 * s.large.radius_m
     assert s.critical_speed_rpm() == pytest.approx(42.3 / math.sqrt(11.9 - d_large), rel=1e-3)
 
@@ -120,7 +148,7 @@ def test_defaults_match_decisions():
     s = SimulationScenario()
     assert s.solver.dt_s == 2.5e-5
     assert s.solver.young_scale == pytest.approx(1 / 26)
-    assert s.mill.diameter_m == 10.7128
+    assert s.mill.diameter_m == pytest.approx(10.7128)
     assert s.mill.depth_m == 0.6
     assert s.mill.speed_rpm == 9.5
     assert s.mill.end_walls == "frictionless"

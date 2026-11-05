@@ -14,11 +14,11 @@ SAG_MILL_SLICE_BODY_GROUP = None
 # --- Public functions --------------------------------------------------------
 
 
-def initialize_sag_mill_slice(sagmill_stl_path):
+def initialize_parametric_mill(mill, cap_material, liner=None):
     """Raise ``NotImplementedError`` (BlazeDEM placeholder).
 
     Reserves the signature of
-    :func:`pm_dem_sm.simulation.yade_dem.stl.initialize_sag_mill_slice`.
+    :func:`pm_dem_sm.simulation.yade_dem.stl.initialize_parametric_mill`.
 
     Raises:
         NotImplementedError: Always; the BlazeDEM backend is not implemented yet.
@@ -67,33 +67,6 @@ def get_surface_y(padding=0.1):
 
     Reserves the signature of
     :func:`pm_dem_sm.simulation.yade_dem.stl.get_surface_y`.
-
-    Raises:
-        NotImplementedError: Always; the BlazeDEM backend is not implemented yet.
-    """
-    raise NotImplementedError("BlazeDEM backend not yet implemented")
-
-
-# --- Private helper functions ------------------------------------------------
-
-
-def _obtain_sag_mill_slice_measurements(sag_mill_body_group):
-    """Raise ``NotImplementedError`` (BlazeDEM placeholder).
-
-    Reserves the signature of
-    ``pm_dem_sm.simulation.yade_dem.stl._obtain_sag_mill_slice_measurements``.
-
-    Raises:
-        NotImplementedError: Always; the BlazeDEM backend is not implemented yet.
-    """
-    raise NotImplementedError("BlazeDEM backend not yet implemented")
-
-
-def _add_sag_mill_slice_caps(sag_mill_slice_body_group, sag_mill_slice_radius_m, z_min, z_max):
-    """Raise ``NotImplementedError`` (BlazeDEM placeholder).
-
-    Reserves the signature of
-    ``pm_dem_sm.simulation.yade_dem.stl._add_sag_mill_slice_caps``.
 
     Raises:
         NotImplementedError: Always; the BlazeDEM backend is not implemented yet.

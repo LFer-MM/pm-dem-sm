@@ -25,13 +25,12 @@ from typing import Any
 
 from .. import config
 from ..config import _from_plain_dict, _to_plain_dict
+from . import mill_geometry
 
 # --- Constants ---------------------------------------------------------------
 
 #: Pipeline stages run by a DEM backend, in order.
 STAGES = ("build", "fill", "settle", "spinup", "record")
-#: Valid ``MillGeometry.source`` values.
-MILL_SOURCES = ("stl", "parametric")
 #: Valid ``MillGeometry.end_walls`` values.
 END_WALLS = ("liner", "frictionless")
 #: Valid ``ContactOptions.model`` values.
@@ -79,27 +78,30 @@ PROVISIONAL_BALL_COUNT = 3750
 
 @dataclass
 class MillGeometry:
-    """Mill slice geometry, liner, and drive speed.
+    """Mill slice geometry, liner design, and drive speed.
 
     The mill axis is the Z axis through the origin; the slice spans
-    ``0 <= z <= depth_m``, and gravity points along ``-Y``.
+    ``0 <= z <= depth_m``, and gravity points along ``-Y``. The liner (flat
+    plates alternating with lifters) is generated from the design
+    parameters by :mod:`pm_dem_sm.simulation.mill_geometry`; the defaults
+    are SAG_A's new liners (docs/scientific_rationale/10_mill_geometry.md).
+    Derived values (diameter inside liners, lifter top width and radii) are
+    read-only properties.
 
     Attributes:
-        source: ``"stl"`` (load ``stl_path``) or ``"parametric"`` (build a
-            shell with lifters from the fields below).
-        stl_path: Mill slice STL, used when ``source == "stl"``.
-        diameter_m: Inside-liner diameter (m). For ``"stl"`` it must match the
-            STL; it sizes the fill boxes and the derived checks.
+        shell_diameter_m: Inside-shell diameter (m).
         depth_m: Slice depth along Z (m); 0.6 m by default
             (docs/scientific_rationale/10_mill_geometry.md).
         speed_rpm: Drive speed (rev/min); positive rotates counter-clockwise
             seen from ``+Z``. Default 9.5, the SAG_A median
             (docs/scientific_rationale/11_mill_speed.md).
-        n_shell_segments: Facet segments around the parametric shell.
-        n_lifters: Lifter rows on the parametric shell (``0`` = smooth liner).
-        lifter_height_m: Lifter height above the shell (m).
+        n_lifters: Lifter rows (>= 1), alternating with as many plates.
         lifter_base_width_m: Lifter width at the shell (m).
-        lifter_top_width_m: Lifter width at its top face (m).
+        lifter_height_m: Lifter height measured from the inside shell (m).
+        lifter_face_angle_deg: Angle of both lifter faces from the lifter's
+            radial centreline (deg).
+        plate_thickness_m: Thickness of the flat liner plates (m).
+        plate_segments: Straight facet segments per plate arc.
         liner_material: Material key (in ``materials``) of shell and lifters;
             ``"liner"`` by default, steel with its own friction mu_w
             (docs/scientific_rationale/05_friction.md).
@@ -109,18 +111,32 @@ class MillGeometry:
             effects of a thin slice.
     """
 
-    source: str = "stl"
-    stl_path: Path = Path(config.SAGMILL_STL_PATH)
-    diameter_m: float = config.MILL_DIAMETER_M
+    shell_diameter_m: float = config.SHELL_DIAMETER_M
     depth_m: float = 0.6
     speed_rpm: float = 9.5
-    n_shell_segments: int = 120
-    n_lifters: int = 0
-    lifter_height_m: float = 0.25
-    lifter_base_width_m: float = 0.30
-    lifter_top_width_m: float = 0.15
+    n_lifters: int = config.N_LIFTERS
+    lifter_base_width_m: float = config.LIFTER_BASE_WIDTH_M
+    lifter_height_m: float = config.LIFTER_HEIGHT_M
+    lifter_face_angle_deg: float = config.LIFTER_FACE_ANGLE_DEG
+    plate_thickness_m: float = config.LINER_PLATE_THICKNESS_M
+    plate_segments: int = 8
     liner_material: str = "liner"
     end_walls: str = "frictionless"
+
+    @property
+    def diameter_m(self) -> float:
+        """Diameter inside liners (m): ``shell_diameter_m - 2 plate_thickness_m``."""
+        return 2.0 * mill_geometry.plate_radius(self)
+
+    @property
+    def lifter_top_width_m(self) -> float:
+        """Width of the lifter tops (m), from base, height, plate and face angle."""
+        return mill_geometry.lifter_top_width(self)
+
+    @property
+    def lifter_top_radius_m(self) -> float:
+        """Radius of the lifter tops (m), on the lifter centreline."""
+        return mill_geometry.lifter_top_radius(self)
 
 
 @dataclass
@@ -378,7 +394,6 @@ class SimulationScenario:
                 negative ``contact.rolling_resistance``, or a species count
                 other than two.
         """
-        _check_choice("mill.source", self.mill.source, MILL_SOURCES)
         _check_choice("mill.end_walls", self.mill.end_walls, END_WALLS)
         _check_choice("contact.model", self.contact.model, CONTACT_MODELS)
         _check_choice(
@@ -421,8 +436,7 @@ class SimulationScenario:
             )
         if mu_r < 0:
             raise ValueError(f"contact.rolling_resistance must be >= 0, got {mu_r}")
-        if self.mill.n_lifters and self.lifter_gap_m <= 0:
-            raise ValueError("Lifters overlap: reduce n_lifters or lifter_base_width_m")
+        self._validate_liner()
 
     @property
     def small(self) -> Species:
@@ -436,11 +450,32 @@ class SimulationScenario:
 
     @property
     def lifter_gap_m(self) -> float:
-        """Free arc length between neighbouring lifter bases at the shell (m)."""
-        if not self.mill.n_lifters:
-            return math.inf
-        pitch = math.pi * self.mill.diameter_m / self.mill.n_lifters
-        return pitch - self.mill.lifter_base_width_m
+        """Free plate arc between neighbouring lifters (m), see :func:`mill_geometry.plate_gap`."""
+        return mill_geometry.plate_gap(self.mill)
+
+    def _validate_liner(self) -> None:
+        """Raise ``ValueError`` unless the liner design can be generated."""
+        m = self.mill
+        if m.n_lifters < 1:
+            raise ValueError(f"mill.n_lifters must be >= 1, got {m.n_lifters}")
+        if m.plate_segments < 1:
+            raise ValueError(f"mill.plate_segments must be >= 1, got {m.plate_segments}")
+        if not 0.0 <= m.lifter_face_angle_deg < 90.0:
+            raise ValueError(
+                f"mill.lifter_face_angle_deg must be in [0, 90), got {m.lifter_face_angle_deg}"
+            )
+        if not 0.0 < m.plate_thickness_m < m.lifter_height_m < m.shell_diameter_m / 2.0:
+            raise ValueError(
+                "Need 0 < plate_thickness_m < lifter_height_m < shell radius, got "
+                f"{m.plate_thickness_m}, {m.lifter_height_m}, {m.shell_diameter_m / 2.0}"
+            )
+        if m.lifter_top_width_m <= 0:
+            raise ValueError(
+                f"Lifter top width is {m.lifter_top_width_m:.3f} m: the faces meet below the "
+                "top; reduce lifter_face_angle_deg or the height, or widen the base"
+            )
+        if self.lifter_gap_m <= 0:
+            raise ValueError("Lifters overlap: reduce n_lifters or lifter_base_width_m")
 
     def restitution_for(self, a: str, b: str) -> float:
         """Return the restitution coefficient of material pair ``(a, b)``, in either order.
@@ -820,9 +855,7 @@ class SimulationScenario:
             )
         if not 0.15 <= c["fill_fraction_J"] <= 0.40:
             out.append(f"Fill level J = {c['fill_fraction_J']:.2f} is outside 0.15-0.40.")
-        if self.mill.source == "parametric" and self.mill.n_lifters == 0:
-            out.append("Smooth liner (no lifters): charge lift relies on wall friction alone.")
-        elif c["lifter_gap_over_large_d"] < 2.0:
+        if c["lifter_gap_over_large_d"] < 2.0:
             out.append("Gap between lifters is under two large-particle diameters (packing risk).")
         if self.mill.depth_m < 4 * 2 * self.large.radius_m and self.mill.end_walls == "liner":
             out.append(

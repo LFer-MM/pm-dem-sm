@@ -64,12 +64,23 @@ VELOCITY_COLS = ["vx", "vy", "vz"]
 #: Valid values for ``ExperimentConfig.dem_backend``.
 DEM_BACKENDS = ("yade", "blaze")
 
-#: SAG mill slice geometry loaded by the DEM backend.
-SAGMILL_STL_PATH = "sag_mill_40ft_m.stl"
-#: Mill diameter inside liners (m): SAG_A, 36 ft inside shell minus 2 x 130 mm
-#: liner plates (docs/scientific_rationale/10_mill_geometry.md). Default
-#: ``MillGeometry.diameter_m``; sizes the fill boxes and the derived checks.
-MILL_DIAMETER_M = 10.7128
+#: SAG_A liner design, new liners (docs/scientific_rationale/10_mill_geometry.md):
+#: inside-shell diameter (36 ft, m) ...
+SHELL_DIAMETER_M = 10.9728
+#: ... flat liner plates (m) ...
+LINER_PLATE_THICKNESS_M = 0.130
+#: ... lifter rows, alternating with the plates ...
+N_LIFTERS = 36
+#: ... lifter width at the shell (m) ...
+LIFTER_BASE_WIDTH_M = 0.523
+#: ... lifter height measured from the inside shell (m; 265 mm above the plates) ...
+LIFTER_HEIGHT_M = 0.395
+#: ... and face angle of both lifter faces from the radial direction (deg).
+LIFTER_FACE_ANGLE_DEG = 35.0
+#: Mill diameter inside liners (m), 10.7128 for SAG_A: Morrell's D, used for the
+#: fill level, critical speed and the derived checks
+#: (``MillGeometry.diameter_m``).
+MILL_DIAMETER_M = SHELL_DIAMETER_M - 2.0 * LINER_PLATE_THICKNESS_M
 
 #: Rock particle diameter (m); 2.75 inches
 #: (docs/scientific_rationale/12_charge_fill_and_particles.md).

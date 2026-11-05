@@ -1,11 +1,11 @@
-"""Mill geometry: STL loading, slice measurements, and ingress-geometry helpers (YADE)."""
+"""Mill liner and end walls as YADE facets, plus ingress-geometry helpers (YADE)."""
 
 from __future__ import annotations
 
 import math
 from math import radians
 
-from yade import FrictMat, Vector3, ymport
+from yade import FrictMat, Vector3
 from yade.utils import facet
 from yade.wrapper import O
 
@@ -14,40 +14,15 @@ from .. import mill_geometry
 # --- Module state ------------------------------------------------------------
 
 #: Body ids of the loaded mill slice and its end caps; set by
-#: :func:`initialize_sag_mill_slice`.
+#: :func:`initialize_parametric_mill`.
 SAG_MILL_SLICE_BODY_GROUP = None
 
 
 # --- Public functions --------------------------------------------------------
 
 
-def initialize_sag_mill_slice(sagmill_stl_path, material="steel", cap_material="steel"):
-    """Load the STL slice, add end caps, and set :data:`SAG_MILL_SLICE_BODY_GROUP`.
-
-    Args:
-        sagmill_stl_path: Path to the SAG mill slice STL.
-        material: Material label of the STL liner facets.
-        cap_material: Material label of the two end-cap walls.
-
-    Returns:
-        list: Body ids of the liner and end caps.
-    """
-    global SAG_MILL_SLICE_BODY_GROUP
-
-    sag_mill_stl = ymport.stl(str(sagmill_stl_path), color=(1,1,1), wire=False, material=material)
-    sag_mill_slice_body_group = O.bodies.append(sag_mill_stl)
-    print("SAG Mill Slice bodies added. Current quantity:", len(sag_mill_slice_body_group))
-
-    sag_mill_slice_radius_m, z_min, z_max = _obtain_sag_mill_slice_measurements(sag_mill_slice_body_group)
-    _add_sag_mill_slice_caps(sag_mill_slice_body_group, sag_mill_slice_radius_m, z_min, z_max, cap_material)
-    print("Added caps to SAG Mill Slice. Current body quantity:", len(sag_mill_slice_body_group))
-
-    SAG_MILL_SLICE_BODY_GROUP = sag_mill_slice_body_group
-    return sag_mill_slice_body_group
-
-
-def initialize_parametric_mill(mill, cap_material):
-    """Build a shell with lifters and end walls from ``mill``; set :data:`SAG_MILL_SLICE_BODY_GROUP`.
+def initialize_parametric_mill(mill, cap_material, liner=None):
+    """Build the liner (plates + lifters) and end walls; set :data:`SAG_MILL_SLICE_BODY_GROUP`.
 
     Geometry comes from :mod:`pm_dem_sm.simulation.mill_geometry`; the slice
     spans ``0 <= z <= mill.depth_m`` around the Z axis.
@@ -55,23 +30,25 @@ def initialize_parametric_mill(mill, cap_material):
     Args:
         mill: :class:`~pm_dem_sm.simulation.scenario.MillGeometry`.
         cap_material: Material label of the two end walls.
+        liner: Liner triangles from
+            :func:`~pm_dem_sm.simulation.mill_geometry.liner_triangles`;
+            built from ``mill`` if ``None``.
 
     Returns:
-        list: Body ids of the shell, lifters, and end walls.
+        list: Body ids of the liner facets and end walls.
     """
     global SAG_MILL_SLICE_BODY_GROUP
 
-    liner = mill_geometry.shell_triangles(mill.diameter_m, mill.depth_m, mill.n_shell_segments)
-    if mill.n_lifters:
-        liner += mill_geometry.lifter_triangles(
-            mill.diameter_m, mill.depth_m, mill.n_lifters, mill.lifter_height_m,
-            mill.lifter_base_width_m, mill.lifter_top_width_m,
-        )
+    if liner is None:
+        liner = mill_geometry.liner_triangles(mill)
     ids = [O.bodies.append(facet(t, material=mill.liner_material, color=(1, 1, 1))) for t in liner]
     for z, color in ((0.0, (1, 0, 0)), (mill.depth_m, (0, 1, 0))):
-        for t in mill_geometry.end_wall_triangles(mill.diameter_m, z):
+        for t in mill_geometry.end_wall_triangles(mill.shell_diameter_m, z):
             ids.append(O.bodies.append(facet(t, material=cap_material, color=color, wire=True)))
-    print(f"Parametric mill: D={mill.diameter_m} m, {mill.n_lifters} lifters, {len(ids)} facets.")
+    print(
+        f"Parametric mill: D inside liners {mill.diameter_m:.4f} m, {mill.n_lifters} lifters, "
+        f"{len(ids)} facets."
+    )
 
     SAG_MILL_SLICE_BODY_GROUP = ids
     return ids
@@ -263,60 +240,3 @@ def get_surface_y(padding=0.1):
     """
     tops = [b.state.pos[1] + b.shape.radius for b in O.bodies if type(b.shape).__name__ == "Sphere"]
     return max(tops) + padding
-
-
-# --- Private helper functions ------------------------------------------------
-
-
-def _obtain_sag_mill_slice_measurements(sag_mill_body_group):
-    """Return the bounding radius and Z extents of the slice bodies.
-
-    Args:
-        sag_mill_body_group: Iterable of YADE body ids belonging to the STL slice.
-
-    Returns:
-        tuple: ``(radius_m, z_min, z_max)`` derived from body positions.
-    """
-    x_pos = [O.bodies[mill].state.pos[0] for mill in sag_mill_body_group]
-    z_pos = [O.bodies[mill].state.pos[2] for mill in sag_mill_body_group]
-
-    x_min = min(x_pos)
-    x_max = max(x_pos)
-    z_min = min(z_pos)
-    z_max = max(z_pos)
-
-    sag_mill_slice_diameter_m = abs(x_min) + abs(x_max)
-    sag_mill_slice_radius_m = abs(x_min)
-    sag_mill_slice_depth_m = abs(z_min) + abs(z_max)
-
-    sag_mill_body_dimensions_message = "\nDIAMETER: %s m | RADIUS: %s m | DEPTH: %s m\n" \
-    % (sag_mill_slice_diameter_m, sag_mill_slice_radius_m, sag_mill_slice_depth_m)
-    print(sag_mill_body_dimensions_message)
-
-    return sag_mill_slice_radius_m, z_min, z_max
-
-
-def _add_sag_mill_slice_caps(sag_mill_slice_body_group, sag_mill_slice_radius_m, z_min, z_max,
-                             material="steel"):
-    """Append triangular end-cap facets; extends ``sag_mill_slice_body_group`` in place.
-
-    Args:
-        sag_mill_slice_body_group: Mutable list of mill body ids (extended with
-            new facet ids).
-        sag_mill_slice_radius_m: Mill slice radius used to size the caps.
-        z_min: Back-face Z coordinate.
-        z_max: Front-face Z coordinate.
-        material: Material label of the caps.
-    """
-    cap_max = sag_mill_slice_radius_m * 1.5
-
-    end_cap_back_0 = [Vector3(cap_max,0,z_min), Vector3(0,-cap_max,z_min), Vector3(-cap_max,0,z_min)]
-    end_cap_back_1 = [Vector3(cap_max,0,z_min), Vector3(-cap_max,0,z_min), Vector3(0,cap_max,z_min)]
-
-    end_cap_front_0 = [Vector3(cap_max,0,z_max), Vector3(0,-cap_max,z_max), Vector3(-cap_max,0,z_max)]
-    end_cap_front_1 = [Vector3(cap_max,0,z_max), Vector3(-cap_max,0,z_max), Vector3(0,cap_max,z_max)]
-
-    sag_mill_slice_body_group += O.bodies.append([facet(end_cap_back_0, color=(1,0,0), wire=True, material=material)])
-    sag_mill_slice_body_group += O.bodies.append([facet(end_cap_back_1, color=(1,0,0), wire=True, material=material)])
-    sag_mill_slice_body_group += O.bodies.append([facet(end_cap_front_0, color=(0,1,0), wire=True, material=material)])
-    sag_mill_slice_body_group += O.bodies.append([facet(end_cap_front_1, color=(0,1,0), wire=True, material=material)])
