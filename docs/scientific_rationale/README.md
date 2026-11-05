@@ -69,9 +69,9 @@ length only there ([15](15_calibration_targets.md)).
 
 Each topic file ends with a **"Pending code changes"** table (IDs `Cnn-k`,
 nn = topic number) listing what the code must change to implement its
-decisions. Status after reviewing topics 01-04 (2026-10-19): nothing
-implemented yet; decided to collect all topics first and implement at the
-end.
+decisions. Status after the full re-review (2026-11-04): nothing
+implemented yet; all topics are collected and implementation follows as
+one planned phase.
 
 | Topic | IDs | Must be done before any production run |
 |---|---|---|
@@ -84,6 +84,7 @@ end.
 | [07](07_restitution.md) | C07-1 ... C07-3 | **C07-1**, **C07-3** |
 | [08](08_density.md) | C08-1 | **C08-1** |
 | [10](10_mill_geometry.md) | C10-1 ... C10-4 | **C10-1**, **C10-2**, **C10-3**, **C10-4** |
+| [11](11_mill_speed.md) | C11-1 | **C11-1** |
 | [12](12_charge_fill_and_particles.md) | C12-1 ... C12-3 | **C12-1**, **C12-2**, **C12-3** |
 | [14](14_dataset_runs_and_recording.md) | C14-1 ... C14-5 | **C14-1**, C14-2, **C14-3** |
 | [15](15_calibration_targets.md) | C15-1 ... C15-3 | **C15-1** |

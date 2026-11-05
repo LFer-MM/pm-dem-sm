@@ -155,8 +155,8 @@ of the handbook values.
   T_r = 2 pi sqrt(I / krot) with I = (2/5) m r^2, stays >= ~20 dt
   ([02](02_time_step.md)), i.e. as short as the step resolves; (b) the
   rotation to reach the plastic limit, theta_y = eta R |F_n| / krot, stays
-  well below Ai et al.'s mobilisation angle of 0.05 rad (§7) at typical
-  contact forces. For comparison, Ai et al.'s rules (§4.3): k_r = k_s R^2
+  small, ~0.01 rad, well below Ai et al.'s mobilisation angle of 0.05 rad
+  (§7), at typical contact forces. For comparison, Ai et al.'s rules (§4.3): k_r = k_s R^2
   (Iwashita & Oda) or k_r = 3 k_n mu_r^2 R^2.
 - There is no rolling dashpot, and numerical damping is 0
   ([04](04_numerical_damping.md)). Ai et al. (§6, Fig. 8) show that an
@@ -188,15 +188,17 @@ band."
   base (fixed rock spheres), lifted-cylinder or poured cone, pile >= ~20
   particle diameters across, damping 0, same dt; slope from a fit of the
   surface particles.
-- Check the end-wall rolling moment: compare the charge shape with eta on and
-  off at the end walls (e.g. one run with frictionless end walls replaced by
-  periodic boundaries if available, or by measuring the end-wall moments).
+- Check the end-wall rolling moment: log the rolling moments of end-wall
+  contacts in the pilot run and compare them with those of particle
+  contacts (eta cannot be switched off per pair in base YADE, and the
+  periodic cell leaked particles, [10](10_mill_geometry.md)); the end-wall
+  sensitivity V11 covers the effect on the charge.
 
 ## Pending code changes
 
 | ID | Change | Current code | When |
 |---|---|---|---|
 | C06-1 | 6-DOF geometry functors and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)`; `Ip2_FrictMat_FrictMat_MindlinPhys(eta=mu_r, krot=..., ktwist=0)` from config (this is C01-2 with values) | `ScGeom`, no moment law (`engines.py:64, 76-77`) | Before calibration |
-| C06-2 | `krot` helper: from the smallest rock sphere, dt and a typical contact force, return krot meeting the T_r >= 20 dt and theta_y ~ 0.01 rad criteria; assert at build | None | With C06-1 |
+| C06-2 | `krot` helper: from the smallest rock sphere, dt and a typical contact force, return krot meeting the T_r >= 20 dt and theta_y ~ 0.01 rad (<< 0.05 rad, Ai et al.) criteria; assert at build | None | With C06-1 |
 | C06-3 | Heap (angle-of-repose) script: rock-only pile, slope fit, returns the angle for given (mu_p, mu_r) | None | Before calibration |
 | C06-4 | Settling test with rolling resistance and damping 0: heap and charge reach rest (mean speed below the [13](13_initial_conditions.md) threshold) | None | With C06-1 and C04-5 |

@@ -41,7 +41,7 @@ The liner is symmetric, so the orientation is a free choice in simulation.
 
 | Where | What |
 |---|---|
-| `scenario.py:78` | `speed_rpm = 9.0` (positive = counter-clockwise seen from +Z) -- matches |
+| `scenario.py:78` | `speed_rpm = 9.0` (positive = counter-clockwise seen from +Z): direction matches, **value does not** (decision 9.5 rpm, C11-1) |
 | `scenario.py:370-434` | `critical_speed_rpm()` and `fraction_critical` use `mill.diameter_m`, still defaulting to 11.0 m, so the reported fraction is wrong (74.0 % instead of 73.0 % at 9.5 rpm) until C10-1 ([10](10_mill_geometry.md)) |
 | Existing dataset (old 40 ft STL, run at 9 rpm) | Shell-contact particles move at ~8.7 rpm |
 
@@ -87,3 +87,9 @@ the reference mill, in the first two months after a reline -- 73 % of its
 critical speed (10.71 m inside liners). The four other mills operate at
 70-76 % of critical, and the value matches the ~75 % of the SAG DEM studies
 of Owen & Cleary and Govender et al."
+
+## Pending code changes
+
+| ID | Change | Current code | When |
+|---|---|---|---|
+| C11-1 | Default `speed_rpm = 9.5` (SAG_A median) in `MillGeometry` and the scenario JSONs | 9.0 (`scenario.py:78`) | Before calibration |

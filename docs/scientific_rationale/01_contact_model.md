@@ -5,7 +5,9 @@
 Use the **Hertz-Mindlin** model in YADE
 (`Ip2_FrictMat_FrictMat_MindlinPhys` + `Law2_ScGeom_MindlinPhys_Mindlin`) with:
 
-- pair-wise normal restitution through a `MatchMaker` on `en` (see [07](07_restitution.md));
+- pair-wise normal restitution through a `MatchMaker` on `en`, converted to
+  damping with Thornton et al.'s Hertz-specific relation, which requires
+  YADE >= 2023.02 (see [07](07_restitution.md));
 - pair-wise friction through a `MatchMaker` on `frictAngle` (see [05](05_friction.md));
   without it YADE uses the **minimum** of the two materials' friction angles;
 - rolling resistance through `includeMoment=True`, `krot`, `eta` (one value for all
@@ -44,7 +46,7 @@ by the mill papers.
 |---|---|
 | `simulation/yade_dem/engines.py:76-83` | Hertz-Mindlin (`Ip2_FrictMat_FrictMat_MindlinPhys` with `en` = restitution MatchMaker, `Law2_ScGeom_MindlinPhys_Mindlin`), `Ig2_*_ScGeom` (not `ScGeom6D`): no `frictAngle` MatchMaker (min rule), no rolling moment |
 | `engines.py:64-68` | Optional `Law2_ScGeom_FrictPhys_CundallStrack` -- no collisional damping at all (C01-3) |
-| `simulation/yade_dem/materials.py:39` | Restitution MatchMaker built from material labels (used); the old id-based `config.restitution_matchmaker()` (`config.py:482-499`) is unused (C07-2) |
+| `simulation/yade_dem/materials.py:39` | Restitution MatchMaker built from material labels (used); the old id-based `config.build_yade_material_interactions()` (`config.py:481-500`) is unused (C07-2) |
 
 ## Analysis
 
@@ -54,10 +56,13 @@ by the mill papers.
    (see [04](04_numerical_damping.md)).
 2. The mill literature uses linear spring-dashpot models (Cleary & Morrison,
    Owen & Cleary, Boemer & Ponthot, Govender). Kishida -- the method this
-   project reproduces -- uses Hertz-Mindlin. Boemer & Ponthot show the
-   macroscopic charge motion and power are insensitive to stiffness and
-   damping formulation, so the choice linear vs. Hertz does not limit fidelity;
-   friction (and particle shape, see [06](06_rolling_resistance.md)) does.
+   project reproduces -- uses Hertz-Mindlin. Boemer & Ponthot show that, within
+   a linear contact law, charge motion and power are relatively insensitive
+   to the stiffness and damping values while friction has a strong influence
+   (abstract). No study in the library compares linear and Hertzian laws in
+   a mill directly; the argument is that the macroscopic charge depends
+   mainly on friction (and particle shape, see [06](06_rolling_resistance.md)),
+   not on the details of the elastic and damping part of the contact.
 3. Hertz-Mindlin derives stiffness from E and nu, so the stiffness reduction in
    [03](03_stiffness_young_modulus.md) stays expressed in physical units.
 
@@ -67,8 +72,10 @@ Hertz-Mindlin is kept because (a) it is the model of the reference surrogate
 study (Kishida 2025, App. A), (b) it supports pair-wise restitution and
 friction and a rolling-resistance torque in YADE, and (c) Boemer & Ponthot --
 a YADE study validated against a 1:5 lab mill -- show that charge motion and
-power are insensitive to the stiffness/damping formulation, so the deviation
-from the linear models used in the mill papers is not a fidelity concern.
+power are relatively insensitive to the stiffness and damping of the contact
+law while friction dominates, which suggests that the deviation from the
+linear models used in the mill papers is not a fidelity concern; the
+stiffness sensitivity check (V10) tests this for the present charge.
 
 ## Open items / validation
 
@@ -83,6 +90,6 @@ from the linear models used in the mill papers is not a fidelity concern.
 | ID | Change | Current code | When |
 |---|---|---|---|
 | C01-1 | **Merged into C05-2** ([05](05_friction.md)): `frictAngle` `MatchMaker` built from material labels | Not set: YADE uses the minimum of the two materials' friction angles | See C05-2 |
-| C01-2 | 6-DOF geometry (`Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`) and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` with `krot`, `ktwist`, `eta` | `ScGeom`, no moment law (`engines.py`) | Implemented as C06-1 with values from [06](06_rolling_resistance.md) (uniform eta, ktwist = 0); also needed to investigate the residual-spin floor ([13](13_initial_conditions.md)) |
+| C01-2 | 6-DOF geometry (`Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`) and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` with `krot`, `ktwist`, `eta` | `ScGeom`, no moment law (`engines.py`) | To be implemented as C06-1 with values from [06](06_rolling_resistance.md) (uniform eta, ktwist = 0); also needed to investigate the residual-spin floor ([13](13_initial_conditions.md)) |
 | C01-3 | Remove the `cundall_strack` contact option (no collisional dissipation in YADE), optionally replacing it with the `ViscElMat` linear fallback | Still offered (`engines.py`, `scenario.CONTACT_MODELS`) | Any time |
 | C01-4 | V1 restitution-recovery script: one binary collision per material pair at the run's dt, measured vs input e | None | With the run-type split ([14](14_dataset_runs_and_recording.md)) |

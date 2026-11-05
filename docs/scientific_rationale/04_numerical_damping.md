@@ -79,13 +79,13 @@ between the smoke test and the full mill):
 | PPT slide-12 moduli (33.16 / 2.868 GPa) at dt = 1e-4 s | ~0.55 | at the jittery edge |
 | **Decided set (f = 26) at dt = 2.5e-5 s** | **0.11** (0.12 with rock at 2650) | stable with a wide margin |
 
-**Contributing causes on `main`, fixed on the branch:**
+**Contributing causes in the old code, fixed in commit `543208a`:**
 
-- Fill boxes sized from the shell circle ignored the 30 lifters, and boxes
+- Fill boxes sized from the shell circle ignored the 30 lifters (old 40 ft STL), and boxes
   straddling the mill axis had corners outside the shell: spheres could be
   created overlapping a facet and be ejected through it (facets are thin,
   so a sphere whose centre crosses the facet plane is pushed to the other
-  side). The branch keeps fill boxes inside the inner radius minus lifter
+  side). The code now keeps fill boxes inside the inner radius minus lifter
   height minus a particle radius, and bounds the box width by the farther
   chord.
 - Resized rocks kept the mass of a steel ball (~24x too heavy), making their
@@ -182,8 +182,8 @@ the packing fraction."
   sum of contact dissipation (YADE energy tracker `O.trackEnergy = True`); see
   [16](16_validation_checks.md).
 - V5: assert `NewtonIntegrator.damping == 0` in every stage, set
-  explicitly in the code (see C04-1 / C04-2 below; the branch's scenario still
-  has `fill.damping` / `settle.damping` = 0.2 defaults).
+  explicitly in the code (see C04-1 / C04-2 below; the scenario still has
+  `fill.damping` / `settle.damping` = 0.2 defaults).
 - V13 (new): zero sphere-sphere and sphere-facet overlaps before the first
   step of every fill batch; abort otherwise.
 - Confirm on the first full-scale IC that the charge settles without escapes

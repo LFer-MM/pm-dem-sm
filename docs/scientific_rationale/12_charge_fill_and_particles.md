@@ -20,7 +20,7 @@ in others (PPT slide 1: 11.576 m for the old 40 ft STL, lifters subtracted). The
 
 | Name | Value now | Use |
 |---|---|---|
-| D inside liners (Morrell's D) | **10.7128 m** = 10.9728 - 2 x 0.130 (SAG_A, [10](10_mill_geometry.md)) | J, critical speed, Lacey cell, Morrell comparisons |
+| D inside liners (Morrell's D) | **10.7128 m** = 10.9728 - 2 x 0.130 (SAG_A, [10](10_mill_geometry.md)) | J, critical speed, Morrell comparisons |
 | D inside shell and liner plate thickness t | 36 ft = 10.9728 m and 130 mm (SAG_A design data) | the two inputs of Morrell's model; D inside liners = D inside shell - 2 t |
 | Volume-equivalent diameter | 11.576 m (old 40 ft STL) | not used |
 
@@ -42,19 +42,20 @@ stages run in the 0.6 m slice ([10](10_mill_geometry.md)) with damping 0
    resulting phi (solid volume / bulk volume between the lifters) with
    their spread. Surface height is nearly proportional to the count, so
    2-3 iterations per stage are expected (~1 h each).
-5. Run provisionally now, then again after calibration (friction and
-   rolling resistance change the packing) and once SAG_A's design (A2)
-   is in.
+5. Run provisionally with the generated SAG_A geometry (C10-4), then again
+   after calibration (friction and rolling resistance change the packing).
 
 **Provisional counts** (SAG_A, 0.6 m slice, D inside liners 10.7128 m,
-cylinder 54.08 m^3, Jb 18.8 %, Jc 27.6 %, phi = 0.5617 from the PPT): **at
-most ~4,000 balls + ~14,950 rocks** (~18,950), before removing the lifters
-and plates under each bed (~14 of 36 lifters under the 27.6 % bed, ~12
-under the 18.8 % ball
-bed), which lowers them by a few percent; the lifter widths needed to
-compute that are not yet in the design data. Estimates only, until the
-procedure above runs; a mixed charge will probably take somewhat more rock
-than a separate-bulk estimate.
+cylinder 54.08 m^3, Jb 18.8 %, Jc 27.6 %, phi = 0.5617 from the PPT):
+**~3,750 balls + ~14,650 rocks (~18,400)**. Without the lifters the
+same beds would hold ~4,000 + ~14,980; the lifters under each bed
+(~12 of 36 under the 18.8 % ball bed, ~14 under the 27.6 % bed; each
+lifter's exposed section above the plate is (0.523 + 0.152) / 2 x 0.265 =
+0.089 m^2, [10](10_mill_geometry.md)) take 6.2 % of the ball bed and
+5.0 % of the full bed. The plates lie outside the inside-liner circle and
+do not reduce J. Estimates only, until the procedure above runs; a mixed
+charge will probably take somewhat more rock than a separate-bulk
+estimate.
 
 ## Evidence
 
@@ -151,9 +152,9 @@ Zhang 2008) because of the walls and lifters."
 
 ## Open items / validation
 
-- Run the procedure provisionally (current STL, 0.6 m), after calibration,
-  and with SAG_A's report geometry; record counts, J, phi and seeds in the
-  scenario.
+- Run the procedure provisionally with the generated SAG_A geometry
+  (C10-4, 0.6 m slice), then after calibration; record counts, J, phi and
+  seeds in the scenario.
 - Regenerate the datasets (the existing one uses 3 in rock and other
   counts).
 

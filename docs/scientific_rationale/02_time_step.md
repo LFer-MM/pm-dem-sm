@@ -223,8 +223,8 @@ literature are compared in [03](03_stiffness_young_modulus.md).
 
 Throughput measured on this machine (24 cores, 16 threads) during the fill
 of the full-scale lifter benchmark, with part of the charge loaded: ~400
-steps/s (expect somewhat less with the full ~14k particles). A 33 s run at
-2.5e-5 s is 1.33 M steps (~55 min); at 1e-4 s it would be ~14 min. The 4x
+steps/s (expect less with SAG_A's ~18,400 particles). A 35 s SIC run at
+2.5e-5 s is 1.4 M steps (~1 h at that rate); at 1e-4 s it would be ~15 min. The 4x
 cost buys a collision resolution that the cited literature requires.
 
 ## Verdict and how to defend it
@@ -245,7 +245,7 @@ documentation; Li et al. 2005) and the lifter-motion bound of Govender et al.
 with the 1e-4 to 1e-6 s range of Cleary (2001) and close to the 2e-5 s used
 by Govender et al. (2015, Table 8) for the Los Bronces SAG mill. The DEM time
 step is independent of the 0.05 s interval at which frames are stored for the
-surrogate model (Kishida et al. 2025, §2.1)."
+surrogate model (Kishida et al. 2025, §3)."
 
 ## Open items / validation
 
@@ -265,6 +265,6 @@ surrogate model (Kishida et al. 2025, §2.1)."
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C02-1 | **Default dt = 2.5e-5 s** (explicit `solver.dt_s` in the scenario defaults and JSONs) | Default is 0.3 x Rayleigh step: with the f = 26 moduli that is 6.4e-5 s, only ~8 steps per collision | Before any production run |
+| C02-1 | **Default dt = 2.5e-5 s** (explicit `solver.dt_s` in the scenario defaults and JSONs) | Default is 0.3 x Rayleigh step: with the f = 26 moduli that is 6.6e-5 s, only ~8 steps per collision | Before any production run |
 | C02-2 | Replace the scenario warning `dt / dt_R > 0.5` by the governing check: Hertz contact time (Johnson Eq. 11.24) at sqrt(2 g D) gives >= 20 steps for every pair | Only the Rayleigh-ratio warning (`scenario.warnings`) | With C02-1 |
 | C02-3 | Log the impact-velocity distribution (P99 of normal relative velocity at contact) in the monitor | Not logged | With the run-type split |

@@ -84,7 +84,7 @@ Compare in revolutions, not seconds:
 - **Replicates.** Kishida uses one run per case. Replicates here serve to
   show that the metrics do not depend much on the run; 5 per IC type give a
   usable mean and spread (Owen & Cleary estimated error from 4 repeats) at
-  ~12 h of compute and ~4 GB of float32 frames for SAG_A's ~19,000
+  ~12 h of compute and ~4 GB of float32 frames for SAG_A's ~18,400
   particles, against ~70 h and ~22 GB for 30 + 30 (rough estimates, to be
   replaced by the pilot's timings).
 - **Why different seeds, not the same run repeated.** On 1 thread YADE is

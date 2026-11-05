@@ -24,13 +24,15 @@ Decided 2026-10-22.
   old STL (`sag_mill_40ft_m.stl`, PPT slide 1: 40 ft, 30 lifters, 11.8375 m)
   is **not SAG_A** and is retired.
 - **Slice depth 0.6 m** (was 0.375 m): 4.3 diameters of the 139.7 mm balls,
-  the same depth as Owen & Cleary's SAG slice, and 10.4 % of SAG_A's 19 ft
-  length -- Govender's 10 % as well (Analysis).
+  the same depth as Owen & Cleary's SAG slice, and 11.4 % of SAG_A's
+  5.244 m belly length (10.4 % of the 19 ft flange-to-flange length) --
+  Govender's 10 % as well (Analysis).
 - **End walls frictionless** (baseline). The liner-friction case is a
   one-off sensitivity check (V11), compared on toe, shoulder, power **and
   segregation**. Periodic axial boundaries are not used.
 - Every diameter-based quantity uses SAG_A's diameter inside liners,
-  10.7128 m: critical speed 13.01 rpm, Lacey cell 0.04 D = 0.4285 m.
+  10.7128 m (critical speed 13.01 rpm). The Lacey cell is 0.3 m, not
+  0.04 D ([14](14_dataset_runs_and_recording.md)).
 
 ## Evidence
 
@@ -87,9 +89,9 @@ Decided 2026-10-22.
   the length**: the slice also meets Govender's 10 %. The length is used
   only here and in the power check V15; the simulation itself works per
   slice and does not use it.
-- Side benefits: the Lacey cell (0.4285 m, [14](14_dataset_runs_and_recording.md))
-  fits inside the slice, which it did not at 0.375 m; the code's own
-  thin-slice warning no longer applies.
+- Side benefits: the 0.6 m depth holds exactly two 0.3 m Lacey cells
+  ([14](14_dataset_runs_and_recording.md)); the code's own thin-slice
+  warning no longer applies.
 - Cost: ~1.6 h per calibration run, ~15 h for the 9-run grid
   ([05](05_friction.md)); particle counts in
   [12](12_charge_fill_and_particles.md).
@@ -205,15 +207,15 @@ design parameters:
   ignored).
 - Extrude to the slice depth; triangulate the quads between the two
   profiles; output YADE facets directly and, optionally, an STL for
-  viewing. End walls are added by the simulation (frictionless,
-  [10](10_mill_geometry.md)).
+  viewing. End walls are added by the simulation (frictionless, see
+  above).
 - Record the input parameters (and a hash of the mesh) in each run
   manifest.
 - Tests: number of lifters, radii of plate surface and lifter tops, top
   width, face angle, closed profile; the net cross-section area against
-  the analytic value (cylinder area minus plates minus lifters). The
-  lifter volume it gives turns the provisional "at most" particle counts
-  of [12](12_charge_fill_and_particles.md) into estimates.
+  the analytic value (cylinder area minus plates minus lifters), which
+  also checks the lifter correction of the provisional particle counts
+  in [12](12_charge_fill_and_particles.md).
 
 
 ## Verdict and how to defend it
@@ -225,7 +227,8 @@ share this design and SAG_D-E show the range for larger 40 ft mills. Slice model
 0.6 m slice of an 8.4 m mill, and a slice of ~10 % of the length reproduces
 the full-mill charge profile whereas a 2D model does not (Govender et al.
 2015, §3.1). Our slice is 4.3 ball diameters deep, at least as deep as
-theirs relative to the largest particles, and 10.4 % of SAG_A's length. The end walls are frictionless,
+theirs relative to the largest particles, and 11.4 % of SAG_A's belly
+length. The end walls are frictionless,
 so they confine the slice without adding wall shear; a run with frictional
 end walls bounds their effect, and segregation next to the end walls is
 reported separately because it has no counterpart in the real mill."
@@ -238,9 +241,8 @@ reported separately because it has no counterpart in the real mill."
   length 5,244 mm between the cone junctions). Cone angle / trunnion diameter will not
   be available: V15 runs belly-only with that caveat. The CSV in Zotero was
   updated 2026-11-01 (no plate-angle column); SAG_B-E rows are complete.
-- Add the author's mill generator to the repo as the primary geometry
-  source; record its parameters (and a hash of the generated mesh) in each
-  run manifest; cross-check the old STL against it.
+- Mill generator: implement C10-4 (plan above) as the primary geometry
+  source, with its parameters and a mesh hash in each run manifest.
 - V11 end-wall check ([16](16_validation_checks.md)): frictionless vs liner
   friction, 3 revolutions each; compare toe, shoulder, power and
   segregation.

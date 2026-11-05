@@ -149,7 +149,7 @@ Against the criteria:
 
 - **Maximum overlap.** Worst case 3.2-3.8 %: well below Boemer's ~10 %
   sensitivity limit. Govender's *customary* 2.5 % is exceeded only for
-  impacts above ~9 m/s; meeting it would need a stiffer set and dt ~1.6e-5 s,
+  impacts above ~9 m/s; meeting it would need a stiffer set and dt ~1.7e-5 s,
   which no sensitivity evidence requires.
 - **Average overlap.** Average overlaps come from the enduring contacts of the
   bulk charge, loaded by gravity rather than impacts. Slide 10's settled-bed
@@ -210,7 +210,7 @@ scaling with particle size in coarse-grained DEM, not softening for dt.
   pair type, in a steady-rotation run with the f = 26 set.
 - **V10** (kept, 2026-10-19): runs at E x 0.5 (f = 52) and E x 2 (f = 13),
   both materials together, 3 revolutions each, same dt = 2.5e-5 s (E x 2
-  still gets >= 15.3 steps per collision); toe, shoulder, power and charge
+  still gets >= 15.4 steps per collision); toe, shoulder, power and charge
   angle must stay within the replicate scatter (V12).
 - Update `config.MATERIALS` and `young_scale`: see C03-1 below.
 
