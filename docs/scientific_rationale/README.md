@@ -82,14 +82,16 @@ phase 3 (mill geometry, C10-4) done 2026-11-04 in commit `d73d750`; phase 4
 (simulation tools and stage checks: C01-4, C02-3, C03-2, C04-2 ... C04-5,
 C06-3, C06-4, C12-2, C12-3) done 2026-11-05 in commits `494c1f3`, `9959f69`
 and `4ac94bb`, with mu_r = 0.13 from the heap test and the particle counts
-3,437 balls + 16,082 rocks from the grind-out; C15-2 done earlier outside the
-repository; everything else pending.
+3,437 balls + 16,082 rocks from the grind-out; phase 5 (run types and
+outputs: C03-3, C14-1, C14-3, C14-4, C15-1, C16-1) done 2026-11-05 in commit
+`69e6ea0`; C15-2 done earlier outside the repository. Pending: C14-5 (after
+the pilot run) and C15-3 (after calibration).
 
 | Topic | IDs | Must be done before any production run | Done |
 |---|---|---|---|
 | [01](01_contact_model.md) | C01-1 ... C01-4 | -- (C01-1, C01-2 need values from 05 / 06) | C01-1, C01-2, C01-3, C01-4 |
 | [02](02_time_step.md) | C02-1 ... C02-3 | **C02-1** (default dt), C02-2 | C02-1, C02-2, C02-3 |
-| [03](03_stiffness_young_modulus.md) | C03-1 ... C03-3 | **C03-1** (moduli), C03-2 | C03-1, C03-2 |
+| [03](03_stiffness_young_modulus.md) | C03-1 ... C03-3 | **C03-1** (moduli), C03-2 | C03-1, C03-2, C03-3 |
 | [04](04_numerical_damping.md) | C04-1 ... C04-5 | **C04-1** (damping), C04-2, C04-4 | C04-1 ... C04-5 |
 | [05](05_friction.md) | C05-1 ... C05-3 | **C05-1**, **C05-2**, **C05-3** | C05-1, C05-2, C05-3 |
 | [06](06_rolling_resistance.md) | C06-1 ... C06-4 | **C06-1**, C06-2, **C06-3** | C06-1 ... C06-4 |
@@ -98,9 +100,9 @@ repository; everything else pending.
 | [10](10_mill_geometry.md) | C10-1 ... C10-4 | **C10-1**, **C10-2**, **C10-3**, **C10-4** | C10-1, C10-2, C10-3, C10-4 |
 | [11](11_mill_speed.md) | C11-1 | **C11-1** | C11-1 |
 | [12](12_charge_fill_and_particles.md) | C12-1 ... C12-3 | **C12-1**, **C12-2**, **C12-3** | C12-1, C12-2, C12-3 |
-| [14](14_dataset_runs_and_recording.md) | C14-1 ... C14-5 | **C14-1**, C14-2, **C14-3** | C14-2 |
-| [15](15_calibration_targets.md) | C15-1 ... C15-3 | **C15-1** | C15-2 |
-| [16](16_validation_checks.md) | C16-1 | **C16-1** | -- |
+| [14](14_dataset_runs_and_recording.md) | C14-1 ... C14-5 | **C14-1**, C14-2, **C14-3** | C14-1 ... C14-4 |
+| [15](15_calibration_targets.md) | C15-1 ... C15-3 | **C15-1** | C15-1, C15-2 |
+| [16](16_validation_checks.md) | C16-1 | **C16-1** | C16-1 |
 
 
 
@@ -266,8 +268,9 @@ doc compares with the PPT's slide-12 set (33.16e9 / 2.868e9), it says so.
 "Current state" sections refer to the `pm_dem_sm` package on `main` of
 `LFer-MM/pm-dem-sm` as re-reviewed on 2026-11-04 (commit `5084426`), with
 paths relative to `pm_dem_sm/` unless stated, updated for the phase-1
-changes (commit `5c194ab`), the phase-2 changes (commit `4bb17e4`) and the
-phase-3 changes (commit `d73d750`). The existing datasets
+changes (commit `5c194ab`), the phase-2 changes (commit `4bb17e4`), the
+phase-3 changes (commit `d73d750`), the phase-4 changes (`494c1f3` ... `4ac94bb`)
+and the phase-5 changes (`69e6ea0`). The existing datasets
 (`data/raw/...`) were produced by older code, before the repository was
 renamed (pre-rename `main`, commit `bb04dfd`), with the friction and
 damping issues described in [04](04_numerical_damping.md) and

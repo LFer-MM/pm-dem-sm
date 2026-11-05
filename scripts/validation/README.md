@@ -48,12 +48,18 @@ Python + numpy, unit-tested in `tests/simulation/test_checks.py`).
 | C06-4 | Heap and charge come to rest with rolling resistance and damping 0 | `heap.py` (final mean speed), settle stage | as above | `data/raw/validation/results/heap/*`, `data/raw/validation/results/smoke/*` | 06, 13 |
 | V16 / C12-2, C12-3 | Particle counts and phi from the grind-out / crash-stop procedure, J from the stopped bed | `checks.fill_level`, `pm_dem_sm/simulation/yade_dem/grind_out.py` | `run_grind_out.sh` (full scale); `run_smoke_checks.sh` (smoke) | `data/raw/validation/results/grind_out/`, `data/raw/validation/results/smoke/phase4_grind_out_smoke/` | [12](../../docs/scientific_rationale/12_charge_fill_and_particles.md) |
 | C07-3 | YADE version floor (>= 2023.02) | `pm_dem_sm/simulation/yade_dem/version.py` | every run; `tests/simulation/yade_dem/test_version.py` | -- | [07](../../docs/scientific_rationale/07_restitution.md) |
+| V6 / C16-1 | Same counts in every frame, no particle outside the mill | `checks.frame_inventory`, `simulation/postprocess.py` | post-processing of any run (`pm-dem-sm dem-post <run-dir>`; `dem-sim` does it automatically) | `<run-dir>/validation.json` | [16](../../docs/scientific_rationale/16_validation_checks.md) |
+| V7 / C16-1 | Quasi-steady kinetic energy / power / charge angle before the training window; Lacey plateau (dataset runs); spin-up steady (calibrate runs) | `checks.quasi_steady_time`, `checks.plateau`, `postprocess.lacey_series` | as above | `validation.json`, `analysis/lacey.csv` | [14](../../docs/scientific_rationale/14_dataset_runs_and_recording.md) |
+| V8 / C15-1 | Bulk toe / shoulder from the time-averaged position density; liner-force cross-check | `checks.toe_shoulder`, `checks.liner_force_arc`, `postprocess.charge_shape`, `monitor.liner_force_histogram` | post-processing of a calibrate run | `analysis/charge_shape.json` | [15](../../docs/scientific_rationale/15_calibration_targets.md) |
+| V19 / C14-3 | Radial large-particle fraction per frame: slice, centre and near-wall layers | `postprocess.segregation_profiles` | post-processing of a dataset run | `analysis/radial_fraction.parquet`, `validation.json` | 14 |
+| C16-1 | All per-run checks in one table (value, criterion, pass / fail / reported) | `postprocess.validation_summary` | any run | manifest `validation`, `validation.json` | 16 |
+| C14-1 | Run types: make_ic -> dataset chain with the material-set id check | `run_simulation.py` (`_stage_save_ic`, `_stage_load_ic`), `scenario.material_set_id` | `run_smoke_checks.sh` (smoke chain) | `data/raw/yade_runs/smoke_make_ic_s0`, `smoke_dataset_s0` | [13](../../docs/scientific_rationale/13_initial_conditions.md), 14 |
 | C10-4 | Mill liner geometry (radii, widths, angles, areas) | `pm_dem_sm/simulation/mill_geometry.py` | `tests/simulation/test_mill_geometry.py`; any run writes `mill_geometry` + mesh hash to the manifest | `data/raw/validation/results/build/phase3_sag_a_build_manifest.json` | [10](../../docs/scientific_rationale/10_mill_geometry.md) |
 | -- | What a saved scene actually contains (functors, per-pair friction / restitution, overlaps, escapes, speeds) | `inspect_checkpoint.py` | `yadedaily -n -x scripts/validation/inspect_checkpoint.py <checkpoint> --shell-radius R --depth L` | (prints) | 05, 06, 07 (Phase 2 check) |
 | -- | YADE API facts relied on (defaults, MatchMaker by id, energy attributes) | `yade_api_probe.py` | `yadedaily -n -x scripts/validation/yade_api_probe.py` | (prints) | 01, 04, 05, 06 |
 
-Not implemented yet: V6-V12, V15, V17, V19 (Phase 5: C14-x, C15-x, C16-1,
-and the one-off sensitivity studies).
+Not implemented yet: V9-V12, V15, V17 (one-off studies; their scenario files are in
+`configs/simulation/sensitivity/`, C03-3).
 
 ## Provenance of the stored results
 

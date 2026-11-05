@@ -120,9 +120,11 @@ twice, neither time to choose parameters:
 
 ## Current state
 
-No toe / shoulder measurement exists in code. `monitor.py` logs the contact
-torque on the mill facets and the drive power P = -T_z * omega every monitor
-interval.
+| Where | What |
+|---|---|
+| `simulation/checks.py` (`toe_shoulder`, `occupied_arc`), `simulation/postprocess.py` (`charge_shape`) | Bulk toe / shoulder (C15-1, commit `69e6ea0`), in this angle convention (0 deg at 3 o'clock, counter-clockwise). Every recorded frame of a `calibrate` run counts particle centres per 1-deg bin in the layer of the charge next to the liner: the annulus two ball diameters wide just inside the lifter tops, which excludes particles held between the lifters. The time-averaged density is cut at 10 % of its 90th percentile (Boemer & Ponthot's "~10x less likely"). The arc above the cut that runs through the bottom of the mill ends at the **toe** (clockwise end) and the **shoulder** (counter-clockwise end). Written to `analysis/charge_shape.json` and reported as V8 against the targets; unit-tested on a synthetic charge (214 / 27 deg recovered within 1 deg) |
+| `yade_dem/monitor.py` (`liner_force_histogram`), `checks.liner_force_arc` | Cross-check: the monitor writes the contact-force magnitude on the liner facets per 5-deg bin (`liner_forces.csv`) every log row; the arc above 10 % of its 90th percentile gives a force-based toe / shoulder, also in `charge_shape.json`. Smoke test (2 m mill, 22 rpm, J ~ 0.17): bulk toe 245.6 / shoulder 21.4 deg; liner force toe 237.6 / shoulder 7.0 deg (the force toe lies past the bulk toe, as the impact toe should) |
+| `monitor.py` | Contact torque on the mill facets and drive power P = -T_z * omega every monitor interval |
 
 ## Analysis
 
@@ -378,14 +380,16 @@ To do (Claude):
 - Morrell 1993 / 1996a only if obtainable (cited through Toor et al. and
   the SMC help file); verify Morrell's shoulder equation in a primary
   source before quoting a Morrell shoulder value.
-- Implement bulk toe / shoulder extraction from the time-averaged position
-  density (plus the liner-force cross-check).
+- ~~Implement bulk toe / shoulder extraction from the time-averaged position
+  density (plus the liner-force cross-check).~~ Done (C15-1, commit `69e6ea0`); the band
+  (two ball diameters inside the lifter tops) and the 10 % cut are to be
+  checked against images of the first full-scale calibration run.
 
 ## Pending code changes
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C15-1 | Bulk toe / shoulder from the time-averaged position-density contour (Boemer & Ponthot §2.3), in this angle convention; liner-force cross-check | None | Before calibration |
+| C15-1 | Bulk toe / shoulder from the time-averaged position-density contour (Boemer & Ponthot §2.3), in this angle convention; liner-force cross-check | Done (`69e6ea0`) | Before calibration |
 | C15-2 | Plant-data analysis: post-reline window, steady-period filter near the operating point, target medians / IQR; SAG_A-E typicality (claims 1-2) | **Done 2026-11-02** as `operational_data_analysis.py` / `.ipynb` in Zotero (kept out of the public repo with the data) | -- |
 | C15-3 | V15 power comparison (P_mill vs P_charge,plant with the stated assumptions) | Monitor logs P only | After calibration |
 

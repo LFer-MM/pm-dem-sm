@@ -118,9 +118,9 @@ changes run time.
 
 | Where | What |
 |---|---|
-| `simulation/scenario.py:198` | Default `solver.dt_s = 2.5e-5` s, also set explicitly in every `configs/simulation/*.json` (C02-1, commit `5c194ab`); `SimulationScenario.time_step_s()` falls back to `dt_safety` x Rayleigh step only if `dt_s` is `None`; `run_simulation.py:205` sets it |
-| `simulation/scenario.py:760-813, 855-889` | `steps_per_collision()`: Hertz contact time (Johnson Eq. 11.24) at `impact_speed_m_s()` = sqrt(2 g D) over dt for every species pair; `warnings()` flags any pair below `MIN_STEPS_PER_COLLISION = 20`, and `checks()` records `min_steps_per_collision` in the run manifest (C02-2). With the defaults it reproduces the table below (rock-rock 20.9, steel-rock 21.3, steel-steel 36.6); dt = 1e-4 s is flagged. Particle-wall pairs are not checked |
-| `config.py:123, 129` | Physical moduli 207 GPa / 55 GPa, scaled by `solver.young_scale` (default 1/26, `scenario.py:200`) ([03](03_stiffness_young_modulus.md)) |
+| `simulation/scenario.py:210` | Default `solver.dt_s = 2.5e-5` s, also set explicitly in every `configs/simulation/*.json` (C02-1, commit `5c194ab`); `SimulationScenario.time_step_s()` falls back to `dt_safety` x Rayleigh step only if `dt_s` is `None`; `run_simulation.py:223` sets it |
+| `simulation/scenario.py:832-885, 927-961` | `steps_per_collision()`: Hertz contact time (Johnson Eq. 11.24) at `impact_speed_m_s()` = sqrt(2 g D) over dt for every species pair; `warnings()` flags any pair below `MIN_STEPS_PER_COLLISION = 20`, and `checks()` records `min_steps_per_collision` in the run manifest (C02-2). With the defaults it reproduces the table below (rock-rock 20.9, steel-rock 21.3, steel-steel 36.6); dt = 1e-4 s is flagged. Particle-wall pairs are not checked |
+| `config.py:123, 129` | Physical moduli 207 GPa / 55 GPa, scaled by `solver.young_scale` (default 1/26, `scenario.py:212`) ([03](03_stiffness_young_modulus.md)) |
 | `data/raw/sic_dataset_20s_dt0p0001_csv.zip` | Existing dataset, generated at dt = 1e-4 s with the old code |
 
 ## Analysis

@@ -54,8 +54,10 @@ No spin-up stage before recording: spinning up first would destroy the IC.
 |---|---|
 | `config.py:204, 209, 210` | `start_frame = 66`, `dt0 = 4.05`, `dt_step = 0.05` (prediction seeded at ~3.3-4.05 s, from the old dataset) |
 | `config.py:252-253`, `configs/pipeline_example.json` | `MetricsOptions.cell_size = 0.3` (C14-2, commit `5c194ab`), `min_particles_per_cell = 15` |
-| `scenario.py:33`, `run_simulation.py:305-316` | Stages `build, fill, settle, spinup, record`: recording only **after** spin-up -- right for calibration runs, wrong for SIC / RMIC datasets (record from rest) |
-| `capture.py:71, 129` | One CSV per frame; `data_processing` converts to parquet afterwards |
+| `scenario.py` (`RunOptions`, `RUN_TYPE_STAGES`), `run_simulation.py` (`_stage_save_ic`, `_stage_load_ic`) | Three run types (C14-1, commit `69e6ea0`): `calibrate` (build, fill, settle, spinup, record), `make_ic` (build, fill, settle, save_ic: velocities zeroed; `ic/positions.csv`, `ic/scene.yade.gz`, `ic/ic.json` with seed, counts, J, phi, settle result and the material-set id in the IC's name) and `dataset` (load_ic, record from rest at t = 0; refuses an IC whose material-set id differs). `--seed N` (`run_simulation.py`, `pm-dem-sm dem-sim`) makes replicate N and appends `_sN` to the run name; `{seed}` in a dataset's `run.ic_dir` pairs it with `make_ic` replicate N. SAG_A scenarios: `configs/simulation/sag_a_make_ic_{rmic,sic}.json`, `sag_a_dataset_{rmic,sic}.json` (20 / 35 s) |
+| `capture.py`, `simulation/postprocess.py` (`convert_frames`) | YADE writes one CSV per frame (its Python has no pandas / pyarrow); after a successful run `pm-dem-sm dem-sim` (or `dem-post <run-dir>`) converts them to float32 parquet (`id` int32, `m` string) and deletes the CSVs (C14-4, commit `69e6ea0`). Smoke test: 20 frames of 360 particles, 18 kB each |
+| `simulation/postprocess.py` (`segregation_profiles`, `lacey_series`) | `dataset` runs: radial large-particle fraction per frame (12 bins out to the radius inside liners) for the whole slice, the centre layer and the near-wall layers (one ball diameter from each end wall, V19), in `analysis/radial_fraction.parquet`; Lacey's index per frame on 0.3 m cells in `analysis/lacey.csv`; both summarised in the validation table (C14-3, commit `69e6ea0`) |
+| `simulation/postprocess.py` (`validation_summary`) | V7: quasi-steady time of kinetic energy, power (10 % of the final level) and charge angle (2 deg) from the record-stage mill log, plus the Lacey plateau; passes if the quasi-steady time leaves at least the 1 s training window before the end. This is the measurement C14-5 will use to place `start_frame` / `dt0` |
 | Existing dataset | Charge centre-of-mass angle: 0 deg (t = 0), 22 deg (2 s), 38 deg (4 s), 54 deg (10 s), 60 deg (20 s) -- still rising at 3-4 s |
 
 ## Analysis
@@ -119,7 +121,7 @@ state of kinetic energy, the criterion used by Kishida et al. (§3, Fig. S1)."
 
 ## Open items / validation
 
-- **End-wall artefact in segregation metrics** ([10](10_mill_geometry.md)):
+- **End-wall artefact in segregation metrics** ([10](10_mill_geometry.md)) -- the near-wall vs centre profiles are computed (C14-3); still to be judged on the datasets:
   report the near-wall layers (~1-2 ball diameters from each frictionless
   end wall) separately from the slice centre, or show they agree;
   segregation next to the end walls has no counterpart in the real mill's
@@ -129,16 +131,16 @@ state of kinetic energy, the criterion used by Kishida et al. (§3, Fig. S1)."
   charge angle; set `start_frame` / `dt0` from it.
 - Check the Lacey index curves reach their plateau within the run length
   (SIC 5 rev); extend if not.
-- Separate run types in the code: `calibrate` (spin-up, steady state),
-  `make_ic`, `dataset` (record from rest).
+- ~~Separate run types in the code: `calibrate` (spin-up, steady state),
+  `make_ic`, `dataset` (record from rest).~~ Done (C14-1, commit `69e6ea0`).
 
 ## Pending code changes
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C14-1 | Run types: `dataset` (load IC, start from rest, record from t = 0 for 20 / 35 s), `calibrate` (spin-up, then record), `make_ic` | One pipeline with spin-up before recording | Before datasets |
+| C14-1 | Run types: `dataset` (load IC, start from rest, record from t = 0 for 20 / 35 s), `calibrate` (spin-up, then record), `make_ic` | Done (`69e6ea0`) | Before datasets |
 | C14-2 | `MetricsOptions.cell_size = 0.3` | Done (`5c194ab`) | With C14-3 |
-| C14-3 | Radial large-particle fraction (result) and axial profile with near-wall vs centre layers (artefact check) | Not computed | Before datasets |
-| C14-4 | Frames to parquet float32 at the end of each run; drop the per-frame CSVs | CSV per frame, converted later | Any time |
+| C14-3 | Radial large-particle fraction (result) and axial profile with near-wall vs centre layers (artefact check) | Done (`69e6ea0`) | Before datasets |
+| C14-4 | Frames to parquet float32 at the end of each run; drop the per-frame CSVs | Done (`69e6ea0`) | Any time |
 | C14-5 | `start_frame` / `dt0` from the pilot's quasi-steady time | 66 / 4.05 (old dataset) | After the pilot |
 

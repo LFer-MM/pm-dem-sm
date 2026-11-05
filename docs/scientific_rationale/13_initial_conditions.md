@@ -161,7 +161,9 @@ per IC differ only in the random seed."
   if eta R |F_n| > 0, so eta = 0 leaves the rolling spring uncapped,
   i.e. unlimited rolling resistance. The code therefore switches the moment
   law off when mu_r = 0 ([06](06_rolling_resistance.md)).
-- Store ICs under versioned names including the material-set id, so an IC is
-  never reused with different materials.
+- ~~Store ICs under versioned names including the material-set id, so an IC is
+  never reused with different materials.~~ Done (C14-1, commit `69e6ea0`): `make_ic`
+  names the IC `<scenario>_<RMIC|SIC>_seed<N>_<material-set id>` and a `dataset` run
+  refuses an IC whose id differs from its own (smoke chain tested 2026-11-05).
 - Confirm in a calibrated run that balls do migrate towards the core (as in
   Govender) for this charge; if not, revisit the SIC orientation argument.

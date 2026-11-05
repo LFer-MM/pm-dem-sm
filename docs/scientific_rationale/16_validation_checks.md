@@ -35,6 +35,16 @@ written to the run manifest so each dataset can be defended individually.
   dissipation and the mill torque logged by `monitor.py` for the input.
 - V1 and V2 are cheap and should run automatically before any long run with a
   new material set or dt.
+- How the per-run checks are judged (C16-1, `postprocess.validation_summary`):
+  - V3 is judged over the settle, spin-up and record stages; the pouring
+    transient of the fill stage stays recorded in the manifest. The mean is
+    the time average of the logged per-row means.
+  - V4 passes at |residual| <= 5 % over the record stage.
+  - V7 is the spin-up's steady-state verdict for `calibrate` runs. For
+    `dataset` runs it needs the quasi-steady time of kinetic energy, power
+    and charge angle to leave the 1 s training window before the end,
+    plus a Lacey plateau.
+  - V8, V16 and V19 are reported, with no pass / fail yet.
 - One-off studies: V9 (dt), V10 (stiffness), V11 (end walls), V11b (ore
   density), V11c (friction pair structure), V11d (restitution), V11e
   (rolling resistance), V15 (plant power), V17 (determinism). Their results
@@ -63,10 +73,12 @@ every check run so far are indexed in
 | V8 | C15-1 (toe / shoulder extraction) |
 | V15 | C15-3 |
 | V19 | C14-3 (radial / axial profiles) |
+| V6, V7, all per-run checks together | C16-1 (`postprocess.validation_summary`: value, criterion and pass / fail / reported per check) |
+| V9, V10, V11, V11b-e scenario files | C03-3 (`configs/simulation/sensitivity/`) |
 
 ## Pending code changes
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C16-1 | Validation step: run the per-run checks (V2-V7, V13, V14, V16, V18, V19) and write their results to the run manifest | Partial (monitor logs power, kinetic energy, max overlap) | Before calibration |
+| C16-1 | Validation step: run the per-run checks (V2-V7, V13, V14, V16, V18, V19) and write their results to the run manifest | Done (`69e6ea0`): `simulation/postprocess.validation_summary`, run by `pm-dem-sm dem-sim` after every successful run and by `dem-post`; manifest `validation` and `validation.json` (also V8 reported for calibrate runs) | Before calibration |
 

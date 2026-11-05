@@ -84,7 +84,7 @@ diameter. The papers quote overlap relative to the **diameter**.
 |---|---|
 | `config.py:123` | steel young = 207e9 Pa (physical value) |
 | `config.py:129` | rock young = 55e9 Pa (physical value) |
-| `scenario.py:69, 200` | `solver.young_scale` defaults to `YOUNG_SCALE = 1/26` and multiplies every modulus when the scene is built (C03-1, commit `5c194ab`): 7.96 / 2.115 GPa in the contacts; every `configs/simulation/*.json` sets it explicitly; `warnings()` flags any other value |
+| `scenario.py:81, 212` | `solver.young_scale` defaults to `YOUNG_SCALE = 1/26` and multiplies every modulus when the scene is built (C03-1, commit `5c194ab`): 7.96 / 2.115 GPa in the contacts; every `configs/simulation/*.json` sets it explicitly; `warnings()` flags any other value |
 
 ## Analysis
 
@@ -219,4 +219,4 @@ scaling with particle size in coarse-grained DEM, not softening for dt.
 |---|---|---|---|
 | C03-1 | Store the **physical** moduli in `config.MATERIALS` (steel 207e9, rock 55e9 Pa) and set `solver.young_scale = 1/26` in the scenario, so the provenance stays visible Done (`5c194ab`) | Before any production run |
 | C03-2 | Overlap statistics relative to the smaller **diameter**, per pair type (mean, P99, max) in the monitor | Done (`494c1f3`): relative to the smaller diameter (the sphere's own for wall contacts); per-row mean / P99 / max in `mill_log.csv`, per pair type (small-small, small-large, large-large, small-wall, large-wall) at the end of every stage in the manifest. Smoke test: max 2.6 % of d, P99 <= 1.9 % (V3 limits 10 % / 2 %) | With C03-1 |
-| C03-3 | V10 scenarios: `young_scale` = 1/52 and 1/13 | None | After C03-1 |
+| C03-3 | V10 scenarios: `young_scale` = 1/52 and 1/13 | Done (`69e6ea0`): `configs/simulation/sensitivity/sens_v10_stiffness_f52.json` / `_f13.json` (same dt; f = 13 gives 15.8 steps per rock-rock collision at 14.5 m/s, flagged by the scenario warning, which is part of what V10 tests), with the V9 / V11 / V11b-e files beside them | After C03-1 |

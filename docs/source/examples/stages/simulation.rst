@@ -18,19 +18,24 @@ and speed, the two particle species, materials (rock, steel and the steel
 friction (``contact.particle_friction`` mu_p, ``contact.wall_friction``
 mu_w) and rolling resistance, time step, and the settings of each stage.
 Keys left out keep their defaults (which come from :mod:`pm_dem_sm.config`
-and the decisions in ``docs/scientific_rationale/``), except
-``contact.rolling_resistance`` (mu_r), which every scenario must set: it
-has no sourced value yet, and runs record it as provisional. Two scenarios
-ship in ``configs/simulation/``, both with mu_r = 0.25:
+and the decisions in ``docs/scientific_rationale/``); mu_r = 0.13 (heap
+test, C06-3) is recorded as provisional in every run until it is
+re-checked with the calibrated friction. Scenarios in ``configs/simulation/``:
 
-``smoke_test.json``
-   A 2 m mill with 360 particles; runs every stage in about a minute.
-   Use it to check the pipeline, not the physics.
+``smoke_test.json``, ``smoke_make_ic.json``, ``smoke_dataset.json``
+   A 2 m mill with 360 particles; each runs in about a minute. Use them to
+   check the pipeline (calibrate, make_ic -> dataset), not the physics.
 ``sag_slice_lifters.json``
    The SAG_A slice (10.7128 m inside liners, 0.6 m deep, 9.5 rpm) with the
    grind-out charge (16,082 rocks, 3,437 steel balls; C12-3), SAG_A's new
    liner (36 lifters of 395 mm at 35 deg alternating with 130 mm plates)
-   and frictionless slice end walls.
+   and frictionless slice end walls; a ``calibrate`` run.
+``sag_a_make_ic_rmic.json``, ``sag_a_make_ic_sic.json``, ``sag_a_dataset_rmic.json``, ``sag_a_dataset_sic.json``
+   The same slice as initial conditions (randomly mixed / segregated) and
+   datasets recorded from them (20 s / 35 s).
+``sensitivity/``
+   The one-off sensitivity runs (V9, V10, V11, V11b-e), each one change
+   from ``sens_baseline.json``.
 
 Check a scenario before spending DEM time on it:
 
@@ -42,11 +47,27 @@ Check a scenario before spending DEM time on it:
    print(s.checks())    # critical speed, fill level J, steps per collision, lifter gap, ...
    print(s.warnings())  # e.g. < 20 steps per collision, speed outside 60-85% critical
 
-Stages
-------
+Run types and stages
+--------------------
 
-``run_simulation.py`` runs five stages and writes a checkpoint after each;
-numerical damping is 0 in all of them:
+``run.type`` in the scenario selects the stages ``run_simulation.py`` runs
+(a checkpoint after each; numerical damping is 0 in all of them):
+
+``calibrate`` (default)
+   ``build``, ``fill``, ``settle``, ``spinup``, ``record``: the charge is
+   spun up to steady state and then recorded; used for the friction
+   calibration and the sensitivity runs (``configs/simulation/sensitivity/``).
+``make_ic``
+   ``build``, ``fill``, ``settle``, ``save_ic``: an initial condition is
+   poured (``fill.method`` ``random`` for RMIC, ``segregated`` for SIC),
+   settled, set at rest and saved in ``ic/`` under a name that includes the
+   material-set id.
+``dataset``
+   ``load_ic``, ``record``: the IC of ``run.ic_dir`` is loaded (refused if its
+   material-set id differs) and recorded from rest at t = 0 for
+   ``record.duration_s`` (20 s RMIC, 35 s SIC).
+
+The stages:
 
 1. ``build`` -- materials, mill liner generated from the design parameters
    (:mod:`~pm_dem_sm.simulation.mill_geometry`; parameters and a mesh hash
@@ -54,13 +75,15 @@ numerical damping is 0 in all of them:
    walls, Hertz-Mindlin engines with per-pair restitution and friction and
    a rolling moment (``eta`` = mu_r, ``krot`` from the time step), and
    ``dt = solver.dt_s`` (2.5e-5 s by default).
-2. ``fill`` -- the charge is poured in chord-box batches.
-3. ``settle`` -- settling until the unbalanced force is small.
-4. ``spinup`` -- rotation from rest until the charge
-   centre-of-mass angle and the drive power stop changing between
-   consecutive windows (steady state).
-5. ``record`` -- frame CSVs every ``record.frame_interval_s`` for
-   ``record.duration_s``, starting at steady state.
+2. ``fill`` -- the charge is poured in chord-box batches, each checked for
+   overlaps before its first step.
+3. ``settle`` -- until the bed geometry is stationary (charge angle and
+   height over 1 s, mean speed < 1 cm/s) or the time cap.
+4. ``spinup`` -- rotation from rest until the charge centre-of-mass angle
+   and the drive power stop changing between consecutive windows.
+5. ``record`` -- frames every ``record.frame_interval_s`` for
+   ``record.duration_s``.
+6. ``save_ic`` / ``load_ic`` -- see ``make_ic`` / ``dataset`` above.
 
 Running
 -------
@@ -75,6 +98,13 @@ Running
 
    # Watch it in the YADE viewer:
    pm-dem-sm dem-sim --scenario configs/simulation/smoke_test.json --gui
+
+   # Initial conditions and datasets, replicate 0 (--seed N for replicate N):
+   pm-dem-sm dem-sim --scenario configs/simulation/sag_a_make_ic_rmic.json --seed 0
+   pm-dem-sm dem-sim --scenario configs/simulation/sag_a_dataset_rmic.json --seed 0
+
+   # Post-process a run directory again (dem-sim does it after every successful run):
+   pm-dem-sm dem-post data/raw/yade_runs/sag_a_dataset_rmic_s0
 
 From Python:
 
@@ -99,14 +129,27 @@ Everything lands in the run directory:
 
 ``manifest.json``
    The full scenario, derived checks and warnings, YADE version, ``dt``,
-   threads, and per stage: wall time, simulated time span, iterations and
-   outcome (inventory, settle balance, revolutions to steady state, frames).
+   threads, the mill geometry with its mesh hash, and per stage: wall time,
+   simulated time span, iterations, outcome and ``checks`` (damping,
+   escapes, overlaps, impact speeds, energy balance). After post-processing
+   also ``postprocess`` and ``validation`` (the per-run checks with value,
+   criterion and status; also in ``validation.json``).
 ``mill_log.csv``
-   One row per ``record.monitor_interval_s``: charge angle (all, small,
-   large), kinetic energy, drive torque and power, largest overlap.
-``frames/frame_00000.csv`` ...
-   ``id, x, y, z, r, m, vx, vy, vz`` -- the input of
-   :doc:`data_processing`. ``frames_index.csv`` gives each frame's exact time.
+   One row per ``record.monitor_interval_s``: charge angle and height, mean
+   speed, kinetic energy, drive torque and power, overlaps relative to the
+   smaller diameter, impact-speed P99, energy terms.
+``liner_forces.csv``
+   Contact force on the liner per 5-degree bin, one row per log row.
+``frames/frame_00000.parquet`` ...
+   ``id, x, y, z, r, m, vx, vy, vz`` as float32 (CSV while YADE runs;
+   converted by the post-processing). ``frames_index.csv`` gives each
+   frame's exact time.
+``analysis/``
+   ``radial_fraction.parquet`` and ``lacey.csv`` (dataset runs),
+   ``charge_shape.json`` with the bulk toe / shoulder and the liner-force
+   cross-check (calibrate runs).
+``ic/`` (make_ic runs)
+   ``positions.csv``, ``scene.yade.gz``, ``ic.json``.
 ``checkpoints/<stage>.yade.gz``
    YADE scenes to resume from or open in the viewer.
 
