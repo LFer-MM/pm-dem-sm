@@ -18,6 +18,10 @@ Decided 2026-10-21.
   parameters (mu_p, mu_w, mu_r).
 - **Repose target: 37 deg**, sensitivity band 33-41 deg (sources and their
   weight in Analysis). No plant measurement is available.
+- **Result of the heap test (C06-3, 2026-11-05): mu_r = 0.13** for 37 deg
+  at the baseline mu_p = 0.5, and 0.08 / 0.19 for 33 / 41 deg (V11e),
+  each about +-0.02 from the seed scatter (Analysis, "Heap test results").
+  To be re-checked once the mill calibration fixes mu_p (step 3 below).
 - **Settings:** `ktwist = 0`; `krot` chosen from the time step and a
   yield-rotation criterion (Analysis); 6-DOF geometry functors.
 
@@ -64,7 +68,7 @@ No slide mentions rolling resistance. Slide 42 (structure map) lists
 | Where | What |
 |---|---|
 | `engines.py:72-88` | `Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`, `Ip2_FrictMat_FrictMat_MindlinPhys(eta=mu_r, krot=..., ktwist=0)`, `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` (C06-1, commit `4bb17e4`) |
-| `scenario.py` (`ContactOptions.rolling_resistance`) | mu_r is a **required** scenario input, with no default: a scenario without it fails validation. `provisional_parameters()` marks it provisional, and every run manifest records it under `provisional_parameters`. Both `configs/simulation/*.json` use **0.25**, a placeholder (the middle of Wei et al. 2022's 0.2-0.3 for lumps as spheres), until C06-3 |
+| `config.ROLLING_RESISTANCE`, `scenario.py` (`ContactOptions.rolling_resistance`) | mu_r = **0.13** by default and in both `configs/simulation/*.json`: the heap test's value for 37 deg at mu_p = 0.5 (C06-3, commit `9959f69`; Analysis "Heap test results"). Before C06-3 it was a required input, with a 0.25 placeholder in the JSONs. It stays listed under `provisional_parameters` in every manifest until the heap is re-checked with the calibrated mu_p. mu_r = 0 switches the moment law off (`engines.initialize_engines`): in YADE, eta = 0 would leave the rolling spring uncapped |
 | `scenario.py` (`rolling_stiffness()`, `check_rolling_stiffness()`) | C06-2, commit `4bb17e4`. `krot` is set so that the smallest sphere's rolling period is exactly 20 time steps, the stiffest the step resolves: with the defaults (r = 0.034925 m, 2850 kg/m^3, dt = 2.5e-5 s) krot = 39,183 N m/rad. At build, `run_simulation` checks T_r >= 20 dt and theta_y <= 0.01 rad at the typical contact force, and stops otherwise. The typical force (`typical_contact_force_n()`) is an order-of-magnitude, high-end estimate: the weight of a column of bulk charge (solid fraction 0.6) as deep as a flat bed holding the fill, standing on one small-particle cross-section (2 r)^2, ~560 N with the defaults. That gives theta_y = 1.3e-4 rad at mu_r = 0.25, far inside the 0.01 rad criterion, so the estimate's precision does not matter. `checks()` and the manifest record krot, T_r, the force and theta_y |
 
 ## Analysis
@@ -166,6 +170,69 @@ of the handbook values.
   rest. The settling test (C06-4) checks that a heap and a settled charge
   come to rest with the stiff krot and shear damping
   ([13](13_initial_conditions.md)).
+- **eta = 0 is not "no rolling resistance" in YADE.** The plastic cap is
+  applied only `if (MomentMax > 0)` (`HertzMindlin.cpp:688-690`, build
+  `7c8d01e`), so eta = 0 leaves the rolling spring elastic and uncapped,
+  i.e. unlimited rolling resistance. A heap with eta = 0 stood at 54 deg,
+  steeper than any capped value. The code therefore switches the moment
+  law off when mu_r = 0.
+
+### Heap test results (C06-3, C06-4; 2026-11-04/05)
+
+`yade_dem/heap.py` follows the design under Open items.
+
+**Setup:**
+- 900 rock spheres (r = 0.034925 m, 2850 kg/m^3) poured into a
+  frictionless cylinder 10 rock diameters wide, on a hexagonal layer of
+  fixed rock spheres.
+- Settled by the geometric rule, cylinder lifted at 0.05 m/s and removed,
+  settled again.
+- The run's dt, moduli and contact law: mu_p = 0.5, krot from the time
+  step, damping 0.
+- Seeds 0-2 per value. Heaps end ~1.2 m across (17-18 d).
+
+**Fit (`checks.repose_angle`):** the surface is the top sphere in each
+one-diameter horizontal cell, and `top = h0 - tan(angle) rho` is fitted
+over 20-80 % of the heap radius (~140 cells, R^2 ~ 0.8).
+
+| mu_r | Seeds | Mean angle | Seed SD |
+|---|---|---|---|
+| 0.05 | 1 | 30.3 deg | -- |
+| 0.10 | 3 | 34.8 deg | 0.3 deg |
+| 0.15 | 3 | 38.3 deg | 2.3 deg |
+| 0.20 | 3 | 41.3 deg | 0.6 deg |
+| 0.25 | 3 | 43.9 deg | 2.1 deg |
+| 0.30 | 3 | 44.6 deg | 1.5 deg |
+
+A quadratic fit through the 16 heaps (0.05-0.30, residual 1.4 deg) gives:
+
+| Target | mu_r |
+|---|---|
+| **37 deg** | **0.13** |
+| 33 deg | 0.08 |
+| 41 deg | 0.19 |
+
+A linear fit agrees within 0.02. The angle rises steadily with mu_r and
+has not saturated by 0.30. The no-rolling-resistance limit (24-27 deg, Li
+et al.) lies below 0.05.
+
+Uncertainties:
+- **Seed scatter:** ~1.5 deg, i.e. about +-0.02 in mu_r.
+- **Fitting method:** an earlier version took the highest sphere of each
+  radial ring. That is biased (outer rings hold more particles), and it
+  read 1.5-3 deg lower; the cell-top method replaced it.
+- **Within one heap:** the 8 azimuthal sector fits spread by 3-7 deg.
+
+The pile is near the ~20 d minimum of the design. A wider pile would
+lower the scatter if the 37 deg value needs to be tighter.
+
+C06-4 (heap part): every heap came to rest with damping 0 and rolling
+resistance on (final mean speed <= 5e-7 m/s), within 1-1.7 s of settling.
+The charge part is in [13](13_initial_conditions.md): the smoke-test bed
+settles by the geometric rule to 0.007 mm/s.
+
+Data: `data/raw/heap/` (JSON per heap with final positions;
+`heap_refit.py` reproduces the table), not in git.
 
 ## Verdict and how to defend it
 
@@ -202,5 +269,5 @@ band."
 |---|---|---|---|
 | C06-1 | 6-DOF geometry functors and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)`; `Ip2_FrictMat_FrictMat_MindlinPhys(eta=mu_r, krot=..., ktwist=0)` from config (this is C01-2 with values) | Done (`4bb17e4`) | Before calibration |
 | C06-2 | `krot` helper: from the smallest rock sphere, dt and a typical contact force, return krot meeting the T_r >= 20 dt and theta_y ~ 0.01 rad (<< 0.05 rad, Ai et al.) criteria; assert at build | Done (`4bb17e4`): krot at exactly T_r = 20 dt; the typical force is the static-bed estimate in Current state | With C06-1 |
-| C06-3 | Heap (angle-of-repose) script: rock-only pile, slope fit, returns the angle for given (mu_p, mu_r) | None | Before calibration |
-| C06-4 | Settling test with rolling resistance and damping 0: heap and charge reach rest (mean speed below the [13](13_initial_conditions.md) threshold) | None | With C06-1 and C04-5 |
+| C06-3 | Heap (angle-of-repose) script: rock-only pile, slope fit, returns the angle for given (mu_p, mu_r) | Done (`494c1f3`, refit `9959f69`): `yade_dem/heap.py`; mu_r = 0.13 (37 deg), 0.08 (33 deg), 0.19 (41 deg), see Analysis | Before calibration |
+| C06-4 | Settling test with rolling resistance and damping 0: heap and charge reach rest (mean speed below the [13](13_initial_conditions.md) threshold) | Done: heaps at rest (<= 5e-7 m/s), smoke-test charge settles by the geometric rule to 0.007 mm/s; full-scale charge with the grind-out runs (C12-3) | With C06-1 and C04-5 |

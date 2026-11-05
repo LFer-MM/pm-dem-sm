@@ -218,5 +218,5 @@ scaling with particle size in coarse-grained DEM, not softening for dt.
 | ID | Change | Current code | When |
 |---|---|---|---|
 | C03-1 | Store the **physical** moduli in `config.MATERIALS` (steel 207e9, rock 55e9 Pa) and set `solver.young_scale = 1/26` in the scenario, so the provenance stays visible Done (`5c194ab`) | Before any production run |
-| C03-2 | Overlap statistics relative to the smaller **diameter**, per pair type (mean, P99, max) in the monitor | `monitor.max_overlap()` divides by the smaller **radius** (2x the literature convention) and reports the max only; same in `diagnostics.check_overlaps()` | With C03-1 |
+| C03-2 | Overlap statistics relative to the smaller **diameter**, per pair type (mean, P99, max) in the monitor | Done (`494c1f3`): relative to the smaller diameter (the sphere's own for wall contacts); per-row mean / P99 / max in `mill_log.csv`, per pair type (small-small, small-large, large-large, small-wall, large-wall) at the end of every stage in the manifest. Smoke test: max 2.6 % of d, P99 <= 1.9 % (V3 limits 10 % / 2 %) | With C03-1 |
 | C03-3 | V10 scenarios: `young_scale` = 1/52 and 1/13 | None | After C03-1 |

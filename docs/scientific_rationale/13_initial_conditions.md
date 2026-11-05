@@ -71,7 +71,7 @@ therefore never reached; a geometric criterion is.
 |---|---|
 | `particles.py:196` | `ingress_segregated` pours **small first, then large** -> rock at the bottom, balls on top (matches the decision) |
 | `particles.py:119, 182, 261-273` | `ingress_random`; mass and inertia recomputed from radius and density after resizing (the old steel-ball-mass bug is fixed) |
-| `run_simulation.py:8, 228-243`; `state.py:136` | Settle stage (undamped since C04-1) and the IC-saving helper still stop on "the unbalanced force is small" (`run_until_forces_balanced`) -- to be replaced by the geometric stop rule (C04-5, [04](04_numerical_damping.md)) |
+| `monitor.run_until_settled`, `run_simulation._stage_settle`, `state.settle_and_save` | Settle stage and the IC helper use the geometric stop rule above (`checks.settle_stop`: 1 s window, 0.5 deg, 1 % of d_small, 1 cm/s, time cap `settle.max_time_s` = 20 s) and record the stop reason; `settle_and_save` also zeroes all velocities before saving (C04-5, commit `494c1f3`) |
 | Existing SIC dataset, frame 0 | ore_rock mean y = -4.42 m, ball_steel mean y = -2.10 m -> rock bottom, balls top (opposite of Kishida's S-IC) |
 
 ## Analysis
@@ -149,6 +149,18 @@ per IC differ only in the random seed."
   (2012, §2) rely instead on a stiff rolling spring with shear damping.
   The settling test C06-4 checks whether the floor disappears with the
   stiff krot of [06](06_rolling_resistance.md).
+  **Smoke test, 2026-11-04 (current code, geometric stop rule):** the 4-6
+  mm/s floor is not seen. The settled bed stops by the rule after 1.15 s
+  with mean speed 0.007 mm/s at mu_r = 0.25. With the rolling moment
+  switched off it stops after 1.2 s at 0.5 mm/s: rolling resistance cuts
+  the residual motion ~70-fold, but even without it the bed is well under
+  the old floor. That floor may have come from the old shell / lifter
+  facets (the liner is now generated, [10](10_mill_geometry.md)). To be
+  confirmed at full scale. Note for such tests: in YADE, eta = 0 does
+  **not** switch rolling resistance off. The plastic cap is applied only
+  if eta R |F_n| > 0, so eta = 0 leaves the rolling spring uncapped,
+  i.e. unlimited rolling resistance. The code therefore switches the moment
+  law off when mu_r = 0 ([06](06_rolling_resistance.md)).
 - Store ICs under versioned names including the material-set id, so an IC is
   never reused with different materials.
 - Confirm in a calibrated run that balls do migrate towards the core (as in

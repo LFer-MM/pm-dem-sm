@@ -82,6 +82,28 @@ stiffness sensitivity check (V10) tests this for the present charge.
 - Check that YADE recovers the input restitution in binary collisions at the
   chosen dt (see [16](16_validation_checks.md)); Cleary 2001 (§2, PDF p5)
   uses exactly this as the accuracy criterion of the integration.
+  **Done 2026-11-04 (V1, C01-4)** on the SAG_A scenario. Setup:
+  dt = 2.5e-5 s, f = 26, rock 2850 kg/m^3, mu_r = 0.25; head-on collisions
+  at 1, 5 and 14.5 m/s; each case averaged over 8 contact-onset phases
+  within a step.
+
+  The recovered e depends on where in the step a contact begins. For
+  rock-rock at 14.5 m/s (25 steps per contact) it ranges from +0.6 % to
+  -4.7 %, and real collisions start at random phases, so V1 judges the
+  mean. Mean errors:
+
+  | Pair | Mean error |
+  |---|---|
+  | steel-steel, steel-liner | <= 0.04 % |
+  | rock-steel, rock-liner | -0.5 to -0.8 % |
+  | rock-rock, 1 m/s | -1.5 % |
+  | rock-rock, 5 m/s | **-2.1 %** |
+  | rock-rock, 14.5 m/s | **-2.6 %** |
+
+  So 13 of the 15 cases are within 2 %. Rock-rock, the lowest e (0.3) with
+  the fewest steps, is just outside V1's "~2 %": it recovers slightly too
+  little bounce. Whether that is accepted or answered by the dt-halving
+  check (V9) is for the author to decide.
 - If calibration cannot reach the plant toe / shoulder, the `ViscElMat` linear
   model is the fallback that matches the mill papers one-to-one.
 
@@ -92,4 +114,4 @@ stiffness sensitivity check (V10) tests this for the present charge.
 | C01-1 | **Merged into C05-2** ([05](05_friction.md)): `frictAngle` `MatchMaker` built from material labels | Done (`4bb17e4`, as C05-2) | See C05-2 |
 | C01-2 | 6-DOF geometry (`Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`) and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` with `krot`, `ktwist`, `eta` | Done (`4bb17e4`, as C06-1) | Implemented as C06-1 with values from [06](06_rolling_resistance.md) (uniform eta, ktwist = 0); also needed to investigate the residual-spin floor ([13](13_initial_conditions.md)) |
 | C01-3 | Remove the `cundall_strack` contact option (no collisional dissipation in YADE), optionally replacing it with the `ViscElMat` linear fallback | Done (`5c194ab`): option removed, no fallback added | Any time |
-| C01-4 | V1 restitution-recovery script: one binary collision per material pair at the run's dt, measured vs input e | None | With the run-type split ([14](14_dataset_runs_and_recording.md)) |
+| C01-4 | V1 restitution-recovery script: one binary collision per material pair at the run's dt, measured vs input e | Done (`494c1f3`): `yade_dem/collision_check.py`, averaged over 8 contact-onset phases; results in Open items | With the run-type split ([14](14_dataset_runs_and_recording.md)) |

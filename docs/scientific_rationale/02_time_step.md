@@ -252,7 +252,8 @@ surrogate model (Kishida et al. 2025, §3)."
 
 - Measure the impact-velocity distribution in a pilot run (99th percentile of
   normal relative velocity at contact) and recompute the steps-per-collision
-  table with it.
+  table with it (logged since C02-3; smoke test, 22 rpm in a 2 m mill: spin-up
+  P99 3.5 m/s -> 23.9 steps per collision for the weakest pair).
 - dt-halving test (V9): run 2.5e-5 vs 1.25e-5 s for 2 revolutions; toe,
   shoulder and power must agree within the run-to-run scatter.
 - Restitution recovery and energy balance (see [16](16_validation_checks.md)).
@@ -268,4 +269,4 @@ surrogate model (Kishida et al. 2025, §3)."
 |---|---|---|---|
 | C02-1 | **Default dt = 2.5e-5 s** (explicit `solver.dt_s` in the scenario defaults and JSONs) | Done (`5c194ab`) | Before any production run |
 | C02-2 | Replace the scenario warning `dt / dt_R > 0.5` by the governing check: Hertz contact time (Johnson Eq. 11.24) at sqrt(2 g D) gives >= 20 steps for every pair | Done (`5c194ab`): every species pair; particle-wall pairs not checked | With C02-1 |
-| C02-3 | Log the impact-velocity distribution (P99 of normal relative velocity at contact) in the monitor | Not logged | With the run-type split |
+| C02-3 | Log the impact-velocity distribution (P99 of normal relative velocity at contact) in the monitor | Done (`494c1f3`): normal relative speed at the contact point of contacts formed in the last step, sampled at every log row; per-row P99 in `mill_log.csv`, stage P99 and the steps per collision at that speed (V2) in the manifest | With the run-type split |

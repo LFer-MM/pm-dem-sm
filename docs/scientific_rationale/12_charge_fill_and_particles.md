@@ -165,5 +165,5 @@ Zhang 2008) because of the walls and lifters."
 | ID | Change | Current code | When |
 |---|---|---|---|
 | C12-1 | Remove the hard-coded `ROCK_COUNT` / `BALL_COUNT`; counts come from the scenario, produced by C12-3 | Done (`5c194ab`): provisional counts as scenario defaults | Before calibration |
-| C12-2 | `fill_fraction` measured from the settled surface profile (Morrell convention), not from an assumed packing | `scenario.py:709-720` | With C12-3 |
+| C12-2 | `fill_fraction` measured from the settled surface profile (Morrell convention), not from an assumed packing | Done (`494c1f3`): `checks.fill_level` (top sphere per column across the section, area of the inside-liner circle below the surface; with the liner profile also the free bulk area and phi), unit-tested on flat beds against the circular-segment formula; `scenario.fill_fraction` stays as the pre-run estimate | With C12-3 |
 | C12-3 | Grind-out / crash-stop script: ball stage then mixed stage, iterate counts to Jb / Jc +-0.5, 3 seeds, writes counts and phi to the scenario | Slides 13-15 procedure (manual, with damping) | Before calibration |

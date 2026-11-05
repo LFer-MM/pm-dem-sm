@@ -120,7 +120,9 @@ between the smoke test and the full mill):
 |---|---|
 | `engines.py:87` | `NewtonIntegrator` created with `damping=0` |
 | `scenario.py` (`FillOptions`, `SettleOptions`) | No damping fields any more: a scenario JSON with `fill.damping` or `settle.damping` is rejected (C04-1, commit `5c194ab`) |
-| `run_simulation.py:189, 202, 232, 249, 282` | `NUMERICAL_DAMPING = 0.0` set explicitly at build and at the start of fill, settle, spin-up and recording. The smoke test (`configs/simulation/smoke_test.json`) fills, settles, spins up and records with it, with no escapes |
+| `run_simulation.py` (`run`, `_stage_checks`) | `NUMERICAL_DAMPING = 0.0` set explicitly at build and at the start of every stage, then **asserted** by `engines.assert_no_damping()` (V5, C04-2, commit `494c1f3`); each stage's `checks` in the manifest records the value. After every stage the V14 escape count (`diagnostics.count_escapes`: centre outside the shell radius or the slice depth) is recorded, and the run stops if it is not 0. Before the first step of every fill batch, `diagnostics.check_new_batch` checks the new spheres against each other, every other sphere, the liner triangles and the end walls (V13); the run stops on any overlap, and the counts go to the fill stage's `v13_initial_overlaps` (C04-4, commit `494c1f3`). The smoke test (`configs/simulation/smoke_test.json`) passes all of them: 11 batches, 360 spheres, 0 overlaps, 0 escapes |
+| `monitor.py` (`run_until_settled`), `run_simulation._stage_settle`, `state.settle_and_save` | Settle stop = the geometric rule of [13](13_initial_conditions.md) (pure logic in `checks.settle_stop`, unit-tested); `run_until_forces_balanced` and the unbalanced-force fields are gone. The manifest records the stop reason (`stationary` or `time_cap`), the window's angle / height changes and the mean speed (C04-5, commit `494c1f3`). `state.settle_and_save` (IC helper) uses the same rule and zeroes all velocities before saving |
+| `engines.initialize_engines`, `monitor.py`, `checks.energy_balance` | Energy tracking on (`O.trackEnergy`, Mindlin `calcEnergy`). The mill log carries the potential (`gravWork`), elastic and cumulative dissipated energy (dashpots + friction), plus a sampled estimate of the rolling-moment plastic dissipation, which YADE does not track: \|M\| x \|relative angular velocity normal to the contact\| over the contacts at the cap, integrated between log rows. Each stage records the V4 balance (C04-3, commit `494c1f3`; results in Analysis) |
 | Existing `sic_dataset_20s_dt0p0001` | Generated with 0.2 according to slide 19 (old code) |
 
 ## Analysis
@@ -177,14 +179,39 @@ the packing fraction."
 
 ## Open items / validation
 
-- Energy balance per run (V4): integral of power (torque x omega) vs. the
-  sum of contact dissipation (YADE energy tracker `O.trackEnergy = True`); see
-  [16](16_validation_checks.md).
-- V5: assert `NewtonIntegrator.damping == 0` in every stage (C04-2). The
-  value is already set explicitly in every stage (C04-1); the assertion
-  is still to come.
+- Energy balance per run (V4), implemented (C04-3). The terms:
+  - **Input:** drive work, the integral of power (torque x omega).
+  - **Tracked by YADE:** contact dissipation (normal and shear dashpots,
+    friction), with the energy tracker and the Mindlin law's `calcEnergy`.
+  - **Not tracked by YADE:** the plastic dissipation of the rolling moment.
+    On the smoke test (mu_r = 0.25) leaving it out leaves 29-31 % of the
+    dissipation unaccounted in fill and settle. With the moment law
+    switched off the balance closes to -3.2 % (fill) and -1.7 % (settle),
+    so the tracked terms are sound. The monitor therefore adds a sampled
+    estimate of the rolling term (Current state).
+
+  Smoke-test residuals with the estimate:
+
+  | Stage | Residual |
+  |---|---|
+  | fill | -1.7 % |
+  | spin-up | -10.5 % |
+  | record | +11.6 % |
+  | spin-up + record pooled | -6 % |
+  | settle | 23 % of only 24 J |
+
+  These are sampled every 0.05 s in a 360-particle mill whose power
+  fluctuates strongly. Judge V4 ("within a few %") over the steady part
+  of a full-scale run (pilot); if it does not close there, the next step is
+  to integrate the drive work every step instead of sampling it.
+  Two YADE details: friction dissipation can be slightly negative in this
+  build, and the residual-free probe of two spheres on a facet closed to
+  1.8 %.
+- ~~V5: assert `NewtonIntegrator.damping == 0` in every stage (C04-2).~~
+  Done (commit `494c1f3`).
 - V13 (new): zero sphere-sphere and sphere-facet overlaps before the first
-  step of every fill batch; abort otherwise. Seen in the phase-1 smoke run
+  step of every fill batch; abort otherwise. Implemented (C04-4, commit
+  `494c1f3`). Seen in the phase-1 smoke run
   (2026-11-04): `fill.settle_steps` is a step count, so with dt = 2.5e-5 s
   the old 1,500 steps gave only 0.04 s of fall time per batch. Batches
   stacked up to the top of the mill, the chord box there had zero width,
@@ -207,7 +234,7 @@ the packing fraction."
 | ID | Change | Current code | When |
 |---|---|---|---|
 | C04-1 | **Damping = 0 in every stage**, set explicitly (drop the `fill.damping` / `settle.damping` fields or default them to 0) Done (`5c194ab`): fields removed | Before any production run |
-| C04-2 | V5 assertion at the start of every stage | None | With C04-1 |
-| C04-3 | Energy tracking (`O.trackEnergy = True`, `Law2...calcEnergy = True`) and the V4 energy balance (mill work vs contact dissipation) | Monitor logs power and kinetic energy only | With the run-type split |
-| C04-4 | V13 overlap check before each fill batch; V14 escape check after each stage | None | With C04-1 |
-| C04-5 | Settle stop rule -> geometric criterion of [13](13_initial_conditions.md) (charge COM angle / height stationary over 1 s, mean speed < 1 cm/s, time cap) | `run_until_forces_balanced` (unbalanced force), which does not converge without damping | With C01-2 (rolling resistance may change the residual motion) |
+| C04-2 | V5 assertion at the start of every stage | Done (`494c1f3`) | With C04-1 |
+| C04-3 | Energy tracking (`O.trackEnergy = True`, `Law2...calcEnergy = True`) and the V4 energy balance (mill work vs contact dissipation) | Done (`494c1f3`), with a sampled estimate of the untracked rolling dissipation; V4 still to be judged on a full-scale run | With the run-type split |
+| C04-4 | V13 overlap check before each fill batch; V14 escape check after each stage | Done (`494c1f3`) | With C04-1 |
+| C04-5 | Settle stop rule -> geometric criterion of [13](13_initial_conditions.md) (charge COM angle / height stationary over 1 s, mean speed < 1 cm/s, time cap) | Done (`494c1f3`) | With C01-2 (rolling resistance may change the residual motion) |
