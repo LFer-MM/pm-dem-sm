@@ -13,11 +13,15 @@ Scenarios
 
 A run is described by one JSON file, loaded into a
 :class:`~pm_dem_sm.simulation.scenario.SimulationScenario`: mill geometry
-and speed, the two particle species, materials and restitution, contact
-law, time step, and the settings of each stage. Keys left out keep their
-defaults (which come from :mod:`pm_dem_sm.config` and the decisions in
-``docs/scientific_rationale/``). Two scenarios ship in
-``configs/simulation/``:
+and speed, the two particle species, materials (rock, steel and the steel
+``liner`` of shell and lifters) and restitution, contact law with per-pair
+friction (``contact.particle_friction`` mu_p, ``contact.wall_friction``
+mu_w) and rolling resistance, time step, and the settings of each stage.
+Keys left out keep their defaults (which come from :mod:`pm_dem_sm.config`
+and the decisions in ``docs/scientific_rationale/``), except
+``contact.rolling_resistance`` (mu_r), which every scenario must set: it
+has no sourced value yet, and runs record it as provisional. Two scenarios
+ship in ``configs/simulation/``, both with mu_r = 0.25:
 
 ``smoke_test.json``
    A 2 m mill with 360 particles; runs every stage in about a minute.
@@ -44,8 +48,9 @@ Stages
 numerical damping is 0 in all of them:
 
 1. ``build`` -- materials, mill (STL or parametric shell with lifters), end
-   walls, Hertz-Mindlin engines, and ``dt = solver.dt_s`` (2.5e-5 s by
-   default).
+   walls, Hertz-Mindlin engines with per-pair restitution and friction and
+   a rolling moment (``eta`` = mu_r, ``krot`` from the time step), and
+   ``dt = solver.dt_s`` (2.5e-5 s by default).
 2. ``fill`` -- the charge is poured in chord-box batches.
 3. ``settle`` -- settling until the unbalanced force is small.
 4. ``spinup`` -- rotation from rest until the charge

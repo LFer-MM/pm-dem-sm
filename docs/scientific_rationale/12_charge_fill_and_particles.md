@@ -88,10 +88,10 @@ estimate.
 | Where | What |
 |---|---|
 | `config.py` | `ROCK_COUNT` / `BALL_COUNT` removed (C12-1, commit `5c194ab`): counts are `Species.count` scenario inputs only |
-| `scenario.py:53-54` | Default species carry the provisional SAG_A counts above, `PROVISIONAL_ROCK_COUNT = 14650` and `PROVISIONAL_BALL_COUNT = 3750`, until C12-3 produces them; `sag_slice_lifters.json` uses them too. Both JSONs use r_rock = 0.034925 m |
-| `config.py:77, 80` | `ROCK_DIAM_M = 0.06985`, `BALL_DIAM_M = 0.1397` -- match |
-| `scenario.py:399-410` | `fill_fraction(packing=0.6)`: gross cylinder pi R^2 L (Morrell-consistent denominator) but an **assumed** packing 0.6 and the solid volume of all particles, so it reports J of a lifter-free, perfectly packed charge |
-| `scenario.py:264` | Species counts are scenario inputs (no derivation from Jc / Jb) |
+| `scenario.py:73-74` | Default species carry the provisional SAG_A counts above, `PROVISIONAL_ROCK_COUNT = 14650` and `PROVISIONAL_BALL_COUNT = 3750`, until C12-3 produces them; `sag_slice_lifters.json` uses them too. Both JSONs use r_rock = 0.034925 m |
+| `config.py:76, 79` | `ROCK_DIAM_M = 0.06985`, `BALL_DIAM_M = 0.1397` -- match |
+| `scenario.py:674-685` | `fill_fraction(packing=0.6)`: gross cylinder pi R^2 L (Morrell-consistent denominator) but an **assumed** packing 0.6 and the solid volume of all particles, so it reports J of a lifter-free, perfectly packed charge |
+| `scenario.py:308` | Species counts are scenario inputs (no derivation from Jc / Jb) |
 | Existing `sic_dataset_20s_dt0p0001` | 11,581 rocks with **r = 0.0381 m** (3 in) + 3,195 balls -- matches neither the slides nor this procedure |
 
 ## Analysis
@@ -164,5 +164,5 @@ Zhang 2008) because of the walls and lifters."
 | ID | Change | Current code | When |
 |---|---|---|---|
 | C12-1 | Remove the hard-coded `ROCK_COUNT` / `BALL_COUNT`; counts come from the scenario, produced by C12-3 | Done (`5c194ab`): provisional counts as scenario defaults | Before calibration |
-| C12-2 | `fill_fraction` measured from the settled surface profile (Morrell convention), not from an assumed packing | `scenario.py:399-410` | With C12-3 |
+| C12-2 | `fill_fraction` measured from the settled surface profile (Morrell convention), not from an assumed packing | `scenario.py:674-685` | With C12-3 |
 | C12-3 | Grind-out / crash-stop script: ball stage then mixed stage, iterate counts to Jb / Jc +-0.5, 3 seeds, writes counts and phi to the scenario | Slides 13-15 procedure (manual, with damping) | Before calibration |

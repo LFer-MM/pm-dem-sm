@@ -64,9 +64,9 @@ shape, friction is treated as the main calibration variable.
 
 | Where | What |
 |---|---|
-| `config.py:85, 98, 105` | One `PARTICLE_FRICTION = 0.5` (mu_p); steel and rock both get `"friction_angle": math.atan(PARTICLE_FRICTION)` -> 0.4636 rad (radians) (C05-1, commit `5c194ab`) |
-| `simulation/yade_dem/materials.py:31` | `frictionAngle=material_properties["friction_angle"]` -- used as radians (the old double conversion, which gave mu = 0.0081, is fixed, commit `543208a`) |
-| `engines.py:64-76` | No `frictAngle` MatchMaker: steel-rock contacts get min(mu_steel, mu_rock) (C05-2) |
+| `config.py` | `PARTICLE_FRICTION = 0.5` (mu_p, C05-1, commit `5c194ab`), `WALL_FRICTION = 0.5` (mu_w), `OWEN_PARTICLE_FRICTION` (0.4 / 0.5 / 0.8); `MATERIALS` has a `"liner"` entry (steel density, modulus and Poisson ratio) and no per-material friction (C05-3, commit `4bb17e4`) |
+| `simulation/scenario.py` (`ContactOptions`, `contact_tables()`, `friction_for()`) | `contact.particle_friction` (mu_p), `contact.wall_friction` (mu_w) and `contact.particle_friction_set` (`"uniform"` or `"owen"`) give one friction value per material pair: particle pairs mu_p (or Owen), particle-liner mu_w, particle-end-wall 0. `mill.liner_material = "liner"` by default, and a liner that is also a particle material, or a material with its own `friction_angle`, is rejected (C05-2, C05-3, commit `4bb17e4`) |
+| `simulation/yade_dem/engines.py:78-84`, `materials.py` (`pair_matchmaker`) | The pair table becomes a `frictAngle` `MatchMaker` (angles in radians, atan(mu)) keyed by the YADE ids of the material labels: no min rule. Each material's own `frictionAngle` is set to the same value (YADE's fallback for pairs not in the table, of which there are none). The table is written to the run manifest (`contact_tables`). Checked in the smoke run: every contact carries the friction of its pair |
 
 Consequence: any run made with the old code (before commit `543208a`) -- including, if it used that code,
 the 212 deg / 26.5 deg match of slide 31 -- had practically frictionless
@@ -161,5 +161,5 @@ Cleary & Morrison 2016 (Table 2), with Owen's set as a sensitivity case."
 | ID | Change | Current code | When |
 |---|---|---|---|
 | C05-1 | Uniform mu_p: steel and rock get the same `friction_angle` (radians, mu = tan(angle)) from one config value | Done (`5c194ab`): `config.PARTICLE_FRICTION` | Before calibration |
-| C05-2 | `frictAngle` `MatchMaker` with per-pair friction: particle-liner pairs = mu_w (needed whenever mu_w > mu_p); particle pairs = mu_p, or the Owen set in the sensitivity run | No MatchMaker: pair angle = min of the two materials | Before calibration |
-| C05-3 | Add a `"liner"` entry to `MATERIALS` (steel density / young / poisson, friction mu_w) and set `mill.liner_material = "liner"`; add liner-steel / liner-rock restitution pairs; the frictionless `end_wall` material keeps deriving from it | `mill.liner_material = "steel"` (`scenario.py:99`); no liner material in `config.py` | Before calibration |
+| C05-2 | `frictAngle` `MatchMaker` with per-pair friction: particle-liner pairs = mu_w (needed whenever mu_w > mu_p); particle pairs = mu_p, or the Owen set in the sensitivity run | Done (`4bb17e4`) | Before calibration |
+| C05-3 | Add a `"liner"` entry to `MATERIALS` (steel density / young / poisson, friction mu_w) and set `mill.liner_material = "liner"`; add liner-steel / liner-rock restitution pairs; the frictionless `end_wall` material keeps deriving from it | Done (`4bb17e4`) | Before calibration |

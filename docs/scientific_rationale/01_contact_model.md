@@ -44,7 +44,7 @@ by the mill papers.
 
 | Where | What |
 |---|---|
-| `simulation/yade_dem/engines.py:64-76` | Hertz-Mindlin (`Ip2_FrictMat_FrictMat_MindlinPhys` with `en` = restitution MatchMaker, `Law2_ScGeom_MindlinPhys_Mindlin`), `Ig2_*_ScGeom` (not `ScGeom6D`): no `frictAngle` MatchMaker (min rule), no rolling moment |
+| `simulation/yade_dem/engines.py:72-88` | Hertz-Mindlin: `Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`, `Ip2_FrictMat_FrictMat_MindlinPhys(en=..., frictAngle=..., eta=mu_r, krot=..., ktwist=0)` with per-pair restitution and friction `MatchMaker`s built from material labels, `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` (C01-1 / C05-2 and C01-2 / C06-1, commit `4bb17e4`) |
 | `engines.py`, `scenario.CONTACT_MODELS` | Hertz-Mindlin is the only contact model; the `cundall_strack` option was removed (C01-3, commit `5c194ab`) and a scenario asking for it fails validation |
 | `simulation/yade_dem/materials.py:39` | Restitution MatchMaker built from material labels (used); the old id-based `config.build_yade_material_interactions()` was removed (C07-2, commit `5c194ab`) |
 
@@ -89,7 +89,7 @@ stiffness sensitivity check (V10) tests this for the present charge.
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C01-1 | **Merged into C05-2** ([05](05_friction.md)): `frictAngle` `MatchMaker` built from material labels | Not set: YADE uses the minimum of the two materials' friction angles | See C05-2 |
-| C01-2 | 6-DOF geometry (`Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`) and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` with `krot`, `ktwist`, `eta` | `ScGeom`, no moment law (`engines.py`) | To be implemented as C06-1 with values from [06](06_rolling_resistance.md) (uniform eta, ktwist = 0); also needed to investigate the residual-spin floor ([13](13_initial_conditions.md)) |
+| C01-1 | **Merged into C05-2** ([05](05_friction.md)): `frictAngle` `MatchMaker` built from material labels | Done (`4bb17e4`, as C05-2) | See C05-2 |
+| C01-2 | 6-DOF geometry (`Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`) and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` with `krot`, `ktwist`, `eta` | Done (`4bb17e4`, as C06-1) | Implemented as C06-1 with values from [06](06_rolling_resistance.md) (uniform eta, ktwist = 0); also needed to investigate the residual-spin floor ([13](13_initial_conditions.md)) |
 | C01-3 | Remove the `cundall_strack` contact option (no collisional dissipation in YADE), optionally replacing it with the `ViscElMat` linear fallback | Done (`5c194ab`): option removed, no fallback added | Any time |
 | C01-4 | V1 restitution-recovery script: one binary collision per material pair at the run's dt, measured vs input e | None | With the run-type split ([14](14_dataset_runs_and_recording.md)) |

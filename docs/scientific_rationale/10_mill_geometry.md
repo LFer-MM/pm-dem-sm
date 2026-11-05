@@ -60,13 +60,13 @@ Decided 2026-10-22.
 
 | Where | What |
 |---|---|
-| `config.py:69` | `SAGMILL_STL_PATH = "sag_mill_40ft_m.stl"`; the file is not in the repo |
-| `config.py:73` | `MILL_DIAMETER_M = 10.7128` (SAG_A inside liners), the default `MillGeometry.diameter_m`, which sizes the fill boxes and derived checks (C10-1, commit `5c194ab`). `MetricsOptions.cell_size` no longer derives from it: 0.3 m ([14](14_dataset_runs_and_recording.md), C14-2) |
+| `config.py:68` | `SAGMILL_STL_PATH = "sag_mill_40ft_m.stl"`; the file is not in the repo |
+| `config.py:72` | `MILL_DIAMETER_M = 10.7128` (SAG_A inside liners), the default `MillGeometry.diameter_m`, which sizes the fill boxes and derived checks (C10-1, commit `5c194ab`). `MetricsOptions.cell_size` no longer derives from it: 0.3 m ([14](14_dataset_runs_and_recording.md), C14-2) |
 | `configs/pipeline_example.json:32` | `cell_size = 0.3` |
-| `scenario.py:92` | `depth_m = 0.6` (C10-3, commit `5c194ab`) |
-| `scenario.py:100` | `end_walls = "frictionless"` (default, C10-2, commit `5c194ab`); `run_simulation.py:161-170`: friction 0, restitution copied from the liner |
-| `scenario.py:545-549` | Warns when the slice is < 4 large diameters deep with frictional end walls |
-| `scenario.py:61-100`, `stl.py` | Parametric shell + trapezoidal lifters exist as an alternative source (`source = "parametric"`) |
+| `scenario.py:115` | `depth_m = 0.6` (C10-3, commit `5c194ab`) |
+| `scenario.py:123` | `end_walls = "frictionless"` (default, C10-2, commit `5c194ab`); `scenario.contact_tables()`: end-wall material derived from the liner, friction 0, restitution copied from the liner |
+| `scenario.py:827-831` | Warns when the slice is < 4 large diameters deep with frictional end walls |
+| `scenario.py:81-123`, `stl.py` | Parametric shell + trapezoidal lifters exist as an alternative source (`source = "parametric"`) |
 | `configs/simulation/sag_slice_lifters.json` | SAG_A diameter / 0.6 m slice / 9.5 rpm, with SAG_A's 36 lifters but the old trapezoidal placeholder shape (0.25 m high, no plates) until C10-4. The old `sag_slice_stl.json` (40 ft STL, file not in the repo) was deleted |
 | Existing dataset | Particle centres reach 5.88 m from the axis, consistent with the old 40 ft STL (inside radius 5.92 m), not with SAG_A |
 

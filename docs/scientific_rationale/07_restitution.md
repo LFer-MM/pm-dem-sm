@@ -48,10 +48,10 @@
 
 | Where | What |
 |---|---|
-| `config.py:113` (`RESTITUTION_COEFFICIENTS`) | 0.8 / 0.5 / 0.3 -- matches the decision; no liner pairs yet |
-| `simulation/yade_dem/materials.py:39` | `restitution_matchmaker(pairs)` builds the MatchMaker from material **labels** (fixed since the old review); the old id-based `config.build_yade_material_interactions()` and its BlazeDEM placeholder were removed (C07-2, commit `5c194ab`) |
-| `simulation/scenario.py:343-347` | Validation: every material pair in use must have an e, otherwise the scenario fails |
-| `simulation/yade_dem/run_simulation.py:161-171` | End-wall material derives from the liner; its restitution pairs copy the liner's |
+| `config.py` (`RESTITUTION_COEFFICIENTS`) | 0.8 / 0.5 / 0.3 plus liner-steel 0.8 and liner-rock 0.5 -- matches the decision (C07-1, commit `4bb17e4`) |
+| `simulation/yade_dem/materials.py` | `pair_matchmaker(pairs)` builds the MatchMaker (restitution, and friction since C05-2) from material **labels** (fixed since the old review); the pairs come from `SimulationScenario.contact_tables()`, which also gives the frictionless end walls the liner's restitution; the old id-based `config.build_yade_material_interactions()` and its BlazeDEM placeholder were removed (C07-2, commit `5c194ab`) |
+| `simulation/scenario.py` (`validate()`) | Validation: every particle-particle and particle-liner pair must have an e, otherwise the scenario fails (liner-liner is not needed: facets do not touch each other) |
+| `simulation/scenario.py` (`contact_tables()`), `run_simulation.py` (build stage) | End-wall material derives from the liner (friction 0); its restitution pairs copy the liner's |
 | `simulation/yade_dem/version.py`, `run_simulation.py:99-100` | At start-up `run()` parses `yade.config.version` (releases `2023.02a`, daily builds `20260115-...`) and refuses anything older than 2023.02 or unparseable; the version goes into the manifest (C07-3, commit `5c194ab`). The build used here, `20260115-8983~7c8d01e~noble1`, passes |
 
 ## Analysis
@@ -141,6 +141,6 @@ et al. (2013), so the coefficient holds at all impact velocities."
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C07-1 | Add liner-steel 0.8 and liner-rock 0.5 to `RESTITUTION_COEFFICIENTS` (with C05-3) | Steel / rock pairs only | Before calibration |
+| C07-1 | Add liner-steel 0.8 and liner-rock 0.5 to `RESTITUTION_COEFFICIENTS` (with C05-3) | Done (`4bb17e4`) | Before calibration |
 | C07-2 | Delete the unused id-based `config.build_yade_material_interactions()` (and its BlazeDEM placeholder) | Done (`5c194ab`) | Any time |
 | C07-3 | At start-up, record the YADE version and refuse releases older than 2023.02 (e -> beta mapping, see Analysis) | Done (`5c194ab`): unparseable versions are refused too | Before calibration |

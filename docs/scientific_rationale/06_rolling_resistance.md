@@ -63,7 +63,9 @@ No slide mentions rolling resistance. Slide 42 (structure map) lists
 
 | Where | What |
 |---|---|
-| `engines.py:68-69, 73` | `Ig2_Sphere_Sphere_ScGeom`, `Ig2_Facet_Sphere_ScGeom` (no 6-DOF); `includeMoment` not set: **no rolling resistance** |
+| `engines.py:72-88` | `Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`, `Ip2_FrictMat_FrictMat_MindlinPhys(eta=mu_r, krot=..., ktwist=0)`, `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` (C06-1, commit `4bb17e4`) |
+| `scenario.py` (`ContactOptions.rolling_resistance`) | mu_r is a **required** scenario input, with no default: a scenario without it fails validation. `provisional_parameters()` marks it provisional, and every run manifest records it under `provisional_parameters`. Both `configs/simulation/*.json` use **0.25**, a placeholder (the middle of Wei et al. 2022's 0.2-0.3 for lumps as spheres), until C06-3 |
+| `scenario.py` (`rolling_stiffness()`, `check_rolling_stiffness()`) | C06-2, commit `4bb17e4`. `krot` is set so that the smallest sphere's rolling period is exactly 20 time steps, the stiffest the step resolves: with the defaults (r = 0.034925 m, 2850 kg/m^3, dt = 2.5e-5 s) krot = 39,183 N m/rad. At build, `run_simulation` checks T_r >= 20 dt and theta_y <= 0.01 rad at the typical contact force, and stops otherwise. The typical force (`typical_contact_force_n()`) is an order-of-magnitude, high-end estimate: the weight of a column of bulk charge (solid fraction 0.6) as deep as a flat bed holding the fill, standing on one small-particle cross-section (2 r)^2, ~560 N with the defaults. That gives theta_y = 1.3e-4 rad at mu_r = 0.25, far inside the 0.01 rad criterion, so the estimate's precision does not matter. `checks()` and the manifest record krot, T_r, the force and theta_y |
 
 ## Analysis
 
@@ -198,7 +200,7 @@ band."
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C06-1 | 6-DOF geometry functors and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)`; `Ip2_FrictMat_FrictMat_MindlinPhys(eta=mu_r, krot=..., ktwist=0)` from config (this is C01-2 with values) | `ScGeom`, no moment law (`engines.py:68-69, 73`) | Before calibration |
-| C06-2 | `krot` helper: from the smallest rock sphere, dt and a typical contact force, return krot meeting the T_r >= 20 dt and theta_y ~ 0.01 rad (<< 0.05 rad, Ai et al.) criteria; assert at build | None | With C06-1 |
+| C06-1 | 6-DOF geometry functors and `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)`; `Ip2_FrictMat_FrictMat_MindlinPhys(eta=mu_r, krot=..., ktwist=0)` from config (this is C01-2 with values) | Done (`4bb17e4`) | Before calibration |
+| C06-2 | `krot` helper: from the smallest rock sphere, dt and a typical contact force, return krot meeting the T_r >= 20 dt and theta_y ~ 0.01 rad (<< 0.05 rad, Ai et al.) criteria; assert at build | Done (`4bb17e4`): krot at exactly T_r = 20 dt; the typical force is the static-bed estimate in Current state | With C06-1 |
 | C06-3 | Heap (angle-of-repose) script: rock-only pile, slope fit, returns the angle for given (mu_p, mu_r) | None | Before calibration |
 | C06-4 | Settling test with rolling resistance and damping 0: heap and charge reach rest (mean speed below the [13](13_initial_conditions.md) threshold) | None | With C06-1 and C04-5 |

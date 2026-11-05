@@ -39,7 +39,7 @@
 
 ## Current state
 
-`pm_dem_sm/config.py:95, 102`: 7850 / 2850 -- matches the decision (C08-1,
+`pm_dem_sm/config.py:106, 112`: 7850 / 2850 -- matches the decision (C08-1,
 commit `5c194ab`).
 
 ## Analysis
