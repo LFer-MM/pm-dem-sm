@@ -45,6 +45,10 @@ written to the run manifest so each dataset can be defended individually.
 
 ## Implementation
 
+The code, rerun commands, stored results and provenance (commit, date) of
+every check run so far are indexed in
+[`scripts/validation/README.md`](../../scripts/validation/README.md).
+
 | Check | Code item |
 |---|---|
 | V1 | C01-4 (binary-collision script) |

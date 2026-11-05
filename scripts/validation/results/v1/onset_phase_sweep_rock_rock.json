@@ -1,0 +1,114 @@
+{
+  "scenario": "configs/simulation/sag_slice_lifters.json",
+  "dt_s": 2.5e-05,
+  "rows": [
+    {
+      "speed_m_s": 5.0,
+      "onset_fraction_of_step": 0.0,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.3010601920994382,
+      "rel_error": 0.0035339736647939843,
+      "contact_steps": 31
+    },
+    {
+      "speed_m_s": 5.0,
+      "onset_fraction_of_step": 0.16666666666666666,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.297743853709764,
+      "rel_error": -0.007520487634120054,
+      "contact_steps": 31
+    },
+    {
+      "speed_m_s": 5.0,
+      "onset_fraction_of_step": 0.3333333333333333,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.29462095413497896,
+      "rel_error": -0.01793015288340342,
+      "contact_steps": 31
+    },
+    {
+      "speed_m_s": 5.0,
+      "onset_fraction_of_step": 0.5,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.2917931869519474,
+      "rel_error": -0.027356043493508658,
+      "contact_steps": 31
+    },
+    {
+      "speed_m_s": 5.0,
+      "onset_fraction_of_step": 0.6666666666666666,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.28946788045362654,
+      "rel_error": -0.035107065154578176,
+      "contact_steps": 32
+    },
+    {
+      "speed_m_s": 5.0,
+      "onset_fraction_of_step": 0.8333333333333334,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.28891177097254694,
+      "rel_error": -0.03696076342484349,
+      "contact_steps": 32
+    },
+    {
+      "speed_m_s": 14.5,
+      "onset_fraction_of_step": 0.0,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.30180698781871185,
+      "rel_error": 0.006023292729039528,
+      "contact_steps": 25
+    },
+    {
+      "speed_m_s": 14.5,
+      "onset_fraction_of_step": 0.16666666666666666,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.29751473142806306,
+      "rel_error": -0.008284228573123092,
+      "contact_steps": 25
+    },
+    {
+      "speed_m_s": 14.5,
+      "onset_fraction_of_step": 0.3333333333333333,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.2934492453820208,
+      "rel_error": -0.021835848726597384,
+      "contact_steps": 25
+    },
+    {
+      "speed_m_s": 14.5,
+      "onset_fraction_of_step": 0.5,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.28974177576896876,
+      "rel_error": -0.03419408077010411,
+      "contact_steps": 25
+    },
+    {
+      "speed_m_s": 14.5,
+      "onset_fraction_of_step": 0.6666666666666666,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.2866603624367912,
+      "rel_error": -0.044465458544029245,
+      "contact_steps": 26
+    },
+    {
+      "speed_m_s": 14.5,
+      "onset_fraction_of_step": 0.8333333333333334,
+      "pair": "rock-rock",
+      "e_input": 0.3,
+      "e_measured": 0.28590120882228337,
+      "rel_error": -0.04699597059238873,
+      "contact_steps": 26
+    }
+  ]
+}

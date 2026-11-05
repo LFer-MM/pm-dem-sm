@@ -1,0 +1,36 @@
+{
+  "scenario": "configs/simulation/sag_slice_lifters.json",
+  "dt_s": 2.5e-05,
+  "particle_friction": 0.5,
+  "results": [
+    {
+      "mu_r": 0.25,
+      "seed": 2,
+      "angle_deg": 40.98094764646112,
+      "radius_m": 0.6286499999999998,
+      "height_m": 0.5977047160039731,
+      "n_bins_fitted": 5,
+      "r2": 0.9753973373708994,
+      "n_rocks": 900,
+      "n_off_base": 0,
+      "final_mean_speed_m_s": 4.427421115081639e-09,
+      "settle_before_lift": {
+        "stop": true,
+        "reason": "stationary",
+        "angle_change_deg": 0.347260242892645,
+        "height_change_m": 2.4799085889017948e-05,
+        "mean_speed_m_s": 2.881873405767339e-07,
+        "settle_time_s": 1.5499999999997223
+      },
+      "settle_after_lift": {
+        "stop": true,
+        "reason": "stationary",
+        "angle_change_deg": 0.024105877950518106,
+        "height_change_m": 8.026342140803923e-07,
+        "mean_speed_m_s": 2.047625387242278e-09,
+        "settle_time_s": 1.0000000000331966
+      },
+      "wall_s": 1501.4153580665588
+    }
+  ]
+}

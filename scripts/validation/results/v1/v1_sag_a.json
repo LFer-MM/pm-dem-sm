@@ -1,0 +1,219 @@
+{
+  "scenario": "configs/simulation/sag_slice_lifters.json",
+  "dt_s": 2.5e-05,
+  "tolerance": 0.02,
+  "phases": 8,
+  "results": [
+    {
+      "pair": "rock-rock",
+      "speed_m_s": 1.0,
+      "e_input": 0.3,
+      "e_mean": 0.2954189503137402,
+      "rel_error_mean": -0.01527016562086601,
+      "rel_error_min": -0.025708394459595756,
+      "rel_error_max": 0.000956397635299607,
+      "contact_steps": [
+        43,
+        44
+      ],
+      "passed": true
+    },
+    {
+      "pair": "rock-rock",
+      "speed_m_s": 5.0,
+      "e_input": 0.3,
+      "e_mean": 0.29369380790368377,
+      "rel_error_mean": -0.021020640321054003,
+      "rel_error_min": -0.03669225035070667,
+      "rel_error_max": 0.0035339736647939843,
+      "contact_steps": [
+        31,
+        32
+      ],
+      "passed": false
+    },
+    {
+      "pair": "rock-rock",
+      "speed_m_s": 14.5,
+      "e_input": 0.3,
+      "e_mean": 0.2921952277086461,
+      "rel_error_mean": -0.026015907637846315,
+      "rel_error_min": -0.04678729019987153,
+      "rel_error_max": 0.006023292729039528,
+      "contact_steps": [
+        25,
+        26
+      ],
+      "passed": false
+    },
+    {
+      "pair": "rock-steel",
+      "speed_m_s": 1.0,
+      "e_input": 0.5,
+      "e_mean": 0.4975485838897861,
+      "rel_error_mean": -0.004902832220427783,
+      "rel_error_min": -0.009908822201464607,
+      "rel_error_max": 0.003574957064641726,
+      "contact_steps": [
+        39,
+        40
+      ],
+      "passed": true
+    },
+    {
+      "pair": "rock-steel",
+      "speed_m_s": 5.0,
+      "e_input": 0.5,
+      "e_mean": 0.49673353016402955,
+      "rel_error_mean": -0.006532939671940949,
+      "rel_error_min": -0.01380307013793991,
+      "rel_error_max": 0.006271919087118549,
+      "contact_steps": [
+        28,
+        29
+      ],
+      "passed": true
+    },
+    {
+      "pair": "rock-steel",
+      "speed_m_s": 14.5,
+      "e_input": 0.5,
+      "e_mean": 0.49599600676280436,
+      "rel_error_mean": -0.008007986474391257,
+      "rel_error_min": -0.01889554428031659,
+      "rel_error_max": 0.00841886449695628,
+      "contact_steps": [
+        23,
+        24
+      ],
+      "passed": true
+    },
+    {
+      "pair": "steel-steel",
+      "speed_m_s": 1.0,
+      "e_input": 0.8,
+      "e_mean": 0.799743576356514,
+      "rel_error_mean": -0.0003205295543575251,
+      "rel_error_min": -0.0011248764311504178,
+      "rel_error_max": 0.0007992306482175471,
+      "contact_steps": [
+        63,
+        64
+      ],
+      "passed": true
+    },
+    {
+      "pair": "steel-steel",
+      "speed_m_s": 5.0,
+      "e_input": 0.8,
+      "e_mean": 0.7996989676877483,
+      "rel_error_mean": -0.00037629039031464653,
+      "rel_error_min": -0.0013878370205760993,
+      "rel_error_max": 0.0015177268468470617,
+      "contact_steps": [
+        46,
+        47
+      ],
+      "passed": true
+    },
+    {
+      "pair": "steel-steel",
+      "speed_m_s": 14.5,
+      "e_input": 0.8,
+      "e_mean": 0.799667874364809,
+      "rel_error_mean": -0.00041515704398881886,
+      "rel_error_min": -0.0017901594258239173,
+      "rel_error_max": 0.0021932826729841037,
+      "contact_steps": [
+        37,
+        38
+      ],
+      "passed": true
+    },
+    {
+      "pair": "rock-liner",
+      "speed_m_s": 1.0,
+      "e_input": 0.5,
+      "e_mean": 0.49755961268618304,
+      "rel_error_mean": -0.004880774627633894,
+      "rel_error_min": -0.01012672129051817,
+      "rel_error_max": 0.0027588845422836794,
+      "contact_steps": [
+        40,
+        41
+      ],
+      "passed": true
+    },
+    {
+      "pair": "rock-liner",
+      "speed_m_s": 5.0,
+      "e_input": 0.5,
+      "e_mean": 0.49672276051196373,
+      "rel_error_mean": -0.006554478976072475,
+      "rel_error_min": -0.014692768059625272,
+      "rel_error_max": 0.005115678221320863,
+      "contact_steps": [
+        29,
+        30
+      ],
+      "passed": true
+    },
+    {
+      "pair": "rock-liner",
+      "speed_m_s": 14.5,
+      "e_input": 0.5,
+      "e_mean": 0.4961021036019122,
+      "rel_error_mean": -0.007795792796175566,
+      "rel_error_min": -0.016985964890465777,
+      "rel_error_max": 0.00890242324434487,
+      "contact_steps": [
+        23,
+        24
+      ],
+      "passed": true
+    },
+    {
+      "pair": "steel-liner",
+      "speed_m_s": 1.0,
+      "e_input": 0.8,
+      "e_mean": 0.7997786063793024,
+      "rel_error_mean": -0.00027674202587205793,
+      "rel_error_min": -0.0008186083018155155,
+      "rel_error_max": 0.0006870487701977901,
+      "contact_steps": [
+        79,
+        80
+      ],
+      "passed": true
+    },
+    {
+      "pair": "steel-liner",
+      "speed_m_s": 5.0,
+      "e_input": 0.8,
+      "e_mean": 0.7997361897256022,
+      "rel_error_mean": -0.0003297628429972492,
+      "rel_error_min": -0.0012882305148820272,
+      "rel_error_max": 0.0010965346576487234,
+      "contact_steps": [
+        57,
+        58
+      ],
+      "passed": true
+    },
+    {
+      "pair": "steel-liner",
+      "speed_m_s": 14.5,
+      "e_input": 0.8,
+      "e_mean": 0.7996974789942106,
+      "rel_error_mean": -0.000378151257236746,
+      "rel_error_min": -0.0016114610759056236,
+      "rel_error_max": 0.001267980864573942,
+      "contact_steps": [
+        46,
+        47
+      ],
+      "passed": true
+    }
+  ],
+  "passed": false
+}

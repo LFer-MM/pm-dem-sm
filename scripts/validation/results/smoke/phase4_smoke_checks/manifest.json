@@ -1,0 +1,683 @@
+{
+  "scenario": {
+    "name": "smoke_test",
+    "seed": 1,
+    "mill": {
+      "shell_diameter_m": 2.06,
+      "depth_m": 0.2,
+      "speed_rpm": 22.0,
+      "n_lifters": 8,
+      "lifter_base_width_m": 0.08,
+      "lifter_height_m": 0.09,
+      "lifter_face_angle_deg": 20.0,
+      "plate_thickness_m": 0.03,
+      "plate_segments": 6,
+      "liner_material": "liner",
+      "end_walls": "frictionless"
+    },
+    "species": [
+      {
+        "name": "rock",
+        "material": "rock",
+        "radius_m": 0.03,
+        "count": 300,
+        "color": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "ball",
+        "material": "steel",
+        "radius_m": 0.05,
+        "count": 60,
+        "color": [
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "materials": {
+      "steel": {
+        "density": 7850,
+        "young": 207000000000.0,
+        "poisson": 0.292,
+        "label": "steel"
+      },
+      "rock": {
+        "density": 2850,
+        "young": 55000000000.0,
+        "poisson": 0.25,
+        "label": "rock"
+      },
+      "liner": {
+        "density": 7850,
+        "young": 207000000000.0,
+        "poisson": 0.292,
+        "label": "liner"
+      }
+    },
+    "restitution": [
+      [
+        "steel",
+        "steel",
+        0.8
+      ],
+      [
+        "steel",
+        "rock",
+        0.5
+      ],
+      [
+        "rock",
+        "rock",
+        0.3
+      ],
+      [
+        "liner",
+        "steel",
+        0.8
+      ],
+      [
+        "liner",
+        "rock",
+        0.5
+      ]
+    ],
+    "contact": {
+      "model": "hertz_mindlin",
+      "particle_friction": 0.5,
+      "wall_friction": 0.5,
+      "particle_friction_set": "uniform",
+      "rolling_resistance": 0.25
+    },
+    "solver": {
+      "dt_s": 2.5e-05,
+      "dt_safety": 0.3,
+      "young_scale": 0.038461538461538464,
+      "threads": null
+    },
+    "fill": {
+      "method": "random",
+      "box_height_m": 0.3,
+      "settle_steps": 11000
+    },
+    "settle": {
+      "window_s": 1.0,
+      "angle_tol_deg": 0.5,
+      "height_tol_rel_d": 0.01,
+      "speed_tol_m_s": 0.01,
+      "max_time_s": 10.0,
+      "sample_s": 0.05
+    },
+    "spinup": {
+      "min_revolutions": 1.0,
+      "max_revolutions": 3.0,
+      "window_revolutions": 0.5,
+      "angle_tol_deg": 3.0,
+      "power_rel_tol": 0.15
+    },
+    "record": {
+      "duration_s": 1.0,
+      "frame_interval_s": 0.1,
+      "monitor_interval_s": 0.05
+    }
+  },
+  "checks": {
+    "critical_speed_rpm": 30.68626866545739,
+    "fraction_critical": 0.7169330438915416,
+    "fill_fraction_J": 0.17333333333333334,
+    "ball_volume_fraction": 0.4807692307692309,
+    "dt_s": 2.5e-05,
+    "rayleigh_dt_s": 0.0001885480261550404,
+    "dt_over_rayleigh": 0.13259221276303818,
+    "impact_speed_m_s": 6.26418390534633,
+    "min_steps_per_collision": 21.24723413821481,
+    "rolling_stiffness": 18323.965367416862,
+    "rolling_period_steps": 20.0,
+    "typical_contact_force_n": 51.12322232600583,
+    "yield_rotation_rad": 2.0924737618574488e-05,
+    "revolution_s": 2.727272727272727,
+    "lifter_gap_over_large_d": 7.059515198517419
+  },
+  "warnings": [],
+  "provisional_parameters": {
+    "contact.rolling_resistance": {
+      "value": 0.25,
+      "note": "mu_r has no sourced value until the heap test (C06-3) fixes it for a 37 deg repose angle (docs/scientific_rationale/06_rolling_resistance.md)"
+    }
+  },
+  "stages": {
+    "build": {
+      "wall_s": 0.008562088012695312,
+      "sim_time_start_s": 0.0,
+      "sim_time_end_s": 0.0,
+      "iterations": 0,
+      "n_mill_bodies": 148,
+      "checks": {
+        "damping": 0.0,
+        "escaped": 0
+      }
+    },
+    "fill": {
+      "wall_s": 15.362602710723877,
+      "sim_time_start_s": 0.0,
+      "sim_time_end_s": 3.0249999999962847,
+      "iterations": 121000,
+      "inventory": {
+        "small": 300,
+        "large": 60,
+        "unclassified": 0
+      },
+      "v13_initial_overlaps": {
+        "batches": 11,
+        "spheres": 360,
+        "overlaps": 0
+      },
+      "checks": {
+        "damping": 0.0,
+        "escaped": 0,
+        "steps_per_collision_at_p99": 30.852137510926866,
+        "energy_balance": {
+          "drive_work_J": 0.0,
+          "dissipated_J": 1154.5019709987157,
+          "delta_mechanical_J": -1508.8656684189777,
+          "residual_J": 354.36369742026204,
+          "residual_rel": 0.30694074702507046
+        },
+        "overlap_now": {
+          "small-small": {
+            "n": 318,
+            "mean": 0.0003967237568527991,
+            "p99": 0.0016350694427115545,
+            "max": 0.002586600017136
+          },
+          "all": {
+            "n": 782,
+            "mean": 0.00036145384626158183,
+            "p99": 0.001655204097232404,
+            "max": 0.002586600017136
+          },
+          "small-wall": {
+            "n": 193,
+            "mean": 0.0003151635132522596,
+            "p99": 0.001660745274435765,
+            "max": 0.0018507342391528108
+          },
+          "large-small": {
+            "n": 209,
+            "mean": 0.0004105260529601498,
+            "p99": 0.0015050441241648367,
+            "max": 0.0017812305847621688
+          },
+          "large-wall": {
+            "n": 26,
+            "mean": 0.0001632068269746796,
+            "p99": 0.0004350834580614353,
+            "max": 0.00044060883076089963
+          },
+          "large-large": {
+            "n": 36,
+            "mean": 0.0001563575686018829,
+            "p99": 0.0004112150903388746,
+            "max": 0.0004517967050948757
+          }
+        },
+        "overlap_p99_rel_d_max": 0.007388272958479125,
+        "overlap_max_rel_d_max": 0.012270192909318023,
+        "impact_speed_samples": 26,
+        "impact_v_p99_m_s": 0.9703987445959306
+      }
+    },
+    "settle": {
+      "wall_s": 13.818591833114624,
+      "sim_time_start_s": 3.0249999999962847,
+      "sim_time_end_s": 4.174999999993605,
+      "iterations": 46000,
+      "settle": {
+        "stop": true,
+        "reason": "stationary",
+        "angle_change_deg": 0.008597076651185365,
+        "height_change_m": 0.0004330599667768942,
+        "mean_speed_m_s": 6.88179158373193e-06,
+        "settle_time_s": 1.1499999999973203
+      },
+      "checks": {
+        "damping": 0.0,
+        "escaped": 0,
+        "steps_per_collision_at_p99": 54.0243882285234,
+        "energy_balance": {
+          "drive_work_J": 0.0,
+          "dissipated_J": 18.556495675900806,
+          "delta_mechanical_J": -23.889869088147535,
+          "residual_J": 5.333373412246729,
+          "residual_rel": 0.2874127478267971
+        },
+        "overlap_now": {
+          "small-small": {
+            "n": 333,
+            "mean": 0.00037862253103768643,
+            "p99": 0.0013961714258924251,
+            "max": 0.0024822606674710047
+          },
+          "all": {
+            "n": 829,
+            "mean": 0.0003387042288503645,
+            "p99": 0.0014232680949810938,
+            "max": 0.0024822606674710047
+          },
+          "small-wall": {
+            "n": 198,
+            "mean": 0.0003081766408934181,
+            "p99": 0.0016615796404707195,
+            "max": 0.0018312053562392443
+          },
+          "large-small": {
+            "n": 234,
+            "mean": 0.0003558513733203518,
+            "p99": 0.0014096037460996306,
+            "max": 0.0018237944252671077
+          },
+          "large-wall": {
+            "n": 25,
+            "mean": 0.00017345120188025088,
+            "p99": 0.0003712981918038537,
+            "max": 0.00038429608570964
+          },
+          "large-large": {
+            "n": 39,
+            "mean": 0.00015589811744967153,
+            "p99": 0.00038975022239987045,
+            "max": 0.0004049042018934579
+          }
+        },
+        "overlap_p99_rel_d_max": 0.0016552655697120698,
+        "overlap_max_rel_d_max": 0.002587029105668298,
+        "impact_speed_samples": 3,
+        "impact_v_p99_m_s": 0.05894232052283524
+      }
+    },
+    "spinup": {
+      "wall_s": 44.14010453224182,
+      "sim_time_start_s": 4.174999999993605,
+      "sim_time_end_s": 11.67480000010668,
+      "iterations": 299992,
+      "revolutions": 2.7499266667081277,
+      "steady_state": {
+        "time": 11.62690000010509,
+        "angle_deg": 57.17677356549036,
+        "angle_change_deg": 0.5047373375692246,
+        "power_kW": 3.080505962839815,
+        "power_rel_change": 0.05364563834342909,
+        "steady": true
+      },
+      "checks": {
+        "damping": 0.0,
+        "escaped": 0,
+        "steps_per_collision_at_p99": 23.91304881267847,
+        "energy_balance": {
+          "drive_work_J": 22259.717120955174,
+          "dissipated_J": 17196.677130996315,
+          "delta_mechanical_J": 2401.8970455828426,
+          "residual_J": 2661.1429443760167,
+          "residual_rel": 0.11954971978825514
+        },
+        "overlap_now": {
+          "large-small": {
+            "n": 40,
+            "mean": 0.0009643023521327457,
+            "p99": 0.004968888519455918,
+            "max": 0.005308132592589157
+          },
+          "all": {
+            "n": 220,
+            "mean": 0.0006108657433056835,
+            "p99": 0.005142859839011428,
+            "max": 0.006796579819559381
+          },
+          "small-wall": {
+            "n": 80,
+            "mean": 0.0004553327357015368,
+            "p99": 0.003608603674313844,
+            "max": 0.004197914334263739
+          },
+          "small-small": {
+            "n": 88,
+            "mean": 0.0006203735839791891,
+            "p99": 0.0059217336555797626,
+            "max": 0.006796579819559381
+          },
+          "large-large": {
+            "n": 8,
+            "mean": 0.00035147694693518985,
+            "p99": 0.0005975862271328804,
+            "max": 0.0006067881289720245
+          },
+          "large-wall": {
+            "n": 4,
+            "mean": 0.0004967649050418611,
+            "p99": 0.0015044501344971585,
+            "max": 0.0015423061051333953
+          }
+        },
+        "overlap_p99_rel_d_max": 0.01882202070624768,
+        "overlap_max_rel_d_max": 0.02589624817549256,
+        "impact_speed_samples": 139,
+        "impact_v_p99_m_s": 3.4689797618551537
+      }
+    },
+    "record": {
+      "wall_s": 5.5193023681640625,
+      "sim_time_start_s": 11.67480000010668,
+      "sim_time_end_s": 12.674800000139877,
+      "iterations": 40000,
+      "frames": 10,
+      "frame_interval_s": 0.1,
+      "frames_dir": "/home/pher/.claude/jobs/03a11257/tmp/smoke4/frames",
+      "checks": {
+        "damping": 0.0,
+        "escaped": 0,
+        "steps_per_collision_at_p99": 35.239175711596566,
+        "energy_balance": {
+          "drive_work_J": 3091.2335148985953,
+          "dissipated_J": 2606.2679654341046,
+          "delta_mechanical_J": -172.86685438954476,
+          "residual_J": 657.8324038540355,
+          "residual_rel": 0.21280579441298372
+        },
+        "overlap_now": {
+          "small-wall": {
+            "n": 110,
+            "mean": 0.00029193981430538285,
+            "p99": 0.0015424290745243768,
+            "max": 0.002333241615115322
+          },
+          "all": {
+            "n": 258,
+            "mean": 0.000438764816144691,
+            "p99": 0.0030982348551354903,
+            "max": 0.0046118152381693
+          },
+          "small-small": {
+            "n": 108,
+            "mean": 0.0005591213352237654,
+            "p99": 0.003974735329032109,
+            "max": 0.004139059173367705
+          },
+          "large-large": {
+            "n": 9,
+            "mean": 0.00019007132773421785,
+            "p99": 0.0005038121879146262,
+            "max": 0.0005129528309034959
+          },
+          "large-small": {
+            "n": 29,
+            "mean": 0.0006451990240127993,
+            "p99": 0.0038998481191033748,
+            "max": 0.0046118152381693
+          },
+          "large-wall": {
+            "n": 2,
+            "mean": 0.00014071257079618926,
+            "p99": 0.00024160966324454498,
+            "max": 0.0002436687875802257
+          }
+        },
+        "overlap_p99_rel_d_max": 0.006654183126950769,
+        "overlap_max_rel_d_max": 0.00888236483243196,
+        "impact_speed_samples": 16,
+        "impact_v_p99_m_s": 0.4991692364050752
+      }
+    }
+  },
+  "yade_version": "20260115-8983~7c8d01e~noble1",
+  "mill_geometry": {
+    "shell_diameter_m": 2.06,
+    "n_lifters": 8,
+    "lifter_base_width_m": 0.08,
+    "lifter_height_m": 0.09,
+    "lifter_face_angle_deg": 20.0,
+    "plate_thickness_m": 0.03,
+    "plate_segments": 6,
+    "depth_m": 0.2,
+    "diameter_inside_liners_m": 2.0,
+    "plate_radius_m": 1.0,
+    "lifter_top_radius_m": 0.9400000000000001,
+    "lifter_top_width_m": 0.036323571888055725,
+    "exposed_lifter_area_m2": 0.0034685984877827723,
+    "net_cross_section_m2": 3.113843865687531,
+    "n_triangles": 144,
+    "mesh_sha256": "74e37449b67e7c51e5f80cff1179c8dada9948703261b42c2e1bad03cf8fcecb"
+  },
+  "mill_body_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147
+  ],
+  "dt_s": 2.5e-05,
+  "threads": 8,
+  "contact_tables": {
+    "restitution": [
+      [
+        "rock",
+        "rock",
+        0.3
+      ],
+      [
+        "rock",
+        "steel",
+        0.5
+      ],
+      [
+        "steel",
+        "steel",
+        0.8
+      ],
+      [
+        "rock",
+        "liner",
+        0.5
+      ],
+      [
+        "steel",
+        "liner",
+        0.8
+      ],
+      [
+        "rock",
+        "end_wall",
+        0.5
+      ],
+      [
+        "steel",
+        "end_wall",
+        0.8
+      ]
+    ],
+    "friction": [
+      [
+        "rock",
+        "rock",
+        0.4636476090008061
+      ],
+      [
+        "rock",
+        "steel",
+        0.4636476090008061
+      ],
+      [
+        "steel",
+        "steel",
+        0.4636476090008061
+      ],
+      [
+        "rock",
+        "liner",
+        0.4636476090008061
+      ],
+      [
+        "steel",
+        "liner",
+        0.4636476090008061
+      ],
+      [
+        "rock",
+        "end_wall",
+        0.0
+      ],
+      [
+        "steel",
+        "end_wall",
+        0.0
+      ]
+    ]
+  },
+  "rolling_stiffness": 18323.965367416862
+}

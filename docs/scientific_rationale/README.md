@@ -67,6 +67,9 @@ length only there ([15](15_calibration_targets.md)).
 
 ## Pending code changes
 
+Validation code, rerun commands and stored results (with the commit each
+result was produced with): [`scripts/validation/README.md`](../../scripts/validation/README.md).
+
 Each topic file ends with a **"Pending code changes"** table (IDs `Cnn-k`,
 nn = topic number) listing what the code must change to implement its
 decisions. Implementation follows the phases of
