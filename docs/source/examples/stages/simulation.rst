@@ -28,7 +28,7 @@ ship in ``configs/simulation/``, both with mu_r = 0.25:
    Use it to check the pipeline, not the physics.
 ``sag_slice_lifters.json``
    The SAG_A slice (10.7128 m inside liners, 0.6 m deep, 9.5 rpm) with the
-   provisional charge (14,650 rocks, 3,750 steel balls), SAG_A's new
+   grind-out charge (16,082 rocks, 3,437 steel balls; C12-3), SAG_A's new
    liner (36 lifters of 395 mm at 35 deg alternating with 130 mm plates)
    and frictionless slice end walls.
 

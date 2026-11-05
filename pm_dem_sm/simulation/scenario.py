@@ -67,11 +67,12 @@ MIN_STEPS_PER_COLLISION = 20
 #: Young's modulus reduction ``1 / f`` with f = 26
 #: (docs/scientific_rationale/03_stiffness_young_modulus.md).
 YOUNG_SCALE = 1.0 / 26.0
-#: Provisional SAG_A counts for the 0.6 m slice (Jb 18.8 %, Jc 27.6 %), until
-#: the grind-out / crash-stop procedure sets them
-#: (docs/scientific_rationale/12_charge_fill_and_particles.md).
-PROVISIONAL_ROCK_COUNT = 14650
-PROVISIONAL_BALL_COUNT = 3750
+#: SAG_A counts for the 0.6 m slice from the grind-out / crash-stop procedure
+#: (C12-3, 2026-11-05: J = 0.188 balls / 0.277 full charge over 3 seeds at
+#: mu_r = 0.13; docs/scientific_rationale/12_charge_fill_and_particles.md).
+#: Provisional until the procedure is rerun with the calibrated friction.
+PROVISIONAL_ROCK_COUNT = 16082
+PROVISIONAL_BALL_COUNT = 3437
 
 
 # --- Public classes ----------------------------------------------------------

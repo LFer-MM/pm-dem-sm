@@ -155,7 +155,7 @@ def test_defaults_match_decisions():
     assert s.mill.speed_rpm == 9.5
     assert s.mill.end_walls == "frictionless"
     assert s.contact.model == "hertz_mindlin"
-    assert {sp.name: sp.count for sp in s.species} == {"rock": 14650, "ball": 3750}
+    assert {sp.name: sp.count for sp in s.species} == {"rock": 16082, "ball": 3437}
     assert s.materials["steel"]["young"] == 207e9
     assert s.materials["rock"]["young"] == 55e9
     assert s.materials["rock"]["density"] == 2850
