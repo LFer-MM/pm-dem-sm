@@ -21,6 +21,12 @@ implement are in ``docs/scientific_rationale/``:
   convention, and the packing fraction phi (12_charge_fill_and_particles.md;
   C12-2, V16); :func:`next_ball_count` / :func:`next_rock_count` -- the count
   updates of the grind-out / crash-stop procedure (C12-3).
+- :func:`toe_shoulder` -- bulk toe and shoulder from the time-averaged
+  position density near the liner; :func:`liner_force_arc` -- the liner
+  contact-force cross-check (15_calibration_targets.md; C15-1, V8).
+- :func:`quasi_steady_time`, :func:`plateau` -- quasi-steady kinetic energy /
+  power / charge angle and the Lacey plateau (14_dataset_runs_and_recording.md;
+  V7); :func:`frame_inventory` -- counts and containment per frame (V6).
 """
 
 from __future__ import annotations
@@ -507,6 +513,216 @@ def fill_level(
         out["free_bulk_area_m2"] = area
         out["phi"] = solids / (area * depth) if area > 0 else float("nan")
     return out
+
+
+def occupied_arc(values, bin_deg: float, threshold: float, start_deg: float = 270.0) -> dict:
+    """Return the ends of the arc where an angular profile exceeds a threshold.
+
+    Starting from the bin containing ``start_deg`` (the bottom of the mill,
+    always inside the charge), the arc is extended clockwise and
+    counter-clockwise while ``values >= threshold``; each end is placed by
+    linear interpolation of the threshold crossing between bin centres.
+    Angles follow the calibration-target convention: 0 deg at 3 o'clock,
+    counter-clockwise (docs/scientific_rationale/15_calibration_targets.md).
+
+    Args:
+        values: One value per angular bin, bin k centred on ``(k + 0.5) bin_deg``.
+        bin_deg: Bin width (deg).
+        threshold: Level separating occupied from empty.
+        start_deg: An angle inside the arc.
+
+    Returns:
+        dict: ``cw_end_deg`` (the toe side, reached going clockwise from the
+        start) and ``ccw_end_deg`` (the shoulder side), both in [0, 360);
+        ``span_deg``; ``None`` ends if the start bin is below the threshold.
+    """
+    v = np.asarray(values, dtype=float)
+    n = v.size
+    k0 = int(start_deg // bin_deg) % n
+    if v[k0] < threshold:
+        return {"cw_end_deg": None, "ccw_end_deg": None, "span_deg": 0.0}
+
+    def edge(step):
+        k, travelled = k0, 0
+        while travelled < n - 1 and v[(k + step) % n] >= threshold:
+            k, travelled = k + step, travelled + 1
+        inside, outside = v[k % n], v[(k + step) % n]
+        frac = (inside - threshold) / (inside - outside) if inside != outside else 0.5
+        centre = (k + 0.5) * bin_deg
+        return (centre + step * frac * bin_deg) % 360.0
+
+    cw, ccw = edge(-1), edge(+1)
+    return {"cw_end_deg": cw, "ccw_end_deg": ccw, "span_deg": (ccw - cw) % 360.0}
+
+
+def toe_shoulder(
+    frames_xy,
+    band_inner: float,
+    band_outer: float,
+    bin_deg: float = 1.0,
+    threshold_rel: float = 0.1,
+) -> dict:
+    """Return the bulk toe and shoulder angles from the time-averaged position density.
+
+    Boemer & Ponthot's "position density limit" (§2.3): the boundary of the
+    main charge body is where particles are ~10 times less likely than in
+    the charge. Particle centres of all ``frames_xy`` in the annulus
+    ``band_inner <= r <= band_outer`` (the layer next to the liner) are
+    counted per ``bin_deg`` angular bin; the threshold is ``threshold_rel``
+    times the 90th percentile of the occupied bins. The occupied arc through
+    the bottom of the mill ends at the bulk **toe** (clockwise end) and the
+    **shoulder** (counter-clockwise end, the side the charge is lifted on,
+    for a mill turning counter-clockwise; 0 deg at 3 o'clock).
+
+    Args:
+        frames_xy: Iterable of ``(N, 2)`` arrays of particle centre ``x, y``.
+        band_inner: Inner radius of the annulus (m).
+        band_outer: Outer radius of the annulus (m).
+        bin_deg: Angular bin width (deg).
+        threshold_rel: Threshold relative to the 90th percentile density.
+
+    Returns:
+        dict: ``toe_deg``, ``shoulder_deg``, ``threshold``, ``frames``, and
+        the averaged ``density`` per bin (particles per frame).
+    """
+    n_bins = round(360.0 / bin_deg)
+    counts = np.zeros(n_bins)
+    n_frames = 0
+    for xy in frames_xy:
+        xy = np.asarray(xy, dtype=float)
+        r = np.hypot(xy[:, 0], xy[:, 1])
+        sel = (r >= band_inner) & (r <= band_outer)
+        ang = np.degrees(np.arctan2(xy[sel, 1], xy[sel, 0])) % 360.0
+        counts += np.bincount((ang // bin_deg).astype(int) % n_bins, minlength=n_bins)
+        n_frames += 1
+    density = counts / max(n_frames, 1)
+    occupied = density[density > 0]
+    ref = float(np.percentile(occupied, 90)) if occupied.size else 0.0
+    thr = threshold_rel * ref
+    arc = occupied_arc(density, bin_deg, thr)
+    return {
+        "toe_deg": arc["cw_end_deg"],
+        "shoulder_deg": arc["ccw_end_deg"],
+        "threshold": thr,
+        "frames": n_frames,
+        "density": density.tolist(),
+    }
+
+
+def liner_force_arc(force_rows, bin_deg: float, threshold_rel: float = 0.1) -> dict:
+    """Return the ends of the loaded liner arc from the liner contact-force distribution.
+
+    Owen & Cleary's liner-force view (§4.3), the cross-check of
+    :func:`toe_shoulder`: the time-averaged force per angular bin, the arc
+    through the bottom where it exceeds ``threshold_rel`` times its 90th
+    percentile. Its clockwise end mainly marks the **impact** toe, so it is
+    compared with, not substituted for, the bulk toe.
+
+    Args:
+        force_rows: Iterable of per-bin force sums (one row per log time).
+        bin_deg: Bin width of the rows (deg).
+        threshold_rel: Threshold relative to the 90th percentile.
+
+    Returns:
+        dict: ``toe_deg`` (clockwise end), ``shoulder_deg`` (counter-clockwise
+        end), ``threshold`` and the averaged ``force`` per bin.
+    """
+    mean = np.asarray(list(force_rows), dtype=float).mean(axis=0)
+    loaded = mean[mean > 0]
+    thr = threshold_rel * (float(np.percentile(loaded, 90)) if loaded.size else 0.0)
+    arc = occupied_arc(mean, bin_deg, thr)
+    return {
+        "toe_deg": arc["cw_end_deg"],
+        "shoulder_deg": arc["ccw_end_deg"],
+        "threshold": thr,
+        "force": mean.tolist(),
+    }
+
+
+def quasi_steady_time(
+    times, values, window_s: float, rel_tol: float = 0.1, abs_tol: float | None = None
+) -> float | None:
+    """Return the time after which a signal stays within a tolerance of its final level (V7).
+
+    The signal is averaged over consecutive ``window_s`` windows; the final
+    level is the mean of the last window. The quasi-steady time is the start
+    of the first window from which every later window mean is within
+    ``abs_tol`` (if given) or ``rel_tol`` x |final level| of it.
+
+    Args:
+        times: Sample times (s), increasing.
+        values: Sample values.
+        window_s: Averaging window (s).
+        rel_tol: Relative tolerance.
+        abs_tol: Absolute tolerance (overrides ``rel_tol``), e.g. for angles.
+
+    Returns:
+        float | None: Quasi-steady time (s), or ``None`` if fewer than two
+        windows or never steady before the last window.
+    """
+    t = np.asarray(times, dtype=float)
+    v = np.asarray(values, dtype=float)
+    edges = np.arange(t[0], t[-1] + 1e-12, window_s)
+    if edges.size < 3:
+        return None
+    means = [v[(t >= a) & (t < b)].mean() for a, b in pairwise(edges)]
+    means = [m for m in means if np.isfinite(m)]
+    final = means[-1]
+    tol = abs_tol if abs_tol is not None else rel_tol * abs(final)
+    ok = [abs(m - final) <= tol for m in means]
+    for k in range(len(ok)):
+        if all(ok[k:]):
+            return None if k == len(ok) - 1 else float(edges[k])
+    return None
+
+
+def plateau(values, fraction: float = 0.2, tol: float = 0.02) -> dict:
+    """Return whether a series has reached a plateau (e.g. Lacey's index, V7).
+
+    Compares the mean of the last ``fraction`` of the series with the mean of
+    the ``fraction`` before it.
+
+    Args:
+        values: Series in time order.
+        fraction: Length of each compared block, as a fraction of the series.
+        tol: Largest accepted absolute change.
+
+    Returns:
+        dict: ``last_mean``, ``previous_mean``, ``change``, ``plateau`` (bool).
+    """
+    v = np.asarray(values, dtype=float)
+    n = max(1, round(fraction * v.size))
+    last, prev = v[-n:], v[-2 * n : -n]
+    change = float(last.mean() - prev.mean()) if prev.size else float("nan")
+    return {
+        "last_mean": float(last.mean()),
+        "previous_mean": float(prev.mean()) if prev.size else float("nan"),
+        "change": change,
+        "plateau": bool(abs(change) <= tol),
+    }
+
+
+def frame_inventory(radii, xyz, shell_radius: float, depth: float, r_split: float) -> dict:
+    """Return the per-species counts and the particles outside the mill in one frame (V6).
+
+    Args:
+        radii: Particle radii.
+        xyz: ``(N, 3)`` particle centres.
+        shell_radius: Inside-shell radius (m).
+        depth: Slice depth (m).
+        r_split: Radius separating small from large.
+
+    Returns:
+        dict: ``small``, ``large``, ``outside`` counts.
+    """
+    r = np.asarray(radii, dtype=float)
+    p = np.asarray(xyz, dtype=float)
+    outside = (np.hypot(p[:, 0], p[:, 1]) > shell_radius) | (p[:, 2] < 0) | (p[:, 2] > depth)
+    return {
+        "small": int((r < r_split).sum()),
+        "large": int((r >= r_split).sum()),
+        "outside": int(outside.sum()),
+    }
 
 
 def fill_converged(J: float, target: float, tol: float = 0.005) -> bool:

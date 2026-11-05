@@ -1,0 +1,33 @@
+{
+  "name": "smoke_make_ic",
+  "run": {"type": "make_ic"},
+  "seed": 1,
+  "mill": {
+    "shell_diameter_m": 2.06,
+    "depth_m": 0.2,
+    "speed_rpm": 22.0,
+    "n_lifters": 8,
+    "lifter_base_width_m": 0.08,
+    "lifter_height_m": 0.09,
+    "lifter_face_angle_deg": 20.0,
+    "plate_thickness_m": 0.03,
+    "plate_segments": 6,
+    "end_walls": "frictionless"
+  },
+  "species": [
+    {"name": "rock", "material": "rock", "radius_m": 0.03, "count": 300, "color": [1, 0, 0]},
+    {"name": "ball", "material": "steel", "radius_m": 0.05, "count": 60, "color": [0, 0, 1]}
+  ],
+  "contact": {"rolling_resistance": 0.13},
+  "solver": {"dt_s": 2.5e-5, "young_scale": 0.038461538461538464},
+  "fill": {"box_height_m": 0.3, "settle_steps": 11000},
+  "settle": {"max_time_s": 10.0},
+  "spinup": {
+    "min_revolutions": 1.0,
+    "max_revolutions": 3.0,
+    "window_revolutions": 0.5,
+    "angle_tol_deg": 3.0,
+    "power_rel_tol": 0.15
+  },
+  "record": {"duration_s": 1.0, "frame_interval_s": 0.1, "monitor_interval_s": 0.05}
+}

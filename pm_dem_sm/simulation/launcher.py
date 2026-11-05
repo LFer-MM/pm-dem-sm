@@ -52,6 +52,25 @@ def find_yade_executable(name: str | None = None) -> str | None:
     return None
 
 
+def default_run_dir(scenario: Path | str | None = None, seed: int | None = None) -> Path:
+    """Return the run directory ``run_simulation.py`` uses when none is given.
+
+    ``data/raw/yade_runs/<scenario name>``, with ``_s<seed>`` appended when a
+    seed override is passed (as ``run_simulation.run`` does).
+
+    Args:
+        scenario: Scenario JSON, or ``None`` for the defaults.
+        seed: Seed override, or ``None``.
+
+    Returns:
+        Path: The run directory.
+    """
+    name = load_scenario(scenario).name
+    if seed is not None:
+        name = f"{name}_s{seed}"
+    return Path(__file__).resolve().parents[2] / "data" / "raw" / "yade_runs" / name
+
+
 def build_command(
     yade_path: str,
     script: Path | str | None = None,

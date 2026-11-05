@@ -18,6 +18,7 @@ follow the decisions in ``docs/scientific_rationale/``.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -30,7 +31,18 @@ from . import mill_geometry
 # --- Constants ---------------------------------------------------------------
 
 #: Pipeline stages run by a DEM backend, in order.
-STAGES = ("build", "fill", "settle", "spinup", "record")
+STAGES = ("build", "fill", "settle", "spinup", "record", "save_ic", "load_ic")
+#: Stages of each run type (docs/scientific_rationale/14_dataset_runs_and_recording.md):
+#: ``calibrate`` spins the charge up to steady state, then records;
+#: ``make_ic`` pours and settles an initial condition and saves it at rest;
+#: ``dataset`` loads a saved IC and records from rest at t = 0.
+RUN_TYPE_STAGES = {
+    "calibrate": ("build", "fill", "settle", "spinup", "record"),
+    "make_ic": ("build", "fill", "settle", "save_ic"),
+    "dataset": ("load_ic", "record"),
+}
+#: Valid ``RunOptions.type`` values.
+RUN_TYPES = tuple(RUN_TYPE_STAGES)
 #: Valid ``MillGeometry.end_walls`` values.
 END_WALLS = ("liner", "frictionless")
 #: Valid ``ContactOptions.model`` values.
@@ -276,8 +288,28 @@ class SpinupOptions:
 
 
 @dataclass
+class RunOptions:
+    """Run type (docs/scientific_rationale/14_dataset_runs_and_recording.md).
+
+    Attributes:
+        type: One of :data:`RUN_TYPES`: ``"calibrate"`` (fill, settle, spin
+            up to steady state, record), ``"make_ic"`` (fill, settle, save
+            the initial condition at rest) or ``"dataset"`` (load an IC, record
+            from rest at t = 0). The stages are :data:`RUN_TYPE_STAGES`.
+        ic_dir: For ``dataset`` runs: the run directory of the ``make_ic`` run
+            whose IC is loaded (its ``ic/`` holds the positions and the
+            manifest with the material-set id, which must match this
+            scenario's). A ``{seed}`` in the path is replaced by the seed, so
+            dataset replicate N loads the IC of ``make_ic`` replicate N.
+    """
+
+    type: str = "calibrate"
+    ic_dir: Path | None = None
+
+
+@dataclass
 class RecordOptions:
-    """Frame recording at steady state (stage ``record``).
+    """Frame recording (stage ``record``): at steady state for ``calibrate``, from rest for ``dataset``.
 
     Attributes:
         duration_s: Simulated time to record (s).
@@ -335,10 +367,12 @@ class SimulationScenario:
         settle: Settle-stage settings.
         spinup: Spin-up stage settings.
         record: Record-stage settings.
+        run: Run type and, for datasets, the IC to load.
     """
 
     name: str = "sag_slice"
     seed: int = 0
+    run: RunOptions = field(default_factory=RunOptions)
     mill: MillGeometry = field(default_factory=MillGeometry)
     species: list[Species] = field(default_factory=lambda: _default_species())
     materials: dict[str, dict[str, Any]] = field(
@@ -421,6 +455,11 @@ class SimulationScenario:
             PARTICLE_FRICTION_SETS,
         )
         _check_choice("fill.method", self.fill.method, FILL_METHODS)
+        _check_choice("run.type", self.run.type, RUN_TYPES)
+        if self.run.type == "dataset" and self.run.ic_dir is None:
+            raise ValueError(
+                "run.ic_dir is required for a dataset run (the make_ic run directory)"
+            )
         if len(self.species) != 2:
             raise ValueError(f"Exactly two species are supported, got {len(self.species)}")
         used = {s.material for s in self.species} | {self.mill.liner_material}
@@ -689,6 +728,39 @@ class SimulationScenario:
                 f"krot = {krot:.4g} N m/rad needs {theta:.3g} rad to reach the plastic rolling "
                 f"moment at the typical contact force (> {MAX_YIELD_ROTATION_RAD} rad)"
             )
+
+    @property
+    def stages(self) -> tuple[str, ...]:
+        """The stages of this scenario's run type, in order (:data:`RUN_TYPE_STAGES`)."""
+        return RUN_TYPE_STAGES[self.run.type]
+
+    def material_set_id(self) -> str:
+        """Return a short hash of everything a saved initial condition depends on.
+
+        Materials and per-pair contact tables, stiffness scaling, rolling
+        resistance and stiffness, time step, particle species (material,
+        radius, count) and the liner design. An IC is saved under a name
+        that includes this id, and a ``dataset`` run refuses an IC whose id
+        differs from its own (docs/scientific_rationale/13_initial_conditions.md:
+        "an IC is never reused with different materials").
+
+        Returns:
+            str: 12 hex characters of a SHA-256.
+        """
+        tables = self.contact_tables()
+        payload = {
+            "materials": tables["materials"],
+            "restitution": tables["restitution"],
+            "friction": tables["friction"],
+            "young_scale": self.solver.young_scale,
+            "rolling_resistance": self.contact.rolling_resistance,
+            "rolling_stiffness": round(self.rolling_stiffness(), 6),
+            "dt_s": self.time_step_s(),
+            "species": [[s.material, s.radius_m, s.count] for s in self.species],
+            "mill": mill_geometry.geometry_summary(self.mill)["mesh_sha256"],
+        }
+        text = json.dumps(payload, sort_keys=True, default=str)
+        return hashlib.sha256(text.encode()).hexdigest()[:12]
 
     def provisional_parameters(self) -> dict[str, Any]:
         """Return the provisional (unsourced) parameters of this scenario with their values.

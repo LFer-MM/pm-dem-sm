@@ -13,7 +13,7 @@ from pm_dem_sm.simulation.scenario import SimulationScenario, load_scenario
 # --- Setup -------------------------------------------------------------------
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SCENARIO_FILES = sorted((REPO_ROOT / "configs" / "simulation").glob("*.json"))
+SCENARIO_FILES = sorted((REPO_ROOT / "configs" / "simulation").glob("**/*.json"))
 # Any value: mu_r is a required input with no sourced default yet.
 MU_R = 0.25
 
@@ -346,3 +346,44 @@ def test_packaged_scenarios_pass_rolling_checks(path):
     s = load_scenario(path)
     s.check_rolling_stiffness(s.rolling_stiffness())
     assert s.contact.rolling_resistance is not None
+
+
+def test_run_type_stages():
+    assert _valid().stages == ("build", "fill", "settle", "spinup", "record")
+    assert _from({"run": {"type": "make_ic"}}).stages == ("build", "fill", "settle", "save_ic")
+    ds = _from({"run": {"type": "dataset", "ic_dir": "data/raw/yade_runs/x_s{seed}"}})
+    assert ds.stages == ("load_ic", "record")
+
+
+def test_dataset_needs_ic_dir_and_known_type():
+    with pytest.raises(ValueError, match="ic_dir"):
+        _from({"run": {"type": "dataset"}})
+    with pytest.raises(ValueError, match="run.type"):
+        _from({"run": {"type": "spin"}})
+
+
+def test_material_set_id():
+    base = _valid().material_set_id()
+    assert len(base) == 12
+    # Same materials and charge: same id, whatever the run type or duration.
+    assert _from({"run": {"type": "make_ic"}, "record": {"duration_s": 35.0}}).material_set_id() \
+        == base
+    # Anything an IC depends on changes it.
+    assert _from({"contact": {"rolling_resistance": 0.2}}).material_set_id() != base
+    assert _from({"solver": {"young_scale": 0.02}}).material_set_id() != base
+    assert _from({"mill": {"n_lifters": 30}}).material_set_id() != base
+    data = _valid().to_dict()
+    data["species"][0]["count"] += 1
+    assert SimulationScenario.from_dict(data).material_set_id() != base
+
+
+def test_sag_a_dataset_scenarios_pair_with_make_ic():
+    root = REPO_ROOT / "configs" / "simulation"
+    for kind, seconds in (("rmic", 20.0), ("sic", 35.0)):
+        ic = load_scenario(root / f"sag_a_make_ic_{kind}.json")
+        ds = load_scenario(root / f"sag_a_dataset_{kind}.json")
+        assert ic.run.type == "make_ic" and ds.run.type == "dataset"
+        assert ds.record.duration_s == seconds
+        assert ic.material_set_id() == ds.material_set_id()
+        assert str(ds.run.ic_dir).endswith(f"sag_a_make_ic_{kind}_s{{seed}}")
+    assert load_scenario(root / "sag_a_make_ic_sic.json").fill.method == "segregated"

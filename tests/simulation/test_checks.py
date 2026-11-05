@@ -255,3 +255,63 @@ def test_count_updates():
     assert checks.next_ball_count(3750, J=0.20, J_target=0.188) == 3525
     # Rock share 0.08 of the bed with 14650 rocks; target share 0.088.
     assert checks.next_rock_count(14650, J=0.268, J_balls=0.188, J_target=0.276) == 16115
+
+
+def test_occupied_arc_wraps_through_zero():
+    # Occupied from 210 deg through 270 and 0 to 30 deg, in 1-deg bins.
+    v = np.zeros(360)
+    v[210:] = 1.0
+    v[:30] = 1.0
+    arc = checks.occupied_arc(v, 1.0, 0.5)
+    assert arc["cw_end_deg"] == pytest.approx(210.0, abs=0.6)
+    assert arc["ccw_end_deg"] == pytest.approx(30.0, abs=0.6)
+    assert arc["span_deg"] == pytest.approx(180.0, abs=1.2)
+    assert checks.occupied_arc(np.zeros(360), 1.0, 0.5)["cw_end_deg"] is None
+
+
+def test_toe_shoulder_of_a_synthetic_charge():
+    # Particles near the liner between the toe (214 deg) and the shoulder (27 deg),
+    # through the bottom; a sparse cataract elsewhere (~20x less dense).
+    rng = np.random.default_rng(3)
+    frames = []
+    for _ in range(20):
+        a_bulk = np.radians(rng.uniform(214.0, 214.0 + 173.0, 4000))
+        a_sparse = np.radians(rng.uniform(27.0, 214.0, 100))
+        a = np.concatenate([a_bulk, a_sparse])
+        r = rng.uniform(4.9, 5.05, a.size)
+        frames.append(np.column_stack([r * np.cos(a), r * np.sin(a)]))
+    res = checks.toe_shoulder(frames, 4.9, 5.05, bin_deg=1.0)
+    assert res["toe_deg"] == pytest.approx(214.0, abs=1.0)
+    assert res["shoulder_deg"] == pytest.approx(27.0, abs=1.0)
+    assert res["frames"] == 20
+
+
+def test_liner_force_arc():
+    rows = np.zeros((5, 72))
+    rows[:, 44:72] = 100.0  # 220-360 deg
+    rows[:, 0:4] = 100.0  # 0-20 deg
+    arc = checks.liner_force_arc(rows, 5.0)
+    assert arc["toe_deg"] == pytest.approx(220.0, abs=3.0)
+    assert arc["shoulder_deg"] == pytest.approx(20.0, abs=3.0)
+
+
+def test_quasi_steady_time():
+    t = np.arange(0, 20, 0.05)
+    ke = 100 * (1 - np.exp(-t / 1.0))  # within 10 % of 100 after ~2.3 s
+    tq = checks.quasi_steady_time(t, ke, window_s=1.0, rel_tol=0.1)
+    assert 2.0 <= tq <= 3.0
+    angle = np.where(t < 5, 10 * t, 50.0)
+    assert checks.quasi_steady_time(t, angle, 1.0, abs_tol=2.0) == pytest.approx(5.0)
+    assert checks.quasi_steady_time(t[:30], ke[:30], 1.0) is None
+
+
+def test_plateau():
+    assert checks.plateau(np.r_[np.linspace(0, 0.9, 80), np.full(80, 0.9)])["plateau"]
+    assert not checks.plateau(np.linspace(0, 1, 100))["plateau"]
+
+
+def test_frame_inventory():
+    radii = [0.03, 0.03, 0.05]
+    xyz = [[0, -0.5, 0.1], [2.0, 0, 0.1], [0, 0, 0.1]]
+    inv = checks.frame_inventory(radii, xyz, shell_radius=1.03, depth=0.2, r_split=0.04)
+    assert inv == {"small": 2, "large": 1, "outside": 1}

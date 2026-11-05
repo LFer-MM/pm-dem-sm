@@ -5,7 +5,11 @@ Two subcommands, matching the project's two runtimes:
 - ``dem-sim``: launches a DEM simulation as a subprocess (``--dem-backend
   yade``, the default, requires YADE installed and on PATH; ``blaze`` is not
   implemented yet). Never imports a DEM engine's own Python API itself --
-  see :mod:`pm_dem_sm.simulation.launcher`.
+  see :mod:`pm_dem_sm.simulation.launcher`. When the run succeeds, its run
+  directory is post-processed (unless ``--no-postprocess``).
+- ``dem-post``: post-processes a finished run directory (frames to float32
+  parquet, segregation profiles, toe / shoulder, validation summary; see
+  :mod:`pm_dem_sm.simulation.postprocess`).
 - ``ml-pipeline``: runs the experiment pipeline (simulate / process / train /
   predict / metrics / visualization). Config can be supplied either as
   individual flags or as a JSON file via ``--config``. When ``--config`` is
@@ -58,6 +62,20 @@ def build_parser() -> argparse.ArgumentParser:
         description="Launch a DEM simulation as a subprocess. --dem-backend yade requires YADE installed and on PATH.",
     )
     _add_dem_sim_arguments(dem_parser)
+
+    post_parser = subparsers.add_parser(
+        "dem-post",
+        help="Post-process a finished DEM run directory (parquet frames, profiles, validation).",
+        description=(
+            "Convert the frames to float32 parquet, compute the segregation profiles "
+            "(dataset runs) or the bulk toe / shoulder (calibrate runs), and write the "
+            "validation summary to the manifest and validation.json."
+        ),
+    )
+    post_parser.add_argument("run_dir", type=Path, help="Run directory of run_simulation.py.")
+    post_parser.add_argument(
+        "--keep-csv", action="store_true", help="Keep the frame CSVs after conversion."
+    )
 
     ml_parser = subparsers.add_parser(
         "ml-pipeline",
@@ -115,6 +133,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.command == "dem-sim":
         return _run_dem_sim(args)
+    if args.command == "dem-post":
+        return _run_dem_post(args.run_dir, keep_csv=args.keep_csv)
     return _run_ml_pipeline(args)
 
 
@@ -277,6 +297,18 @@ def _add_dem_sim_arguments(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         help="Open the YADE Qt viewer instead of running headless.",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Override the scenario seed (replicates); '_s<N>' is appended to the run name.",
+    )
+    parser.add_argument(
+        "--no-postprocess",
+        action="store_true",
+        help="Do not post-process the run directory after a successful run.",
+    )
 
 
 def _leaf_override_names() -> list[str]:
@@ -302,6 +334,8 @@ def _run_dem_sim(args: argparse.Namespace) -> int:
             extra += ["--to-stage", args.to_stage]
         if args.gui:
             extra.append("--gui")
+        if args.seed is not None:
+            extra += ["--seed", str(args.seed)]
         result = launcher.launch_simulation(
             script=args.script,
             yade_executable=args.yade_executable,
@@ -315,7 +349,24 @@ def _run_dem_sim(args: argparse.Namespace) -> int:
     except (FileNotFoundError, NotImplementedError, ValueError) as exc:
         print(str(exc))
         return 1
-    return result.returncode
+    if result.returncode != 0 or args.no_postprocess or args.dem_backend != "yade":
+        return result.returncode
+    run_dir = args.run_dir or launcher.default_run_dir(args.scenario, args.seed)
+    return _run_dem_post(run_dir)
+
+
+def _run_dem_post(run_dir: Path, keep_csv: bool = False) -> int:
+    """Handle ``dem-post`` (and the post-processing after ``dem-sim``); return an exit code."""
+    from .simulation import postprocess
+
+    if not (Path(run_dir) / "manifest.json").exists():
+        print(f"No manifest.json in {run_dir}: nothing to post-process.")
+        return 1
+    validation = postprocess.postprocess_run(run_dir, delete_csv=not keep_csv)
+    failed = [k for k, v in validation.items() if v["status"] == "fail"]
+    if failed:
+        print(f"[validation] failed checks: {', '.join(failed)} (see {run_dir}/validation.json)")
+    return 0
 
 
 def _run_ml_pipeline(args: argparse.Namespace) -> int:

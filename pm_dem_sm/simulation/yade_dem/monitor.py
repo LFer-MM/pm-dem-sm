@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import csv
 import math
+from pathlib import Path
 
 from yade import Sphere
 from yade.utils import kineticEnergy, unbalancedForce
@@ -41,6 +42,8 @@ from .. import checks
 
 # --- Constants ---------------------------------------------------------------
 
+#: Angular bin width of the liner contact-force log (deg).
+LINER_BIN_DEG = 5
 #: Columns of ``mill_log.csv``, in order.
 LOG_COLUMNS = [
     "time",
@@ -76,10 +79,14 @@ MONITOR_STATE = {"rows": [], "impact_speeds": []}
 # --- Public functions --------------------------------------------------------
 
 
-def start_monitor(log_path, interval, mill_ids, r_split, omega, stage, runner_label="monitor"):
+def start_monitor(
+    log_path, interval, mill_ids, r_split, omega, stage, runner_label="monitor", liner_ids=None
+):
     """Append a ``PyRunner`` that logs the mill state every ``interval`` seconds.
 
-    Appends to ``log_path`` if it exists (resumed runs keep one log).
+    Appends to ``log_path`` if it exists (resumed runs keep one log). With
+    ``liner_ids``, each row also appends the liner contact-force distribution
+    to ``liner_forces.csv`` beside the log (see :func:`liner_force_histogram`).
 
     Args:
         log_path: CSV path of the mill log.
@@ -89,11 +96,19 @@ def start_monitor(log_path, interval, mill_ids, r_split, omega, stage, runner_la
         omega: Mill angular velocity (rad/s); converts torque to power.
         stage: Stage name written in the ``stage`` column.
         runner_label: Label for the ``PyRunner`` engine.
+        liner_ids: Body ids of the liner facets (shell and lifters), or ``None``.
 
     Returns:
         PyRunner: The appended runner.
     """
     stop_monitor(runner_label)
+    MONITOR_STATE["liner_ids"] = list(liner_ids) if liner_ids else []
+    MONITOR_STATE["liner_path"] = str(Path(log_path).with_name("liner_forces.csv"))
+    if MONITOR_STATE["liner_ids"] and not Path(MONITOR_STATE["liner_path"]).exists():
+        with open(MONITOR_STATE["liner_path"], "w", newline="") as f:
+            csv.writer(f).writerow(
+                ["time", "stage"] + [f"f_{k * LINER_BIN_DEG}" for k in range(360 // LINER_BIN_DEG)]
+            )
     MONITOR_STATE.update(
         {
             "path": str(log_path),
@@ -343,6 +358,36 @@ def rolling_dissipation_rate():
     return rate
 
 
+def liner_force_histogram(liner_ids, bin_deg=None):
+    """Return the contact-force magnitude on the liner facets, summed per angular bin (N).
+
+    The angle of each facet is that of its position in the lab frame in the
+    calibration-target convention: 0 deg at 3 o'clock (+X), counter-clockwise
+    (docs/scientific_rationale/15_calibration_targets.md). Owen & Cleary's
+    liner-force distribution, the cross-check of the bulk toe / shoulder
+    (C15-1).
+
+    Args:
+        liner_ids: Body ids of the liner facets.
+        bin_deg: Bin width (deg); :data:`LINER_BIN_DEG` by default.
+
+    Returns:
+        list[float]: ``360 / bin_deg`` sums, bin k covering
+        ``[k bin_deg, (k + 1) bin_deg)``.
+    """
+    w = bin_deg or LINER_BIN_DEG
+    out = [0.0] * (360 // w)
+    for i in liner_ids:
+        f = O.forces.f(i)
+        mag = f.norm()
+        if mag == 0.0:
+            continue
+        p = O.bodies[i].state.pos
+        angle = math.degrees(math.atan2(p[1], p[0])) % 360.0
+        out[int(angle // w) % len(out)] += mag
+    return out
+
+
 def run_until_settled(d_small, max_time_s, r_split, sample_s=0.05, **tolerances):
     """Run the scene until the bed geometry is stationary (or the time cap).
 
@@ -430,6 +475,11 @@ def _log_row():
     st["rows"].append(row)
     with open(st["path"], "a", newline="") as f:
         csv.writer(f).writerow([row[c] for c in LOG_COLUMNS])
+    if st.get("liner_ids"):
+        with open(st["liner_path"], "a", newline="") as f:
+            csv.writer(f).writerow(
+                [row["time"], st["stage"]] + liner_force_histogram(st["liner_ids"])
+            )
 
 
 def _mean(rows, key):

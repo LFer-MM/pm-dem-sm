@@ -64,7 +64,7 @@ from yade.wrapper import O
 
 from pm_dem_sm.simulation import checks, mill_geometry
 from pm_dem_sm.simulation.scenario import STAGES, load_scenario
-from pm_dem_sm.simulation.yade_dem import (  # noqa: F401
+from pm_dem_sm.simulation.yade_dem import (
     capture,
     diagnostics,
     engines,
@@ -86,47 +86,64 @@ NUMERICAL_DAMPING = 0.0
 # --- Public functions --------------------------------------------------------
 
 
-def run(scenario_path=None, run_dir=None, from_stage="build", to_stage="record", gui=False):
+def run(scenario_path=None, run_dir=None, from_stage=None, to_stage=None, gui=False, seed=None):
     """Run stages ``from_stage`` .. ``to_stage`` of a scenario, checkpointing after each.
+
+    The stages are those of the scenario's run type
+    (:attr:`~pm_dem_sm.simulation.scenario.SimulationScenario.stages`):
+    ``calibrate``, ``make_ic`` or ``dataset``.
 
     Args:
         scenario_path: Scenario JSON; ``None`` uses the
             :class:`~pm_dem_sm.simulation.scenario.SimulationScenario` defaults.
             When resuming, ``None`` reuses the scenario stored in the manifest.
         run_dir: Output directory; defaults to ``data/raw/yade_runs/<name>``.
-        from_stage: First stage to run; later than ``build`` loads the
-            previous stage's checkpoint from ``run_dir``.
-        to_stage: Last stage to run.
+        from_stage: First stage to run (default: the run type's first);
+            a later stage loads the previous stage's checkpoint from
+            ``run_dir``.
+        to_stage: Last stage to run (default: the run type's last).
         gui: If ``True``, open the YADE Qt controller and 3D view.
+        seed: Overrides the scenario's seed (replicates) and appends
+            ``_s<seed>`` to its name, hence to the default run directory.
 
     Returns:
         dict: The final manifest.
 
     Raises:
         RuntimeError: If the running YADE is older than 2023.02.
-        ValueError: If the scenario is invalid (e.g. no
-            ``contact.rolling_resistance``).
+        ValueError: If the scenario is invalid, a stage is not one of the run
+            type's, or a resume has no ``run_dir``.
     """
     yade_version = str(getattr(yade.config, "version", "unknown"))
     check_yade_version(yade_version)
     print(f"[yade] version {yade_version}")
-    first, last = STAGES.index(from_stage), STAGES.index(to_stage)
-    if first > last:
-        raise ValueError(f"from_stage {from_stage!r} comes after to_stage {to_stage!r}")
 
-    resume_manifest = None
-    if first > 0:
-        if run_dir is None:
-            raise ValueError("--run-dir is required when resuming from a later stage")
-        resume_manifest = _read_manifest(Path(run_dir))
+    resuming = from_stage is not None and run_dir is not None and (
+        Path(run_dir) / "manifest.json"
+    ).exists()
+    resume_manifest = _read_manifest(Path(run_dir)) if resuming else None
     if scenario_path is None and resume_manifest is not None:
         from pm_dem_sm.simulation.scenario import SimulationScenario
 
         scenario = SimulationScenario.from_dict(resume_manifest["scenario"])
     else:
         scenario = load_scenario(scenario_path)
-    # The defaults are not validated on load; mu_r has no default.
+        if seed is not None:
+            scenario.seed = int(seed)
+            scenario.name = f"{scenario.name}_s{seed}"
     scenario.validate()
+
+    stages = scenario.stages
+    for s in (from_stage, to_stage):
+        if s is not None and s not in stages:
+            raise ValueError(f"Stage {s!r} is not a stage of run type "
+                             f"{scenario.run.type!r}: {stages}")
+    first = stages.index(from_stage) if from_stage else 0
+    last = stages.index(to_stage) if to_stage else len(stages) - 1
+    if first > last:
+        raise ValueError(f"from_stage {from_stage!r} comes after to_stage {to_stage!r}")
+    if first > 0 and resume_manifest is None:
+        raise ValueError("--run-dir with a manifest is required when resuming from a later stage")
 
     run_dir = Path(run_dir or Path(_REPO_ROOT) / "data" / "raw" / "yade_runs" / scenario.name)
     (run_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
@@ -137,7 +154,7 @@ def run(scenario_path=None, run_dir=None, from_stage="build", to_stage="record",
         print(f"[scenario] WARNING: {w}")
 
     if first > 0:
-        _load_checkpoint(run_dir, STAGES[first - 1], manifest)
+        _load_checkpoint(run_dir, stages[first - 1], manifest)
 
     if gui:
         from yade import qt
@@ -145,12 +162,13 @@ def run(scenario_path=None, run_dir=None, from_stage="build", to_stage="record",
         qt.Controller()
         qt.View()
 
-    for name in STAGES[first:last + 1]:
+    for name in stages[first:last + 1]:
         print(f"\n=== Stage: {name} ===")
         t_wall = time.time()
         t_sim, it0 = float(O.time), int(O.iter)
-        if name != "build":
-            # V5: damping set explicitly and checked at the start of every stage.
+        if name not in ("build", "load_ic"):
+            # V5: damping set explicitly and checked at the start of every stage
+            # (build and load_ic create the engines and check it themselves).
             engines.set_gravity_damping(NUMERICAL_DAMPING)
             engines.assert_no_damping()
         outcome = _stage_function(name)(scenario, run_dir, manifest) or {}
@@ -207,6 +225,7 @@ def _stage_build(scenario, run_dir, manifest):
     engines.assert_no_damping()
 
     manifest["mill_body_ids"] = list(mill_ids)
+    manifest["liner_body_ids"] = list(mill_ids[: len(liner)])
     manifest["dt_s"] = O.dt
     manifest["threads"] = O.numThreads
     manifest["contact_tables"] = {k: tables[k] for k in ("restitution", "friction")}
@@ -316,11 +335,80 @@ def _stage_record(scenario, run_dir, manifest):
             "frames_dir": str(run_dir / "frames")}
 
 
+def _stage_save_ic(scenario, run_dir, manifest):
+    """Zero all velocities and save the settled bed as an initial condition (``make_ic``).
+
+    docs/scientific_rationale/13_initial_conditions.md, steps 4-5: all
+    particles at rest; positions (CSV) and scene saved with the seed,
+    counts, phi, J, material-set id and settle stop condition. Files go to
+    ``<run-dir>/ic/``: ``positions.csv``, ``scene.yade.gz`` and ``ic.json``;
+    the IC's name includes the material-set id.
+    """
+    ic_dir = run_dir / "ic"
+    ic_dir.mkdir(parents=True, exist_ok=True)
+    for b in O.bodies:
+        if b and isinstance(b.shape, yade.Sphere):
+            b.state.vel = yade.Vector3(0, 0, 0)
+            b.state.angVel = yade.Vector3(0, 0, 0)
+    state.save_particle_positions(str(ic_dir / "positions.csv"))
+    O.save(str(ic_dir / "scene.yade.gz"))
+    fill = checks.fill_level(
+        diagnostics.spheres(), scenario.mill.diameter_m / 2.0, scenario.mill.depth_m,
+        liner_profile=mill_geometry.liner_profile(scenario.mill),
+    )
+    ic_type = "SIC" if scenario.fill.method == "segregated" else "RMIC"
+    msid = scenario.material_set_id()
+    info = {
+        "name": f"{scenario.name}_{ic_type}_seed{scenario.seed}_{msid}",
+        "ic_type": ic_type,
+        "seed": scenario.seed,
+        "material_set_id": msid,
+        "counts": {s.name: s.count for s in scenario.species},
+        "J": fill["J"],
+        "phi": fill["phi"],
+        "settle": manifest["stages"].get("settle", {}).get("settle"),
+        "sim_time_s": float(O.time),
+    }
+    (ic_dir / "ic.json").write_text(json.dumps(info, indent=2), encoding="utf-8")
+    manifest["initial_condition"] = info
+    print(f"[make_ic] saved {info['name']}: J = {fill['J']:.4f}, phi = {fill['phi']:.4f}")
+    return {"initial_condition": info["name"], "J": fill["J"], "phi": fill["phi"]}
+
+
+def _stage_load_ic(scenario, run_dir, manifest):
+    """Build the scene and load a saved initial condition at rest (``dataset``).
+
+    The IC (``<run.ic_dir>/ic/``) must carry this scenario's material-set id;
+    the mill then starts from rest at t = 0 in the record stage
+    (docs/scientific_rationale/14_dataset_runs_and_recording.md).
+
+    Raises:
+        ValueError: If the IC's material-set id differs from the scenario's.
+    """
+    # "{seed}" in ic_dir pairs dataset replicate N with make_ic replicate N.
+    ic_root = Path(str(scenario.run.ic_dir).format(seed=scenario.seed))
+    if not ic_root.is_absolute():
+        ic_root = Path(_REPO_ROOT) / ic_root
+    info = json.loads((ic_root / "ic" / "ic.json").read_text(encoding="utf-8"))
+    msid = scenario.material_set_id()
+    if info["material_set_id"] != msid:
+        raise ValueError(
+            f"IC {info['name']} was made with material set {info['material_set_id']}, "
+            f"this scenario has {msid}: an IC is never reused with different materials"
+        )
+    outcome = _stage_build(scenario, run_dir, manifest)
+    ids = state.load_particle_positions(str(ic_root / "ic" / "positions.csv"))
+    manifest["initial_condition"] = info
+    print(f"[dataset] loaded IC {info['name']}: {len(ids)} particles at rest")
+    return {**outcome, "initial_condition": info["name"], "n_particles": len(ids)}
+
+
 def _start_monitor(scenario, run_dir, manifest, stage, omega):
     """(Re)start the mill-state log for ``stage``."""
     monitor.start_monitor(
         run_dir / "mill_log.csv", scenario.record.monitor_interval_s,
         manifest["mill_body_ids"], _r_split(scenario), omega, stage,
+        liner_ids=manifest.get("liner_body_ids"),
     )
 
 
@@ -343,7 +431,7 @@ def _stage_checks(scenario, stage):
             scenario.mill.shell_diameter_m / 2.0, scenario.mill.depth_m
         ),
     }
-    if stage == "build":
+    if stage in ("build", "load_ic", "save_ic"):
         return out
     summary = monitor.stage_summary()
     v99 = summary["impact_v_p99_m_s"]
@@ -404,8 +492,9 @@ def _parse_args(argv):
     p = argparse.ArgumentParser(description="Staged YADE run of the SAG mill slice.")
     p.add_argument("--scenario", default=None, help="Scenario JSON (default: built-in defaults).")
     p.add_argument("--run-dir", default=None, help="Output directory.")
-    p.add_argument("--from-stage", default="build", choices=STAGES)
-    p.add_argument("--to-stage", default="record", choices=STAGES)
+    p.add_argument("--from-stage", default=None, choices=STAGES)
+    p.add_argument("--to-stage", default=None, choices=STAGES)
+    p.add_argument("--seed", type=int, default=None, help="Override the scenario seed (replicates).")
     p.add_argument("--gui", action="store_true", help="Open the YADE Qt viewer.")
     return p.parse_args(argv)
 
@@ -418,6 +507,8 @@ def _stage_function(name):
         "settle": _stage_settle,
         "spinup": _stage_spinup,
         "record": _stage_record,
+        "save_ic": _stage_save_ic,
+        "load_ic": _stage_load_ic,
     }[name]
 
 
@@ -425,4 +516,4 @@ def _stage_function(name):
 
 if __name__ == "__main__":
     _args = _parse_args(sys.argv[1:])
-    run(_args.scenario, _args.run_dir, _args.from_stage, _args.to_stage, _args.gui)
+    run(_args.scenario, _args.run_dir, _args.from_stage, _args.to_stage, _args.gui, _args.seed)
