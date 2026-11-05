@@ -71,7 +71,8 @@ Each topic file ends with a **"Pending code changes"** table (IDs `Cnn-k`,
 nn = topic number) listing what the code must change to implement its
 decisions. Status after the full re-review (2026-11-04): nothing
 implemented yet; all topics are collected and implementation follows as
-one planned phase.
+one planned phase: order, dependencies and tests in
+[`../implementation_plan.md`](../implementation_plan.md).
 
 | Topic | IDs | Must be done before any production run |
 |---|---|---|
