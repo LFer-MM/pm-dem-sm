@@ -57,7 +57,7 @@
   by the friction limit mu |F_n| once contacts slide, not by the tangential
   spring; no source in the library tests it. The argument holds only if
   V10 passes; if the mill proves stiffness-sensitive, nu must be revisited.
-- **Rock value.** The SAG_A-C ore is Chilean porphyry copper ore
+- **Rock value.** SAG_A's ore is Chilean porphyry copper ore
   ([03](03_stiffness_young_modulus.md), [08](08_density.md)). 0.25 is
   Vergara et al.'s value for El Teniente andesite, the same source as the
   rock modulus (55 GPa) and density (2850 kg/m^3), so all three rock

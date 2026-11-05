@@ -165,7 +165,7 @@ in the library (0.1-0.5 % to 0.1-1 %); it should be replaced by these ranges.
 
 ### Ore modulus
 
-The SAG_A/B/C mills grind ore from large Chilean copper operations
+SAG_A, like SAG_B and SAG_C, grinds ore from large Chilean copper operations
 (e.g. Caserones, Minera Escondida, Minera Los Pelambres); no measured Young's
 modulus of these ores is available. The value used, E_i = 55 GPa, is the
 intact-rock modulus of El Teniente (CMET) andesite from Vergara et al. 2020,
@@ -173,7 +173,7 @@ Table 1 (manuscript PDF p3), a Chilean porphyry copper deposit ("Veined rock
 masses can be found in porphyry copper deposits like at the El Teniente mine
 in Chile", abstract). It is therefore a **representative value for hard
 igneous rock of a Chilean porphyry copper deposit, not a measurement of the
-SAG_A/B/C ores**. Its companion Poisson's ratio (0.25) lies within Gercek's
+SAG_A ore**. Its companion Poisson's ratio (0.25) lies within Gercek's
 range for andesite ([09](09_poisson_ratio.md)).
 
 The uncertainty matters little here: the modulus is reduced 26x for

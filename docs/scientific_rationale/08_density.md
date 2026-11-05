@@ -46,7 +46,7 @@
 
 ### Ore density: why 2850
 
-- The SAG_A-C mills grind Chilean porphyry copper ore. The two sources that
+- SAG_A (like SAG_B and SAG_C) grinds Chilean porphyry copper ore. The two sources that
   describe that ore type give the same value: El Teniente andesite,
   28 kN/m^3 = 2855 kg/m^3 (Vergara et al. 2020, Table 10), and the Los
   Bronces SAG ore, 2850 kg/m^3 (Govender et al. 2015, Table 7).

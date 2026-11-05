@@ -210,7 +210,7 @@ claims, each compared at matched conditions:
    are new
    ([10](10_mill_geometry.md)), from the **first ~2 months after the
    reline**, while the plant's models still use the new-liner profiles
-   (reline date and the dates of the profile updates needed). Target =
+   (the period covered by the operational data). Target =
    median in that window; acceptance band = its interquartile range.
 3. **The angle model is published and reproducible** (checked 2026-11-04).
    The angles come from Maleki-Moghaddam et al. (2013), an empirical model
@@ -371,12 +371,12 @@ Plant data (author):
   not subtracted; the basis of [12](12_charge_fill_and_particles.md).
 
 To do (Claude):
-- Build the claim 1-4 analysis once the data arrive; search the literature
-  for published plant toe / shoulder measurements (e.g. Burns et al. 2018,
-  Lihir, cited by Toor et al. 2023) for claim 4.
-
-- Zotero additions for this topic: see the checklist in [README](README.md) ("Pending Zotero additions"), plus Morrell
-  1993 / 1996a if obtainable; verify Morrell's shoulder equation in a primary
+- Claims 1-3 are done (operational-data analysis 2026-11-02; Maleki-Moghaddam
+  reproduction 2026-11-04). Claim 4: search the literature for published
+  plant toe / shoulder measurements (e.g. Burns et al. 2018, Lihir, cited by
+  Toor et al. 2023).
+- Morrell 1993 / 1996a only if obtainable (cited through Toor et al. and
+  the SMC help file); verify Morrell's shoulder equation in a primary
   source before quoting a Morrell shoulder value.
 - Implement bulk toe / shoulder extraction from the time-averaged position
   density (plus the liner-force cross-check).

@@ -19,7 +19,7 @@ file; "j." is the printed journal page. Slide numbers refer to
 file `J8ID6KEP`, collection `bppm_dem_sm/unison`) in presentation order (slide *N* is the
 *N*-th slide; verified against `ppt/presentation.xml`).
 
-## Plant data: one reference mill, two supporting mills
+## Plant data: one reference mill, four supporting mills
 
 **Mill naming (2026-10-21):** the reference mill is **SAG_A** in these
 docs. The PPT (slides 2-5) labels it SAG_B and calls the other mill SAG_A;
@@ -38,7 +38,7 @@ specific way throughout these documents:
 - **SAG_B-E are evidence that the selected values are typical.** They are
   not simulated or used as validation cases; their distributions show that
   SAG_A's values sit inside the normal operating ranges of SAG mills
-  (medians: 70.4-76.2 % of critical, Jb 17.1-18.8 %, Jc 25.2-34.3 %, bulk
+  (medians: 70.4-76.2 % of critical, Jb 17.1-18.6 %, Jc 25.2-34.3 %, bulk
   toe 208.6-215.4 deg, shoulder 23.0-35.7 deg).
 
 Plant power is used only in the report-only check V15, and SAG_A's belly
@@ -57,9 +57,9 @@ length only there ([15](15_calibration_targets.md)).
 | 07 | [07_restitution.md](07_restitution.md) | Fixed pair-wise e (Cleary & Morrison 2016): 0.3 / 0.5 / 0.8; steel liners take the steel values; es = en |
 | 08 | [08_density.md](08_density.md) | Steel 7850 / ore 2850 kg/m^3 (Chilean porphyry copper: Vergara 2020, Govender 2015); not calibrated; sensitivity 2650 incl. segregation |
 | 09 | [09_poisson_ratio.md](09_poisson_ratio.md) | Steel 0.292 (Shigley), rock 0.25 (Vergara 2020, El Teniente andesite); physical, not calibrated; effect < 7 % on contact stiffness |
-| 10 | [10_mill_geometry.md](10_mill_geometry.md) | SAG_A: 36 ft x 19 ft, 36 lifters (395 mm, 35 deg) + 36 plates (130 mm), D inside liners 10.71 m, new liners, generated in code; 0.6 m slice (4.3 ball diameters, 10.4 % of length); frictionless end walls |
+| 10 | [10_mill_geometry.md](10_mill_geometry.md) | SAG_A: 36 ft x 19 ft, 36 lifters (395 mm, 35 deg) + 36 plates (130 mm), D inside liners 10.71 m, new liners, generated in code; 0.6 m slice (4.3 ball diameters, 11.4 % of the belly length); frictionless end walls |
 | 11 | [11_mill_speed.md](11_mill_speed.md) | SAG_A median 9.5 rpm = 73.0 % of critical (N_c 13.01 rpm); SAG_B-E 70.4-76.2 %; compared as % critical |
-| 12 | [12_charge_fill_and_particles.md](12_charge_fill_and_particles.md) | Jb 18.8 % / Jc 27.6 % (SAG_A) in Morrell's convention (D inside liners, lifters not subtracted); counts from a simulated grind-out + mixed crash stop; phi is a result |
+| 12 | [12_charge_fill_and_particles.md](12_charge_fill_and_particles.md) | Jb 18.8 % / Jc 27.6 % (SAG_A) in Morrell's convention (D inside liners, lifters not subtracted); counts from a simulated grind-out + mixed crash stop (estimate ~3,750 balls + ~14,650 rocks); phi is a result |
 | 13 | [13_initial_conditions.md](13_initial_conditions.md) | SIC / RMIC at rest, undamped settle with a geometric stop rule, velocities zeroed; SIC = rock bottom, balls top |
 | 14 | [14_dataset_runs_and_recording.md](14_dataset_runs_and_recording.md) | Record from rest every 0.05 s; RMIC 20 s, SIC 35 s (revolution-matched); 5 replicates per IC; Lacey on 0.3 m cubes; radial segregation as result, axial only as end-wall check |
 | 15 | [15_calibration_targets.md](15_calibration_targets.md) | Match SAG_A's bulk toe 213.8 deg (IQR 213.4-214.5) and shoulder 26.6 deg (IQR 26.0-27.3) at Jb 18.8 % / Jc 27.6 % / 9.5 rpm (0 deg at 3 o'clock, CCW), band widened to the replicate scatter if larger; SAG_B-E show these are typical; power only for V4 and V15 |
