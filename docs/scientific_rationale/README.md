@@ -250,6 +250,10 @@ doc compares with the PPT's slide-12 set (33.16e9 / 2.868e9), it says so.
 
 ## Code state referenced
 
-"`main`" means the `main` branch at commit `bb04dfd` (the code that produced
-or will produce the datasets). Branch `worktree-yade-sim-structure` contains
-the structural rework and the bug fixes referenced in some files.
+"Current state" sections refer to the `pm_dem_sm` package on `main` of
+`LFer-MM/pm-dem-sm` as re-reviewed on 2026-11-04 (commit `5084426`), with
+paths relative to `pm_dem_sm/` unless stated. The existing datasets
+(`data/raw/...`) were produced by older code, before the repository was
+renamed (pre-rename `main`, commit `bb04dfd`), with the friction and
+damping issues described in [04](04_numerical_damping.md) and
+[05](05_friction.md).

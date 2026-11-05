@@ -118,9 +118,9 @@ changes run time.
 
 | Where | What |
 |---|---|
-| `main` `yade_dem/run_simulation.py:36` | `set_dt(new_dt=0.000015 * 0.2)` = 3e-6 s |
-| `main` `config.py:89,96` | Moduli of the dt_crit = 1.5e-5 row (155.7 GPa / 13.47 GPa), not slide 12 |
-| `data/raw/sic_dataset_20s_dt0p0001_csv.zip` | Generated at dt = 1e-4 s (folder name `sic_dataset_20s0.0001_`) |
+| `simulation/yade_dem/run_simulation.py:172` | `dt = solver.dt_s or solver.dt_safety x Rayleigh step`; default `dt_safety = 0.3` (`scenario.py:116-117`) -- not the decided 2.5e-5 s (C02-1) |
+| `config.py:91, 98` | Moduli 155.7 GPa / 13.47 GPa (the dt_crit = 1.5e-5 row of slide 11), scaled by `solver.young_scale` (default 1.0, `scenario.py:118`) |
+| `data/raw/sic_dataset_20s_dt0p0001_csv.zip` | Existing dataset, generated at dt = 1e-4 s with the old code |
 
 ## Analysis
 

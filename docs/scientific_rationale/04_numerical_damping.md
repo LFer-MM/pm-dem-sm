@@ -118,10 +118,11 @@ between the smoke test and the full mill):
 
 | Where | What |
 |---|---|
-| `main` `engines.py:69,84` | Engines created with `damping=0` |
-| `main` `run_simulation.py:38` | Immediately set to 0.2 (`set_gravity_damping(0.2)`) |
-| `main` `run_simulation.py:63` | The reset to 0.0 is commented out (manual step) |
-| Existing `sic_dataset_20s_dt0p0001` | Generated with 0.2 according to slide 19 |
+| `engines.py:68, 83` | `NewtonIntegrator` created with `damping=0` |
+| `scenario.py:137, 151` | Defaults `fill.damping = 0.2`, `settle.damping = 0.2` |
+| `run_simulation.py:174, 185, 217` | Damping set to those values during fill and settle |
+| `run_simulation.py:234, 267` | Damping set to 0 for spin-up and recording |
+| Existing `sic_dataset_20s_dt0p0001` | Generated with 0.2 according to slide 19 (old code) |
 
 ## Analysis
 

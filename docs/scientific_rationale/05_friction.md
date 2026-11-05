@@ -64,12 +64,11 @@ shape, friction is treated as the main calibration variable.
 
 | Where | What |
 |---|---|
-| `main` `config.py:91,98` | `"friction_angle": math.atan(0.5)` -> 0.4636 rad (already radians) |
-| `main` `yade_dem/materials.py:30` | `frictionAngle=radians(material_properties["friction_angle"])` -> converts **again**: 0.4636 deg -> 0.00809 rad, **mu = 0.0081** |
-| `main` engines | No `frictAngle` MatchMaker: steel-rock contacts get min(mu_steel, mu_rock) |
-| Branch `worktree-yade-sim-structure` | Double conversion fixed (commit `543208a`) |
+| `config.py:93, 100` | `"friction_angle": math.atan(0.5)` -> 0.4636 rad (radians) |
+| `simulation/yade_dem/materials.py:31` | `frictionAngle=material_properties["friction_angle"]` -- used as radians (the old double conversion, which gave mu = 0.0081, is fixed, commit `543208a`) |
+| `engines.py:76-83` | No `frictAngle` MatchMaker: steel-rock contacts get min(mu_steel, mu_rock) (C05-2) |
 
-Consequence: any run made with `main` -- including, if it used this code,
+Consequence: any run made with the old code (before commit `543208a`) -- including, if it used that code,
 the 212 deg / 26.5 deg match of slide 31 -- had practically frictionless
 particles and liner. The lifters (30 rows in the old 40 ft STL) can still lift such a charge,
 which is why a plausible toe / shoulder may have been reached, but those

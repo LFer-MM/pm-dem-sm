@@ -82,9 +82,10 @@ diameter. The papers quote overlap relative to the **diameter**.
 
 | Where | What |
 |---|---|
-| `main` `config.py:89` | steel young = 155,709,722,558 Pa (slide 11, dt_crit = 1.5e-5 row) |
-| `main` `config.py:96` | rock young = 13,468,135,026 Pa (same row) |
-| -- | Neither slide 12 nor the f = 26 set is in the code yet. |
+| `config.py:91` | steel young = 155,709,722,558 Pa (slide 11, dt_crit = 1.5e-5 row) |
+| `config.py:98` | rock young = 13,468,135,026 Pa (same row) |
+| `scenario.py:118` | `solver.young_scale` (default 1.0) multiplies every modulus -- the hook for f = 26 (C03-1) |
+| -- | Neither slide 12 nor the f = 26 set is in the code yet |
 
 ## Analysis
 
