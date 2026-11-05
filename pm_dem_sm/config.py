@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, fields, is_dataclass, replace
 import json
-import math
 from pathlib import Path
 from typing import Any, get_type_hints
 
@@ -83,37 +82,56 @@ BALL_DIAM_M = 0.1397
 #: steel-rock and rock-rock: the calibration baseline
 #: (docs/scientific_rationale/05_friction.md).
 PARTICLE_FRICTION = 0.5
+#: Particle-liner friction coefficient mu_w (shell and lifters): the
+#: calibration baseline (docs/scientific_rationale/05_friction.md).
+WALL_FRICTION = 0.5
+#: Owen & Cleary (2015, Table 4) particle-pair friction, run once as a
+#: sensitivity case (``ContactOptions.particle_friction_set = "owen"``;
+#: docs/scientific_rationale/05_friction.md).
+OWEN_PARTICLE_FRICTION = {
+    ("steel", "steel"): 0.4,
+    ("steel", "rock"): 0.5,
+    ("rock", "rock"): 0.8,
+}
 
 #: Per-material DEM properties (density in kg/m^3, **physical** Young's
 #: modulus in Pa -- scaled by ``SolverOptions.young_scale`` when the scene is
-#: built --, Poisson ratio, friction angle in radians, ``atan(mu)``) plus the
-#: label the DEM backend registers each material under. Sources in
-#: docs/scientific_rationale/: moduli 03, density 08, Poisson ratio 09,
-#: friction 05.
+#: built --, Poisson ratio) plus the label the DEM backend registers each
+#: material under. Friction is set per pair from ``ContactOptions``, not per
+#: material. ``"liner"`` (shell and lifters) is steel with its own friction
+#: mu_w. Sources in docs/scientific_rationale/: moduli 03, density 08,
+#: Poisson ratio 09, liner material 05.
 MATERIALS = {
     "steel": {
         "density": 7850,
         "young": 207e9,
         "poisson": 0.292,
-        "friction_angle": math.atan(PARTICLE_FRICTION),
         "label": "steel",
     },
     "rock": {
         "density": 2850,
         "young": 55e9,
         "poisson": 0.25,
-        "friction_angle": math.atan(PARTICLE_FRICTION),
         "label": "rock",
+    },
+    "liner": {
+        "density": 7850,
+        "young": 207e9,
+        "poisson": 0.292,
+        "label": "liner",
     },
 }
 
 #: Pairwise coefficients of restitution keyed by material-name pair
-#: (docs/scientific_rationale/07_restitution.md); a scenario looks them up
-#: order-independently via ``SimulationScenario.restitution_for``.
+#: (docs/scientific_rationale/07_restitution.md; liner pairs take the steel
+#: values); a scenario looks them up order-independently via
+#: ``SimulationScenario.restitution_for``.
 RESTITUTION_COEFFICIENTS = {
     ("steel", "steel"): 0.8,
     ("steel", "rock"): 0.5,
     ("rock", "rock"): 0.3,
+    ("liner", "steel"): 0.8,
+    ("liner", "rock"): 0.5,
 }
 
 

@@ -36,6 +36,26 @@ MILL_SOURCES = ("stl", "parametric")
 END_WALLS = ("liner", "frictionless")
 #: Valid ``ContactOptions.model`` values.
 CONTACT_MODELS = ("hertz_mindlin",)
+#: Valid ``ContactOptions.particle_friction_set`` values.
+PARTICLE_FRICTION_SETS = ("uniform", "owen")
+#: Material label given to frictionless end walls; derived from the liner.
+END_WALL_MATERIAL = "end_wall"
+#: Fewest time steps per rolling oscillation period of the smallest sphere,
+#: ``T_r = 2 pi sqrt(I / krot)`` (docs/scientific_rationale/06_rolling_resistance.md).
+MIN_STEPS_PER_ROLLING_PERIOD = 20
+#: Largest accepted rotation to reach the plastic rolling moment,
+#: ``theta_y = mu_r R |F_n| / krot``, at the typical contact force (rad)
+#: (docs/scientific_rationale/06_rolling_resistance.md; Ai et al. 2011 §7).
+MAX_YIELD_ROTATION_RAD = 0.01
+#: Bulk solid fraction assumed for the typical-contact-force estimate.
+TYPICAL_PACKING = 0.6
+#: Scenario fields with no sourced value yet; runs record them as provisional.
+PROVISIONAL_PARAMETERS = {
+    "contact.rolling_resistance": (
+        "mu_r has no sourced value until the heap test (C06-3) fixes it for a 37 deg "
+        "repose angle (docs/scientific_rationale/06_rolling_resistance.md)"
+    ),
+}
 #: Valid ``FillOptions.method`` values.
 FILL_METHODS = ("random", "segregated")
 #: Standard gravity (m/s^2).
@@ -80,10 +100,13 @@ class MillGeometry:
         lifter_height_m: Lifter height above the shell (m).
         lifter_base_width_m: Lifter width at the shell (m).
         lifter_top_width_m: Lifter width at its top face (m).
-        liner_material: Material key (in ``materials``) of shell and lifters.
+        liner_material: Material key (in ``materials``) of shell and lifters;
+            ``"liner"`` by default, steel with its own friction mu_w
+            (docs/scientific_rationale/05_friction.md).
         end_walls: ``"liner"`` gives the flat slice end walls the liner
-            material; ``"frictionless"`` (default) gives them zero friction to
-            limit the wall effects of a thin slice.
+            material; ``"frictionless"`` (default) gives them a material
+            derived from the liner with zero friction, to limit the wall
+            effects of a thin slice.
     """
 
     source: str = "stl"
@@ -96,21 +119,42 @@ class MillGeometry:
     lifter_height_m: float = 0.25
     lifter_base_width_m: float = 0.30
     lifter_top_width_m: float = 0.15
-    liner_material: str = "steel"
+    liner_material: str = "liner"
     end_walls: str = "frictionless"
 
 
 @dataclass
 class ContactOptions:
-    """Contact law selection.
+    """Contact law, per-pair friction and rolling resistance.
+
+    Friction is set per material pair (a YADE ``frictAngle`` ``MatchMaker``),
+    not per material: particle pairs get ``particle_friction`` (or the Owen
+    set), particle-liner pairs ``wall_friction``, particle-end-wall pairs 0
+    when the end walls are frictionless
+    (docs/scientific_rationale/05_friction.md). See
+    :meth:`SimulationScenario.contact_tables`.
 
     Attributes:
         model: ``"hertz_mindlin"`` (nonlinear, restitution from
             ``restitution``), the only law offered
             (docs/scientific_rationale/01_contact_model.md).
+        particle_friction: mu_p, one value for every particle pair.
+        wall_friction: mu_w, particle-liner pairs.
+        particle_friction_set: ``"uniform"`` (``particle_friction`` for all
+            particle pairs) or ``"owen"`` (Owen & Cleary 2015 steel-steel /
+            steel-rock / rock-rock 0.4 / 0.5 / 0.8, the sensitivity case).
+        rolling_resistance: mu_r, YADE's ``eta`` (plastic rolling moment
+            ``mu_r R_mean |F_n|``), one value for all contacts
+            (docs/scientific_rationale/06_rolling_resistance.md). **Required**:
+            there is no default until the heap test (C06-3) fixes it, and runs
+            record it as provisional.
     """
 
     model: str = "hertz_mindlin"
+    particle_friction: float = config.PARTICLE_FRICTION
+    wall_friction: float = config.WALL_FRICTION
+    particle_friction_set: str = "uniform"
+    rolling_resistance: float | None = None
 
 
 @dataclass
@@ -327,12 +371,21 @@ class SimulationScenario:
 
         Raises:
             ValueError: On an unknown option value, a species or liner whose
-                material is not in ``materials``, a restitution pair that is
-                missing, or a species count other than two.
+                material is not in ``materials``, a material that still
+                carries a per-material ``friction_angle``, a restitution pair
+                (particle-particle or particle-liner) that is missing, an
+                Owen friction set without steel / rock species, a missing or
+                negative ``contact.rolling_resistance``, or a species count
+                other than two.
         """
         _check_choice("mill.source", self.mill.source, MILL_SOURCES)
         _check_choice("mill.end_walls", self.mill.end_walls, END_WALLS)
         _check_choice("contact.model", self.contact.model, CONTACT_MODELS)
+        _check_choice(
+            "contact.particle_friction_set",
+            self.contact.particle_friction_set,
+            PARTICLE_FRICTION_SETS,
+        )
         _check_choice("fill.method", self.fill.method, FILL_METHODS)
         if len(self.species) != 2:
             raise ValueError(f"Exactly two species are supported, got {len(self.species)}")
@@ -340,11 +393,34 @@ class SimulationScenario:
         missing = used - set(self.materials)
         if missing:
             raise ValueError(f"Materials not defined in 'materials': {sorted(missing)}")
+        if self.mill.liner_material in {s.material for s in self.species}:
+            raise ValueError(
+                f"mill.liner_material {self.mill.liner_material!r} is also a particle material; "
+                "the liner needs its own material so mu_w is independent of mu_p"
+            )
+        with_angle = sorted(k for k, m in self.materials.items() if "friction_angle" in m)
+        if with_angle:
+            raise ValueError(
+                f"Materials {with_angle} set 'friction_angle'; friction is set per pair in "
+                "'contact' (particle_friction, wall_friction)"
+            )
         pairs = {frozenset((a, b)) for a, b, _ in self.restitution}
-        for a in used:
-            for b in used:
-                if frozenset((a, b)) not in pairs:
-                    raise ValueError(f"No restitution coefficient for pair ({a}, {b})")
+        for a, b in self._contact_pairs():
+            if frozenset((a, b)) not in pairs:
+                raise ValueError(f"No restitution coefficient for pair ({a}, {b})")
+        if self.contact.particle_friction_set == "owen":
+            owen = {frozenset(k) for k in config.OWEN_PARTICLE_FRICTION}
+            for a, b in self._particle_pairs():
+                if frozenset((a, b)) not in owen:
+                    raise ValueError(f"No Owen friction coefficient for pair ({a}, {b})")
+        mu_r = self.contact.rolling_resistance
+        if mu_r is None:
+            raise ValueError(
+                "contact.rolling_resistance (mu_r) is required: "
+                + PROVISIONAL_PARAMETERS["contact.rolling_resistance"]
+            )
+        if mu_r < 0:
+            raise ValueError(f"contact.rolling_resistance must be >= 0, got {mu_r}")
         if self.mill.n_lifters and self.lifter_gap_m <= 0:
             raise ValueError("Lifters overlap: reduce n_lifters or lifter_base_width_m")
 
@@ -383,6 +459,205 @@ class SimulationScenario:
             if {x, y} == {a, b}:
                 return float(e)
         raise KeyError((a, b))
+
+    def friction_for(self, a: str, b: str) -> float:
+        """Return the friction coefficient of material pair ``(a, b)``, in either order.
+
+        Particle pairs get ``contact.particle_friction`` (or the Owen value),
+        particle-liner pairs ``contact.wall_friction``, and pairs with the
+        frictionless end-wall material 0.
+
+        Args:
+            a: First material name.
+            b: Second material name.
+
+        Returns:
+            float: Friction coefficient mu (not an angle).
+
+        Raises:
+            KeyError: If ``(a, b)`` is not a particle-particle, particle-liner
+                or particle-end-wall pair.
+        """
+        particles = {s.material for s in self.species}
+        pair = {a, b}
+        if pair <= particles:
+            if self.contact.particle_friction_set == "owen":
+                for (x, y), mu in config.OWEN_PARTICLE_FRICTION.items():
+                    if {x, y} == pair:
+                        return float(mu)
+                raise KeyError((a, b))
+            return float(self.contact.particle_friction)
+        for wall, mu in (
+            (self.mill.liner_material, self.contact.wall_friction),
+            (END_WALL_MATERIAL, 0.0),
+        ):
+            if wall in pair and (pair - {wall} <= particles) and len(pair) == 2:
+                return float(mu)
+        raise KeyError((a, b))
+
+    def contact_tables(self) -> dict[str, Any]:
+        """Return the materials and per-pair tables the backend registers.
+
+        Adds the frictionless end-wall material (a copy of the liner) when
+        ``mill.end_walls == "frictionless"``, with the liner's restitution.
+        Friction is returned as angles in radians, ``atan(mu)``, for YADE's
+        ``frictAngle`` ``MatchMaker``; every material also gets the matching
+        ``friction_angle`` (YADE's fallback for unmatched pairs, which do not
+        occur). Pairs cover every particle-particle and particle-wall
+        combination, each once (unordered).
+
+        Returns:
+            dict[str, Any]: ``materials`` (name -> properties incl.
+            ``friction_angle``), ``restitution`` and ``friction`` (lists of
+            ``[material_a, material_b, value]``), and ``cap_material`` (the
+            end walls' material).
+        """
+        liner = self.mill.liner_material
+        materials = {k: dict(v) for k, v in self.materials.items()}
+        walls = [liner]
+        cap_material = liner
+        if self.mill.end_walls == "frictionless":
+            cap_material = END_WALL_MATERIAL
+            materials[END_WALL_MATERIAL] = dict(materials[liner], label=END_WALL_MATERIAL)
+            walls.append(END_WALL_MATERIAL)
+        particles = sorted({s.material for s in self.species})
+        for name, props in materials.items():
+            if name in particles:
+                mu = self.contact.particle_friction
+            elif name == liner:
+                mu = self.contact.wall_friction
+            else:
+                mu = 0.0
+            props["friction_angle"] = math.atan(mu)
+        restitution, friction = [], []
+        for a, b in self._particle_pairs() + [(p, w) for w in walls for p in particles]:
+            e_pair = (a, liner) if b == END_WALL_MATERIAL else (a, b)
+            restitution.append([a, b, self.restitution_for(*e_pair)])
+            friction.append([a, b, math.atan(self.friction_for(a, b))])
+        return {
+            "materials": materials,
+            "restitution": restitution,
+            "friction": friction,
+            "cap_material": cap_material,
+        }
+
+    def rolling_stiffness(self) -> float:
+        """Return ``krot`` (N m/rad): the stiffest the time step resolves.
+
+        Sized on the smallest sphere so that its rolling oscillation period,
+        ``T_r = 2 pi sqrt(I / krot)`` with ``I = (2/5) m r^2``, is exactly
+        :data:`MIN_STEPS_PER_ROLLING_PERIOD` time steps -- "as high as
+        numerical stability allows" (Wensrich & Katterfeld 2012, §2; see
+        docs/scientific_rationale/06_rolling_resistance.md).
+
+        Returns:
+            float: Rolling stiffness ``krot``.
+        """
+        s = self.small
+        mass = self.materials[s.material]["density"] * 4.0 / 3.0 * math.pi * s.radius_m**3
+        inertia = 0.4 * mass * s.radius_m**2
+        omega = 2.0 * math.pi / (MIN_STEPS_PER_ROLLING_PERIOD * self.time_step_s())
+        return inertia * omega**2
+
+    def rolling_period_steps(self, krot: float) -> float:
+        """Return the smallest sphere's rolling period ``2 pi sqrt(I / krot)`` in time steps."""
+        s = self.small
+        mass = self.materials[s.material]["density"] * 4.0 / 3.0 * math.pi * s.radius_m**3
+        inertia = 0.4 * mass * s.radius_m**2
+        return 2.0 * math.pi * math.sqrt(inertia / krot) / self.time_step_s()
+
+    def typical_contact_force_n(self) -> float:
+        """Return a typical (high-end) static contact force on a small sphere (N).
+
+        The weight of a column of bulk charge, as deep as the static bed,
+        standing on one small-particle cross-section ``(2 r_small)^2``:
+        ``F = phi rho_s g h (2 r_small)^2`` with phi = :data:`TYPICAL_PACKING`,
+        ``rho_s`` the mean solid density of the charge and ``h`` the depth of
+        a flat bed holding the fill fraction :meth:`fill_fraction`. An order
+        of magnitude for the yield-rotation check, not a measurement.
+
+        Returns:
+            float: Force (N).
+        """
+        mass = sum(self.materials[s.material]["density"] * s.volume_m3 for s in self.species)
+        rho_solid = mass / sum(s.volume_m3 for s in self.species)
+        r_mill = self.mill.diameter_m / 2.0
+        target = min(self.fill_fraction(TYPICAL_PACKING), 1.0) * math.pi * r_mill**2
+        lo, hi = 0.0, 2.0 * r_mill
+        for _ in range(60):
+            h = 0.5 * (lo + hi)
+            c = r_mill - h
+            area = r_mill**2 * math.acos(c / r_mill) - c * math.sqrt(max(0.0, r_mill**2 - c**2))
+            lo, hi = (h, hi) if area < target else (lo, h)
+        h = 0.5 * (lo + hi)
+        return TYPICAL_PACKING * rho_solid * GRAVITY * h * (2.0 * self.small.radius_m) ** 2
+
+    def yield_rotation_rad(self, krot: float, force_n: float | None = None) -> float:
+        """Return the rotation to reach the plastic rolling moment, ``mu_r R F / krot`` (rad).
+
+        For two small spheres (``R_mean = r_small``) at ``force_n``, by
+        default :meth:`typical_contact_force_n`.
+
+        Args:
+            krot: Rolling stiffness (N m/rad).
+            force_n: Normal contact force (N).
+
+        Returns:
+            float: Yield rotation theta_y (rad).
+        """
+        force = self.typical_contact_force_n() if force_n is None else force_n
+        mu_r = self.contact.rolling_resistance or 0.0
+        return mu_r * self.small.radius_m * force / krot
+
+    def check_rolling_stiffness(self, krot: float) -> None:
+        """Raise unless ``krot`` meets both criteria of the rolling-resistance decision.
+
+        ``T_r >= MIN_STEPS_PER_ROLLING_PERIOD`` steps for the smallest sphere,
+        and ``theta_y <= MAX_YIELD_ROTATION_RAD`` at the typical contact force
+        (docs/scientific_rationale/06_rolling_resistance.md).
+
+        Args:
+            krot: Rolling stiffness to check (N m/rad).
+
+        Raises:
+            ValueError: If either criterion fails.
+        """
+        steps = self.rolling_period_steps(krot)
+        # Allow round-off when krot is exactly at the limit.
+        if steps < MIN_STEPS_PER_ROLLING_PERIOD * (1.0 - 1e-9):
+            raise ValueError(
+                f"krot = {krot:.4g} N m/rad gives a rolling period of {steps:.1f} steps "
+                f"(< {MIN_STEPS_PER_ROLLING_PERIOD}) for the smallest sphere"
+            )
+        theta = self.yield_rotation_rad(krot)
+        if theta > MAX_YIELD_ROTATION_RAD:
+            raise ValueError(
+                f"krot = {krot:.4g} N m/rad needs {theta:.3g} rad to reach the plastic rolling "
+                f"moment at the typical contact force (> {MAX_YIELD_ROTATION_RAD} rad)"
+            )
+
+    def provisional_parameters(self) -> dict[str, Any]:
+        """Return the provisional (unsourced) parameters of this scenario with their values.
+
+        Returns:
+            dict[str, Any]: Field path -> ``{"value": ..., "note": ...}``.
+        """
+        return {
+            "contact.rolling_resistance": {
+                "value": self.contact.rolling_resistance,
+                "note": PROVISIONAL_PARAMETERS["contact.rolling_resistance"],
+            }
+        }
+
+    def _particle_pairs(self) -> list[tuple[str, str]]:
+        """Return every unordered pair of particle materials, each once."""
+        mats = sorted({s.material for s in self.species})
+        return [(a, b) for i, a in enumerate(mats) for b in mats[i:]]
+
+    def _contact_pairs(self) -> list[tuple[str, str]]:
+        """Return particle-particle and particle-liner material pairs (restitution needed)."""
+        mats = sorted({s.material for s in self.species})
+        return self._particle_pairs() + [(m, self.mill.liner_material) for m in mats]
 
     def critical_speed_rpm(self) -> float:
         """Return the mill critical speed (rev/min) for the large species.
@@ -495,12 +770,15 @@ class SimulationScenario:
             ``fill_fraction_J``, ``ball_volume_fraction``, ``dt_s``
             (:meth:`time_step_s`), ``rayleigh_dt_s``, ``dt_over_rayleigh``,
             ``impact_speed_m_s``, ``min_steps_per_collision`` (fewest over the
-            species pairs of :meth:`steps_per_collision`), ``revolution_s``,
-            ``lifter_gap_over_large_d``.
+            species pairs of :meth:`steps_per_collision`), ``rolling_stiffness``
+            (``krot``, :meth:`rolling_stiffness`), ``rolling_period_steps``,
+            ``typical_contact_force_n``, ``yield_rotation_rad``,
+            ``revolution_s``, ``lifter_gap_over_large_d``.
         """
         nc = self.critical_speed_rpm()
         dt_r = self.rayleigh_dt_s()
         dt = self.time_step_s()
+        krot = self.rolling_stiffness()
         solids = sum(s.volume_m3 for s in self.species)
         return {
             "critical_speed_rpm": nc,
@@ -512,6 +790,10 @@ class SimulationScenario:
             "dt_over_rayleigh": dt / dt_r,
             "impact_speed_m_s": self.impact_speed_m_s(),
             "min_steps_per_collision": min(self.steps_per_collision().values()),
+            "rolling_stiffness": krot,
+            "rolling_period_steps": self.rolling_period_steps(krot),
+            "typical_contact_force_n": self.typical_contact_force_n(),
+            "yield_rotation_rad": self.yield_rotation_rad(krot),
             "revolution_s": self.revolution_s(),
             "lifter_gap_over_large_d": self.lifter_gap_m / (2.0 * self.large.radius_m),
         }

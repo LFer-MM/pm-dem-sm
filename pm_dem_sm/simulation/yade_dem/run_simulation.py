@@ -67,8 +67,6 @@ from pm_dem_sm.simulation.yade_dem.version import check_yade_version
 
 # --- Constants ---------------------------------------------------------------
 
-#: Material label given to frictionless end walls.
-END_WALL_MATERIAL = "end_wall"
 #: ``NewtonIntegrator.damping`` in every stage
 #: (docs/scientific_rationale/04_numerical_damping.md).
 NUMERICAL_DAMPING = 0.0
@@ -95,6 +93,8 @@ def run(scenario_path=None, run_dir=None, from_stage="build", to_stage="record",
 
     Raises:
         RuntimeError: If the running YADE is older than 2023.02.
+        ValueError: If the scenario is invalid (e.g. no
+            ``contact.rolling_resistance``).
     """
     yade_version = str(getattr(yade.config, "version", "unknown"))
     check_yade_version(yade_version)
@@ -114,6 +114,8 @@ def run(scenario_path=None, run_dir=None, from_stage="build", to_stage="record",
         scenario = SimulationScenario.from_dict(resume_manifest["scenario"])
     else:
         scenario = load_scenario(scenario_path)
+    # The defaults are not validated on load; mu_r has no default.
+    scenario.validate()
 
     run_dir = Path(run_dir or Path(_REPO_ROOT) / "data" / "raw" / "yade_runs" / scenario.name)
     (run_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
@@ -156,19 +158,13 @@ def run(scenario_path=None, run_dir=None, from_stage="build", to_stage="record",
 
 def _stage_build(scenario, run_dir, manifest):
     """Register materials, build the mill and engines, and set dt."""
-    mats = {k: dict(v) for k, v in scenario.materials.items()}
-    restitution = [list(p) for p in scenario.restitution]
-    cap_material = scenario.mill.liner_material
-    if scenario.mill.end_walls == "frictionless":
-        cap_material = END_WALL_MATERIAL
-        mats[END_WALL_MATERIAL] = dict(
-            scenario.materials[scenario.mill.liner_material],
-            friction_angle=0.0, label=END_WALL_MATERIAL,
-        )
-        for s in {s.material for s in scenario.species}:
-            e = scenario.restitution_for(scenario.mill.liner_material, s)
-            restitution.append([END_WALL_MATERIAL, s, e])
-    materials.initialize_simulation_materials(mats, young_scale=scenario.solver.young_scale)
+    tables = scenario.contact_tables()
+    cap_material = tables["cap_material"]
+    materials.initialize_simulation_materials(
+        tables["materials"], young_scale=scenario.solver.young_scale
+    )
+    krot = scenario.rolling_stiffness()
+    scenario.check_rolling_stiffness(krot)
 
     if scenario.mill.source == "stl":
         stl_path = Path(scenario.mill.stl_path)
@@ -182,7 +178,12 @@ def _stage_build(scenario, run_dir, manifest):
 
     engines.initialize_engines(
         contact_model=scenario.contact.model,
-        contact_model_params={"restitution": materials.restitution_matchmaker(restitution)},
+        contact_model_params={
+            "restitution": materials.pair_matchmaker(tables["restitution"]),
+            "friction_angle": materials.pair_matchmaker(tables["friction"]),
+            "rolling_resistance": scenario.contact.rolling_resistance,
+            "rolling_stiffness": krot,
+        },
         rotation_engine=True,
     )
     engines.set_dt(new_dt=scenario.time_step_s())
@@ -191,6 +192,8 @@ def _stage_build(scenario, run_dir, manifest):
     manifest["mill_body_ids"] = list(mill_ids)
     manifest["dt_s"] = O.dt
     manifest["threads"] = O.numThreads
+    manifest["contact_tables"] = {k: tables[k] for k in ("restitution", "friction")}
+    manifest["rolling_stiffness"] = krot
     return {"n_mill_bodies": len(mill_ids)}
 
 
@@ -322,6 +325,7 @@ def _new_manifest(scenario):
         "scenario": scenario.to_dict(),
         "checks": scenario.checks(),
         "warnings": scenario.warnings(),
+        "provisional_parameters": scenario.provisional_parameters(),
         "stages": {},
     }
 

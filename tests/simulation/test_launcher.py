@@ -126,7 +126,7 @@ def test_launch_simulation_validates_scenario_and_uses_its_threads(monkeypatch, 
 
     monkeypatch.setattr(subprocess, "run", fake_run)
     scenario = tmp_path / "s.json"
-    scenario.write_text('{"solver": {"threads": 6}}', encoding="utf-8")
+    scenario.write_text('{"solver": {"threads": 6}, "contact": {"rolling_resistance": 0.25}}', encoding="utf-8")
     dem_launcher.launch_simulation(scenario=scenario)
     assert captured["cmd"][3:5] == ["-j", "6"]
 

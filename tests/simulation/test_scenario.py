@@ -14,14 +14,38 @@ from pm_dem_sm.simulation.scenario import SimulationScenario, load_scenario
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCENARIO_FILES = sorted((REPO_ROOT / "configs" / "simulation").glob("*.json"))
+# Any value: mu_r is a required input with no sourced default yet.
+MU_R = 0.25
+
+
+# --- Helpers -----------------------------------------------------------------
+
+
+def _from(data):
+    """Build a validated scenario from ``data``, adding ``MU_R`` unless set."""
+    data = json.loads(json.dumps(data))
+    data.setdefault("contact", {}).setdefault("rolling_resistance", MU_R)
+    return SimulationScenario.from_dict(data)
+
+
+def _valid():
+    """Return the default scenario with ``MU_R`` set."""
+    return _from({})
 
 
 # --- Tests -------------------------------------------------------------------
 
 
 def test_defaults_round_trip_through_dict():
-    s = SimulationScenario()
+    s = _valid()
     assert SimulationScenario.from_dict(s.to_dict()).to_dict() == s.to_dict()
+
+
+def test_rolling_resistance_is_required():
+    with pytest.raises(ValueError, match="rolling_resistance"):
+        SimulationScenario.from_dict({})
+    with pytest.raises(ValueError, match=">= 0"):
+        _from({"contact": {"rolling_resistance": -0.1}})
 
 
 def test_to_dict_is_json_serializable():
@@ -36,7 +60,10 @@ def test_packaged_scenarios_load(path):
 
 def test_partial_json_keeps_other_defaults(tmp_path):
     path = tmp_path / "s.json"
-    path.write_text(json.dumps({"mill": {"speed_rpm": 7.5}}), encoding="utf-8")
+    path.write_text(
+        json.dumps({"mill": {"speed_rpm": 7.5}, "contact": {"rolling_resistance": MU_R}}),
+        encoding="utf-8",
+    )
     s = load_scenario(path)
     assert s.mill.speed_rpm == 7.5
     assert s.mill.depth_m == SimulationScenario().mill.depth_m
@@ -61,7 +88,7 @@ def test_species_material_must_exist():
 
 def test_overlapping_lifters_raise():
     with pytest.raises(ValueError, match="Lifters overlap"):
-        SimulationScenario.from_dict(
+        _from(
             {"mill": {"source": "parametric", "diameter_m": 1.0, "n_lifters": 40,
                       "lifter_base_width_m": 0.2}}
         )
@@ -78,14 +105,14 @@ def test_restitution_lookup_is_order_independent():
 
 
 def test_critical_speed_matches_classic_formula():
-    s = SimulationScenario.from_dict({"mill": {"diameter_m": 11.9}})
+    s = _from({"mill": {"diameter_m": 11.9}})
     d_large = 2 * s.large.radius_m
     assert s.critical_speed_rpm() == pytest.approx(42.3 / math.sqrt(11.9 - d_large), rel=1e-3)
 
 
 def test_rayleigh_dt_scales_with_young():
-    stiff = SimulationScenario.from_dict({"solver": {"young_scale": 1.0}})
-    soft = SimulationScenario.from_dict({"solver": {"young_scale": 0.01}})
+    stiff = _from({"solver": {"young_scale": 1.0}})
+    soft = _from({"solver": {"young_scale": 0.01}})
     assert soft.rayleigh_dt_s() == pytest.approx(10 * stiff.rayleigh_dt_s())
 
 
@@ -102,8 +129,17 @@ def test_defaults_match_decisions():
     assert s.materials["steel"]["young"] == 207e9
     assert s.materials["rock"]["young"] == 55e9
     assert s.materials["rock"]["density"] == 2850
-    assert s.materials["steel"]["friction_angle"] == s.materials["rock"]["friction_angle"]
-    assert math.tan(s.materials["rock"]["friction_angle"]) == pytest.approx(0.5)
+    assert s.contact.particle_friction == 0.5
+    assert s.contact.wall_friction == 0.5
+    assert s.contact.particle_friction_set == "uniform"
+    assert s.contact.rolling_resistance is None
+    assert s.mill.liner_material == "liner"
+    liner, steel = s.materials["liner"], s.materials["steel"]
+    assert {k: liner[k] for k in ("density", "young", "poisson")} == {
+        k: steel[k] for k in ("density", "young", "poisson")
+    }
+    assert s.restitution_for("liner", "steel") == 0.8
+    assert s.restitution_for("liner", "rock") == 0.5
 
 
 def test_damping_is_not_an_option():
@@ -144,7 +180,7 @@ def test_default_dt_gives_no_steps_warning():
 
 
 def test_dt_1e4_is_flagged():
-    s = SimulationScenario.from_dict({"solver": {"dt_s": 1e-4}})
+    s = _from({"solver": {"dt_s": 1e-4}})
     assert s.checks()["min_steps_per_collision"] < 20
     flagged = [w for w in s.warnings() if "steps" in w]
     assert len(flagged) == 3
@@ -155,3 +191,128 @@ def test_fill_fraction_counts_both_species():
     solids = sum(sp.volume_m3 for sp in s.species)
     mill = math.pi * (s.mill.diameter_m / 2) ** 2 * s.mill.depth_m
     assert s.fill_fraction(packing=1.0) == pytest.approx(solids / mill)
+
+
+def test_contact_tables_cover_every_pair_once():
+    t = _valid().contact_tables()
+    walls = ["liner", "end_wall"]
+    expected = {frozenset(p) for p in [("rock", "rock"), ("rock", "steel"), ("steel", "steel")]}
+    expected |= {frozenset((p, w)) for p in ("rock", "steel") for w in walls}
+    for key in ("restitution", "friction"):
+        pairs = [frozenset((a, b)) for a, b, _ in t[key]]
+        assert len(pairs) == len(set(pairs))
+        assert set(pairs) == expected
+    assert t["cap_material"] == "end_wall"
+    assert set(t["materials"]) == {"steel", "rock", "liner", "end_wall"}
+
+
+def test_contact_table_values():
+    s = _from({"contact": {"particle_friction": 0.3, "wall_friction": 0.7}})
+    t = s.contact_tables()
+    mu = {frozenset((a, b)): math.tan(v) for a, b, v in t["friction"]}
+    e = {frozenset((a, b)): v for a, b, v in t["restitution"]}
+    for pair in [("rock", "rock"), ("rock", "steel"), ("steel", "steel")]:
+        assert mu[frozenset(pair)] == pytest.approx(0.3)
+    for p in ("rock", "steel"):
+        assert mu[frozenset((p, "liner"))] == pytest.approx(0.7)
+        assert mu[frozenset((p, "end_wall"))] == 0.0
+        assert e[frozenset((p, "end_wall"))] == e[frozenset((p, "liner"))]
+    assert e[frozenset(("steel", "liner"))] == 0.8
+    assert e[frozenset(("rock", "liner"))] == 0.5
+    assert math.tan(t["materials"]["liner"]["friction_angle"]) == pytest.approx(0.7)
+    assert t["materials"]["end_wall"]["friction_angle"] == 0.0
+    assert t["materials"]["end_wall"]["young"] == t["materials"]["liner"]["young"]
+
+
+def test_friction_lookup_is_order_independent():
+    s = _valid()
+    for a, b in [("rock", "steel"), ("rock", "liner"), ("steel", "end_wall")]:
+        assert s.friction_for(a, b) == s.friction_for(b, a)
+    with pytest.raises(KeyError):
+        s.friction_for("liner", "liner")
+
+
+def test_owen_friction_set():
+    s = _from({"contact": {"particle_friction_set": "owen", "wall_friction": 0.6}})
+    mu = {frozenset((a, b)): math.tan(v) for a, b, v in s.contact_tables()["friction"]}
+    assert mu[frozenset(("steel", "steel"))] == pytest.approx(0.4)
+    assert mu[frozenset(("rock", "steel"))] == pytest.approx(0.5)
+    assert mu[frozenset(("rock", "rock"))] == pytest.approx(0.8)
+    assert mu[frozenset(("rock", "liner"))] == pytest.approx(0.6)
+
+
+def test_liner_end_walls_use_liner_material():
+    t = _from({"mill": {"end_walls": "liner"}}).contact_tables()
+    assert t["cap_material"] == "liner"
+    assert "end_wall" not in t["materials"]
+
+
+def test_liner_must_be_its_own_material():
+    with pytest.raises(ValueError, match="liner_material"):
+        _from({"mill": {"liner_material": "steel"}})
+
+
+def test_per_material_friction_angle_is_rejected():
+    data = _valid().to_dict()
+    data["materials"]["rock"]["friction_angle"] = 0.5
+    with pytest.raises(ValueError, match="friction_angle"):
+        SimulationScenario.from_dict(data)
+
+
+def test_restitution_needs_liner_pairs():
+    data = _valid().to_dict()
+    data["restitution"] = [p for p in data["restitution"] if "liner" not in p[:2]]
+    with pytest.raises(ValueError, match="liner"):
+        SimulationScenario.from_dict(data)
+
+
+def test_rolling_stiffness_hand_computed():
+    # Smallest rock: r = 0.034925 m, 2850 kg/m^3; T_r = 20 x 2.5e-5 s.
+    s = _valid()
+    mass = 2850 * 4 / 3 * math.pi * 0.034925**3
+    inertia = 0.4 * mass * 0.034925**2
+    krot = inertia * (2 * math.pi / (20 * 2.5e-5)) ** 2
+    assert s.rolling_stiffness() == pytest.approx(krot)
+    assert s.rolling_stiffness() == pytest.approx(39182.8, rel=1e-4)
+    assert s.rolling_period_steps(s.rolling_stiffness()) == pytest.approx(20.0)
+    # theta_y = mu_r R F / krot.
+    assert s.yield_rotation_rad(krot, force_n=1000.0) == pytest.approx(
+        MU_R * 0.034925 * 1000.0 / krot
+    )
+
+
+def test_default_rolling_stiffness_passes_both_criteria():
+    s = _valid()
+    krot = s.rolling_stiffness()
+    s.check_rolling_stiffness(krot)
+    c = s.checks()
+    assert c["rolling_stiffness"] == pytest.approx(krot)
+    assert 1e-5 < c["yield_rotation_rad"] < 0.01
+    assert 100 < c["typical_contact_force_n"] < 5000
+
+
+def test_rolling_stiffness_check_raises():
+    s = _valid()
+    krot = s.rolling_stiffness()
+    with pytest.raises(ValueError, match="rolling period"):
+        s.check_rolling_stiffness(1.1 * krot)
+    with pytest.raises(ValueError, match="plastic rolling moment"):
+        _from({"contact": {"rolling_resistance": 1000.0}}).check_rolling_stiffness(krot)
+
+
+def test_rolling_stiffness_follows_dt():
+    fine = _from({"solver": {"dt_s": 1.25e-5}})
+    assert fine.rolling_stiffness() == pytest.approx(4 * _valid().rolling_stiffness())
+
+
+def test_provisional_parameters_record_mu_r():
+    p = _valid().provisional_parameters()
+    assert p["contact.rolling_resistance"]["value"] == MU_R
+    assert "C06-3" in p["contact.rolling_resistance"]["note"]
+
+
+@pytest.mark.parametrize("path", SCENARIO_FILES, ids=lambda p: p.name)
+def test_packaged_scenarios_pass_rolling_checks(path):
+    s = load_scenario(path)
+    s.check_rolling_stiffness(s.rolling_stiffness())
+    assert s.contact.rolling_resistance is not None

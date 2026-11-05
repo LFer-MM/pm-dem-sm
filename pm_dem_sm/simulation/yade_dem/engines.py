@@ -15,8 +15,8 @@ from yade.wrapper import (
     Bo1_Facet_Aabb,
     Bo1_Sphere_Aabb,
     ForceResetter,
-    Ig2_Facet_Sphere_ScGeom,
-    Ig2_Sphere_Sphere_ScGeom,
+    Ig2_Facet_Sphere_ScGeom6D,
+    Ig2_Sphere_Sphere_ScGeom6D,
     InsertionSortCollider,
     InteractionLoop,
     Ip2_FrictMat_FrictMat_MindlinPhys,
@@ -44,14 +44,22 @@ BALANCE_STATE = {
 
 
 def initialize_engines(contact_model, contact_model_params, rotation_engine=False):
-    """Build ``O.engines`` for Hertz-Mindlin; optionally add a RotationEngine.
+    """Build ``O.engines`` for Hertz-Mindlin with rolling resistance; optionally add a RotationEngine.
+
+    6-DOF geometry (``ScGeom6D``) and ``Law2_ScGeom_MindlinPhys_Mindlin``
+    with ``includeMoment=True``: a rolling moment with stiffness ``krot``
+    capped at ``eta R_mean |F_n|``, no twisting moment (``ktwist = 0``)
+    (docs/scientific_rationale/06_rolling_resistance.md).
 
     Args:
         contact_model: ``"hertz_mindlin"``, the only supported law (YADE's
             Cundall-Strack law has no collisional dissipation; see
             docs/scientific_rationale/01_contact_model.md).
-        contact_model_params: Must include a ``"restitution"`` MatchMaker (see
-            :func:`~pm_dem_sm.simulation.yade_dem.materials.restitution_matchmaker`).
+        contact_model_params: Must include ``"restitution"`` and
+            ``"friction_angle"`` MatchMakers (see
+            :func:`~pm_dem_sm.simulation.yade_dem.materials.pair_matchmaker`),
+            ``"rolling_resistance"`` (mu_r, YADE's ``eta``) and
+            ``"rolling_stiffness"`` (``krot``, N m/rad).
         rotation_engine: If ``True``, append a ``RotationEngine`` labeled
             ``rotation_engine`` using ``stl.SAG_MILL_SLICE_BODY_GROUP``.
 
@@ -65,12 +73,16 @@ def initialize_engines(contact_model, contact_model_params, rotation_engine=Fals
         ForceResetter(),
         InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb()], verletDist=.02),
         InteractionLoop(
-            [Ig2_Sphere_Sphere_ScGeom(),
-            Ig2_Facet_Sphere_ScGeom()],
+            [Ig2_Sphere_Sphere_ScGeom6D(),
+            Ig2_Facet_Sphere_ScGeom6D()],
             [Ip2_FrictMat_FrictMat_MindlinPhys(
-                en = contact_model_params["restitution"]
+                en=contact_model_params["restitution"],
+                frictAngle=contact_model_params["friction_angle"],
+                eta=contact_model_params["rolling_resistance"],
+                krot=contact_model_params["rolling_stiffness"],
+                ktwist=0.0,
             )],
-            [Law2_ScGeom_MindlinPhys_Mindlin()]
+            [Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)]
         ),
         NewtonIntegrator(damping=0, gravity=(0,-9.81,0), label="newton_integrator"),
     ]

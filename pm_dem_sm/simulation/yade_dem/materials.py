@@ -1,4 +1,4 @@
-"""Steel/rock material definitions and per-body material labeling (YADE)."""
+"""Material registration, per-pair ``MatchMaker`` tables and body labeling (YADE)."""
 
 from __future__ import annotations
 
@@ -20,7 +20,8 @@ def initialize_simulation_materials(materials, young_scale=1.0):
     Args:
         materials: Mapping of material name to property dicts with keys
             ``density`` (kg/m^3), ``young`` (Pa), ``poisson``,
-            ``friction_angle`` (rad, as in :data:`pm_dem_sm.config.MATERIALS`),
+            ``friction_angle`` (rad; YADE's fallback for unmatched pairs, see
+            :meth:`~pm_dem_sm.simulation.scenario.SimulationScenario.contact_tables`),
             and ``label``.
         young_scale: Multiplier applied to every Young's modulus.
     """
@@ -36,15 +37,18 @@ def initialize_simulation_materials(materials, young_scale=1.0):
         print("Added material:", material_properties["label"])
 
 
-def restitution_matchmaker(pairs):
-    """Build a restitution ``MatchMaker`` from label pairs, resolving YADE material ids.
+def pair_matchmaker(pairs):
+    """Build a ``MatchMaker`` from material-label pairs, resolving YADE material ids.
+
+    Used for restitution (``en``) and friction angles (``frictAngle``); see
+    :meth:`~pm_dem_sm.simulation.scenario.SimulationScenario.contact_tables`.
 
     Args:
-        pairs: Iterable of ``(label_a, label_b, e)``; both orders are added.
-            Labels must already be registered in ``O.materials``.
+        pairs: Iterable of ``(label_a, label_b, value)``; both orders are
+            added. Labels must already be registered in ``O.materials``.
 
     Returns:
-        MatchMaker: Pairwise coefficients of restitution by material id.
+        MatchMaker: Pairwise values by material id.
     """
     ids = {m.label: i for i, m in enumerate(O.materials)}
     matches = []
