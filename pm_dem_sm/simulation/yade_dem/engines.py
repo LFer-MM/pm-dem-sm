@@ -19,9 +19,7 @@ from yade.wrapper import (
     Ig2_Sphere_Sphere_ScGeom,
     InsertionSortCollider,
     InteractionLoop,
-    Ip2_FrictMat_FrictMat_FrictPhys,
     Ip2_FrictMat_FrictMat_MindlinPhys,
-    Law2_ScGeom_FrictPhys_CundallStrack,
     Law2_ScGeom_MindlinPhys_Mindlin,
     NewtonIntegrator,
     O,
@@ -46,42 +44,36 @@ BALANCE_STATE = {
 
 
 def initialize_engines(contact_model, contact_model_params, rotation_engine=False):
-    """Build ``O.engines`` for Cundall-Strack or Hertz-Mindlin; optionally add a RotationEngine.
+    """Build ``O.engines`` for Hertz-Mindlin; optionally add a RotationEngine.
 
     Args:
-        contact_model: ``"cundall_strack"`` or ``"hertz_mindlin"``.
-        contact_model_params: For Hertz-Mindlin, must include a
-            ``"restitution"`` MatchMaker (see
+        contact_model: ``"hertz_mindlin"``, the only supported law (YADE's
+            Cundall-Strack law has no collisional dissipation; see
+            docs/scientific_rationale/01_contact_model.md).
+        contact_model_params: Must include a ``"restitution"`` MatchMaker (see
             :func:`~pm_dem_sm.simulation.yade_dem.materials.restitution_matchmaker`).
         rotation_engine: If ``True``, append a ``RotationEngine`` labeled
             ``rotation_engine`` using ``stl.SAG_MILL_SLICE_BODY_GROUP``.
-    """
-    if contact_model == "cundall_strack":
-        O.engines = [
-            ForceResetter(),
-            InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb()], verletDist=.02),
-            InteractionLoop(
-                [Ig2_Sphere_Sphere_ScGeom(),Ig2_Facet_Sphere_ScGeom()],
-                [Ip2_FrictMat_FrictMat_FrictPhys()],
-                [Law2_ScGeom_FrictPhys_CundallStrack()],
-            ),
-            NewtonIntegrator(damping=0, gravity=(0,-9.81,0), label="newton_integrator"),
-        ]
 
-    if contact_model == "hertz_mindlin":
-        O.engines = [
-            ForceResetter(),
-            InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb()], verletDist=.02),
-            InteractionLoop(
-                [Ig2_Sphere_Sphere_ScGeom(),
-                Ig2_Facet_Sphere_ScGeom()],
-                [Ip2_FrictMat_FrictMat_MindlinPhys(
-                    en = contact_model_params["restitution"]
-                )],
-                [Law2_ScGeom_MindlinPhys_Mindlin()]
-            ),
-            NewtonIntegrator(damping=0, gravity=(0,-9.81,0), label="newton_integrator"),
-        ]
+    Raises:
+        ValueError: If ``contact_model`` is not ``"hertz_mindlin"``.
+    """
+    if contact_model != "hertz_mindlin":
+        raise ValueError(f"Unsupported contact model: {contact_model!r}")
+
+    O.engines = [
+        ForceResetter(),
+        InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb()], verletDist=.02),
+        InteractionLoop(
+            [Ig2_Sphere_Sphere_ScGeom(),
+            Ig2_Facet_Sphere_ScGeom()],
+            [Ip2_FrictMat_FrictMat_MindlinPhys(
+                en = contact_model_params["restitution"]
+            )],
+            [Law2_ScGeom_MindlinPhys_Mindlin()]
+        ),
+        NewtonIntegrator(damping=0, gravity=(0,-9.81,0), label="newton_integrator"),
+    ]
 
     if rotation_engine:
         O.engines += [RotationEngine(rotateAroundZero=True, zeroPoint=(0,0,0), rotationAxis=(0,0,1), angularVelocity=0, ids=stl.SAG_MILL_SLICE_BODY_GROUP, label="rotation_engine")]

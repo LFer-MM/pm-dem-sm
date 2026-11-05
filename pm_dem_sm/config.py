@@ -2,12 +2,13 @@
 
 Two tiers, both in this one file:
 
-- Plain module constants for DEM simulation setup -- paths, particle counts
-  and diameters, material properties, mill geometry. They hold
-  backend-agnostic data only; the ``YADE DEM specific`` and ``BlazeDEM
-  specific`` function sections hold the glue code that turns that data into
-  each backend's own objects (e.g. a YADE ``MatchMaker``). These are
-  hardcoded values with no CLI flag or JSON key -- edit them here directly.
+- Plain module constants for DEM simulation setup -- paths, particle
+  diameters, material properties, mill geometry. They hold backend-agnostic
+  data only; each backend turns them into its own objects (e.g.
+  :mod:`pm_dem_sm.simulation.yade_dem.materials`). These are hardcoded
+  values with no CLI flag or JSON key -- edit them here directly. Particle
+  counts are not constants: they are scenario inputs
+  (:class:`~pm_dem_sm.simulation.scenario.Species`).
 - :class:`ExperimentConfig`, a dataclass tree (with nested per-stage option
   groups) that drives the RNN surrogate pipeline and DEM-backend selection.
   Drivable from Python, JSON (``configs/pipeline_example.json``), or
@@ -66,44 +67,49 @@ DEM_BACKENDS = ("yade", "blaze")
 
 #: SAG mill slice geometry loaded by the DEM backend.
 SAGMILL_STL_PATH = "sag_mill_40ft_m.stl"
-#: Mill diameter (m), used for ingress chord geometry and as ``D`` in the
-#: Lacey/granular-temperature cell formula ``0.04 x D`` (Kishida et al. 2025,
-#: Sec. 4.1).
-MILL_DIAMETER_M = 11.0
+#: Mill diameter inside liners (m): SAG_A, 36 ft inside shell minus 2 x 130 mm
+#: liner plates (docs/scientific_rationale/10_mill_geometry.md). Default
+#: ``MillGeometry.diameter_m``; sizes the fill boxes and the derived checks.
+MILL_DIAMETER_M = 10.7128
 
-#: Number of rock (small-species) particles (9%).
-ROCK_COUNT = 19888
-#: Rock particle diameter (m); 2.75 inches.
+#: Rock particle diameter (m); 2.75 inches
+#: (docs/scientific_rationale/12_charge_fill_and_particles.md).
 ROCK_DIAM_M = 0.06985
-#: Number of steel-ball (large-species) particles (17%).
-BALL_COUNT = 4696
 #: Steel-ball diameter (m); 5.5 inches. The large/tracer species
 #: (``material_large="steel"``).
 BALL_DIAM_M = 0.1397
 
-#: Per-material DEM properties (density in kg/m^3, Young's modulus in Pa,
-#: Poisson ratio, friction angle in radians -- ``atan(0.5)`` is a friction
-#: coefficient of 0.5) plus the label the DEM backend registers each material
-#: under.
+#: Particle-particle friction coefficient mu_p, one value for steel-steel,
+#: steel-rock and rock-rock: the calibration baseline
+#: (docs/scientific_rationale/05_friction.md).
+PARTICLE_FRICTION = 0.5
+
+#: Per-material DEM properties (density in kg/m^3, **physical** Young's
+#: modulus in Pa -- scaled by ``SolverOptions.young_scale`` when the scene is
+#: built --, Poisson ratio, friction angle in radians, ``atan(mu)``) plus the
+#: label the DEM backend registers each material under. Sources in
+#: docs/scientific_rationale/: moduli 03, density 08, Poisson ratio 09,
+#: friction 05.
 MATERIALS = {
     "steel": {
         "density": 7850,
-        "young": 155709722558.42664,
+        "young": 207e9,
         "poisson": 0.292,
-        "friction_angle": math.atan(0.5),
+        "friction_angle": math.atan(PARTICLE_FRICTION),
         "label": "steel",
     },
     "rock": {
-        "density": 2650,
-        "young": 13468135026.041664,
+        "density": 2850,
+        "young": 55e9,
         "poisson": 0.25,
-        "friction_angle": math.atan(0.5),
+        "friction_angle": math.atan(PARTICLE_FRICTION),
         "label": "rock",
     },
 }
 
-#: Pairwise coefficients of restitution keyed by material-name pair; look up
-#: order-independently via ``_restitution``.
+#: Pairwise coefficients of restitution keyed by material-name pair
+#: (docs/scientific_rationale/07_restitution.md); a scenario looks them up
+#: order-independently via ``SimulationScenario.restitution_for``.
 RESTITUTION_COEFFICIENTS = {
     ("steel", "steel"): 0.8,
     ("steel", "rock"): 0.5,
@@ -187,7 +193,8 @@ class MetricsOptions:
 
     ``cell_size`` and ``min_particles_per_cell`` are shared by Lacey's mixing
     index and granular temperature (the paper uses the same grid for both:
-    ``0.04 x drum_diameter``, Kishida et al. 2025 Sec 4.1 -- distinct from
+    ``0.04 x drum_diameter``, Kishida et al. 2025 Sec 4.1; 0.3 m here, see
+    docs/scientific_rationale/14_dataset_runs_and_recording.md -- distinct from
     ``StochasticOptions.velocity_cell_size``, which follows a different
     formula for a different purpose; see that class's docstring).
     ``center_x``/``center_y``/``center_z`` and the bin counts configure the
@@ -206,7 +213,9 @@ class MetricsOptions:
         n_axial_bins: Number of equal-width axial bins.
     """
 
-    cell_size: float = 0.04 * MILL_DIAMETER_M  # 0.44 m
+    # Two cells across the 0.6 m slice
+    # (docs/scientific_rationale/14_dataset_runs_and_recording.md).
+    cell_size: float = 0.3
     min_particles_per_cell: int = 15
     metrics_dt: float = 0.05
     center_x: float = 0.0
@@ -260,8 +269,8 @@ class StochasticOptions:
     ``velocity_cell_size`` follows the paper's SR-specific formula --
     ``4 x large-particle diameter`` (Sec 2.2.3, Sec 3) -- which is *not* the
     same cell as ``MetricsOptions.cell_size`` (Lacey/granular temperature,
-    ``0.04 x drum diameter``); the two default to different numbers on
-    purpose (0.5588 m vs. 0.44 m here) because they answer different
+    0.3 m here); the two default to different numbers on
+    purpose (0.5588 m vs. 0.3 m) because they answer different
     questions over different reference lengths, even though the paper's own
     reference DEM happens to use a small cell for both.
 
@@ -475,57 +484,7 @@ class ExperimentConfig:
         return cls.from_dict(data)
 
 
-# --- Public functions: YADE DEM specific -------------------------------------
-
-
-def build_yade_material_interactions():
-    """Build the YADE restitution ``MatchMaker`` for steel/rock contacts.
-
-    Requires YADE. Translates the backend-agnostic
-    :data:`RESTITUTION_COEFFICIENTS` table into YADE material indices
-    (0 = steel, 1 = rock).
-
-    Returns:
-        dict: Mapping with a ``"restitution"`` key whose value is a YADE
-        ``MatchMaker`` of pairwise restitution coefficients.
-    """
-    from yade import MatchMaker
-
-    return {
-        "restitution": MatchMaker(matches=[
-            (0, 0, _restitution("steel", "steel")),  # steel-steel
-            (0, 1, _restitution("steel", "rock")),   # steel-rock
-            (1, 0, _restitution("rock", "steel")),   # rock-steel
-            (1, 1, _restitution("rock", "rock")),    # rock-rock
-        ])
-    }
-
-
-# --- Public functions: BlazeDEM specific -------------------------------------
-# No BlazeDEM fields yet. Reserved for backend-specific settings (GPU device
-# index, solver tolerances, contact model variant, etc.) once BlazeDEM
-# support lands.
-
-
-def build_blaze_material_interactions():
-    """Raise ``NotImplementedError`` (BlazeDEM placeholder).
-
-    Reserves the BlazeDEM counterpart of :func:`build_yade_material_interactions`.
-
-    Raises:
-        NotImplementedError: Always; the BlazeDEM backend is not implemented yet.
-    """
-    raise NotImplementedError("BlazeDEM backend not yet implemented")
-
-
 # --- Private helper functions ------------------------------------------------
-
-
-def _restitution(a: str, b: str) -> float:
-    """Look up a pairwise restitution coefficient regardless of pair order."""
-    if (a, b) in RESTITUTION_COEFFICIENTS:
-        return RESTITUTION_COEFFICIENTS[(a, b)]
-    return RESTITUTION_COEFFICIENTS[(b, a)]
 
 
 def _option_group_types() -> dict[str, type]:

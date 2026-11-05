@@ -76,7 +76,7 @@ sigma_v = 0, i.e. no added noise.
 .. note::
 
    ``velocity_cell_size`` (0.5588 m, ``4 x BALL_DIAM_M``) is deliberately
-   not the Lacey cell size (0.44 m, ``0.04 x MILL_DIAMETER_M``); see
+   not the Lacey cell size (0.3 m, ``MetricsOptions.cell_size``); see
    :class:`~pm_dem_sm.config.StochasticOptions`. Both grids can be drawn
    with :func:`~pm_dem_sm.visualization.cell_grid.plot_particles_with_grid`
    -- see :doc:`visualization`.

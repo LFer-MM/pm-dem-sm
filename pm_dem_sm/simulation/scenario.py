@@ -10,8 +10,9 @@ backend-agnostic and stdlib-only, so it imports both under the project venv
 Defaults come from the DEM constants in :mod:`pm_dem_sm.config`; a scenario
 JSON (see ``configs/simulation/``) overrides any subset of them. The derived
 checks (:meth:`SimulationScenario.checks`) are plain formulas -- critical
-speed, fill level, Rayleigh time step -- so a scenario can be sanity-checked
-before any DEM time is spent.
+speed, fill level, Rayleigh time step, integration steps per collision -- so
+a scenario can be sanity-checked before any DEM time is spent. The defaults
+follow the decisions in ``docs/scientific_rationale/``.
 """
 
 from __future__ import annotations
@@ -34,11 +35,23 @@ MILL_SOURCES = ("stl", "parametric")
 #: Valid ``MillGeometry.end_walls`` values.
 END_WALLS = ("liner", "frictionless")
 #: Valid ``ContactOptions.model`` values.
-CONTACT_MODELS = ("hertz_mindlin", "cundall_strack")
+CONTACT_MODELS = ("hertz_mindlin",)
 #: Valid ``FillOptions.method`` values.
 FILL_METHODS = ("random", "segregated")
 #: Standard gravity (m/s^2).
 GRAVITY = 9.81
+#: Fewest integration steps per collision accepted at the worst-case impact
+#: speed (Boemer & Ponthot 2017: 20-70; Cleary 2001: 15-25; see
+#: docs/scientific_rationale/02_time_step.md).
+MIN_STEPS_PER_COLLISION = 20
+#: Young's modulus reduction ``1 / f`` with f = 26
+#: (docs/scientific_rationale/03_stiffness_young_modulus.md).
+YOUNG_SCALE = 1.0 / 26.0
+#: Provisional SAG_A counts for the 0.6 m slice (Jb 18.8 %, Jc 27.6 %), until
+#: the grind-out / crash-stop procedure sets them
+#: (docs/scientific_rationale/12_charge_fill_and_particles.md).
+PROVISIONAL_ROCK_COUNT = 14650
+PROVISIONAL_BALL_COUNT = 3750
 
 
 # --- Public classes ----------------------------------------------------------
@@ -57,9 +70,11 @@ class MillGeometry:
         stl_path: Mill slice STL, used when ``source == "stl"``.
         diameter_m: Inside-liner diameter (m). For ``"stl"`` it must match the
             STL; it sizes the fill boxes and the derived checks.
-        depth_m: Slice depth along Z (m).
+        depth_m: Slice depth along Z (m); 0.6 m by default
+            (docs/scientific_rationale/10_mill_geometry.md).
         speed_rpm: Drive speed (rev/min); positive rotates counter-clockwise
-            seen from ``+Z``.
+            seen from ``+Z``. Default 9.5, the SAG_A median
+            (docs/scientific_rationale/11_mill_speed.md).
         n_shell_segments: Facet segments around the parametric shell.
         n_lifters: Lifter rows on the parametric shell (``0`` = smooth liner).
         lifter_height_m: Lifter height above the shell (m).
@@ -67,22 +82,22 @@ class MillGeometry:
         lifter_top_width_m: Lifter width at its top face (m).
         liner_material: Material key (in ``materials``) of shell and lifters.
         end_walls: ``"liner"`` gives the flat slice end walls the liner
-            material; ``"frictionless"`` gives them zero friction to limit the
-            wall effects of a thin slice.
+            material; ``"frictionless"`` (default) gives them zero friction to
+            limit the wall effects of a thin slice.
     """
 
     source: str = "stl"
     stl_path: Path = Path(config.SAGMILL_STL_PATH)
     diameter_m: float = config.MILL_DIAMETER_M
-    depth_m: float = 0.375
-    speed_rpm: float = 9.0
+    depth_m: float = 0.6
+    speed_rpm: float = 9.5
     n_shell_segments: int = 120
     n_lifters: int = 0
     lifter_height_m: float = 0.25
     lifter_base_width_m: float = 0.30
     lifter_top_width_m: float = 0.15
     liner_material: str = "steel"
-    end_walls: str = "liner"
+    end_walls: str = "frictionless"
 
 
 @dataclass
@@ -91,7 +106,8 @@ class ContactOptions:
 
     Attributes:
         model: ``"hertz_mindlin"`` (nonlinear, restitution from
-            ``restitution``) or ``"cundall_strack"`` (linear).
+            ``restitution``), the only law offered
+            (docs/scientific_rationale/01_contact_model.md).
     """
 
     model: str = "hertz_mindlin"
@@ -102,20 +118,22 @@ class SolverOptions:
     """Time integration settings.
 
     Attributes:
-        dt_s: Explicit time step (s); ``None`` uses ``dt_safety`` times the
-            P-wave critical step of the built scene.
-        dt_safety: Fraction of the critical time step used when ``dt_s`` is
+        dt_s: Explicit time step (s); 2.5e-5 s by default
+            (docs/scientific_rationale/02_time_step.md). ``None`` uses
+            ``dt_safety`` times the Rayleigh step of the scenario.
+        dt_safety: Fraction of the Rayleigh time step used when ``dt_s`` is
             ``None``.
-        young_scale: Multiplier on every material's Young's modulus. Values
-            below 1 soften contacts, which lengthens the stable time step
-            (``dt`` scales as ``young_scale ** -0.5``) at the cost of larger
-            overlaps; the manifest records it so runs stay comparable.
+        young_scale: Multiplier on every material's (physical) Young's
+            modulus; default :data:`YOUNG_SCALE` = 1/26. Values below 1 soften
+            contacts, which lengthens the contact time (as
+            ``young_scale ** -0.4``) at the cost of larger overlaps; the
+            manifest records it so runs stay comparable.
         threads: OpenMP threads for the backend (``None`` = backend default).
     """
 
-    dt_s: float | None = None
+    dt_s: float | None = 2.5e-5
     dt_safety: float = 0.3
-    young_scale: float = 1.0
+    young_scale: float = YOUNG_SCALE
     threads: int | None = None
 
 
@@ -123,32 +141,31 @@ class SolverOptions:
 class FillOptions:
     """Charge generation (stage ``fill``).
 
+    Numerical damping is 0 in this and every other stage; there is no option
+    for it (docs/scientific_rationale/04_numerical_damping.md).
+
     Attributes:
         method: ``"random"`` (species mixed in every batch) or
             ``"segregated"`` (small species first, then large).
         box_height_m: Height of each chord-box ingress batch (m).
         settle_steps: DEM steps run after each batch.
-        damping: Numerical (non-viscous) damping while filling.
     """
 
     method: str = "random"
     box_height_m: float = 1.0
     settle_steps: int = 20000
-    damping: float = 0.2
 
 
 @dataclass
 class SettleOptions:
-    """Static settling before rotation (stage ``settle``).
+    """Static settling before rotation (stage ``settle``), undamped.
 
     Attributes:
-        damping: Numerical damping while settling.
         unbalanced_force: Stop once YADE's unbalanced-force ratio is below this.
         check_every: Steps between unbalanced-force checks.
         max_steps: Give up (and continue) after this many steps.
     """
 
-    damping: float = 0.2
     unbalanced_force: float = 0.01
     check_every: int = 1000
     max_steps: int = 200_000
@@ -161,8 +178,8 @@ class SpinupOptions:
     Steady state is declared when, after ``min_revolutions``, the mean charge
     centre-of-mass angle and mean drive power over the last
     ``window_revolutions`` differ from the window before by less than
-    ``angle_tol_deg`` and ``power_rel_tol``. Numerical damping is always 0
-    from this stage on.
+    ``angle_tol_deg`` and ``power_rel_tol``. Numerical damping is 0, as in
+    every stage.
 
     Attributes:
         min_revolutions: Revolutions run before steady state is tested.
@@ -411,6 +428,61 @@ class SimulationScenario:
             out = min(out, dt)
         return out
 
+    def time_step_s(self) -> float:
+        """Return the time step the run uses (s): ``dt_s``, else ``dt_safety`` x Rayleigh."""
+        return self.solver.dt_s or self.solver.dt_safety * self.rayleigh_dt_s()
+
+    def impact_speed_m_s(self) -> float:
+        """Return the worst-case impact speed ``sqrt(2 g D)`` (m/s).
+
+        Free fall across the mill, Boemer & Ponthot (2017, §3.1.2); see
+        docs/scientific_rationale/02_time_step.md.
+        """
+        return math.sqrt(2.0 * GRAVITY * self.mill.diameter_m)
+
+    def contact_time_s(self, a: Species, b: Species, speed_m_s: float) -> float:
+        """Return the Hertz elastic impact duration of a sphere pair (s).
+
+        ``t_c = 2.87 (m*^2 / (R* E*^2 v))^(1/5)`` (Johnson 1985, Eq. 11.24),
+        with ``1/m* = 1/m_a + 1/m_b``, ``1/R* = 1/r_a + 1/r_b`` and
+        ``1/E* = (1 - nu_a^2)/E_a + (1 - nu_b^2)/E_b``, the moduli scaled by
+        ``solver.young_scale``.
+
+        Args:
+            a: First species.
+            b: Second species.
+            speed_m_s: Normal impact speed (m/s).
+
+        Returns:
+            float: Contact duration (s).
+        """
+        mats = [self.materials[s.material] for s in (a, b)]
+        masses = [m["density"] * 4.0 / 3.0 * math.pi * s.radius_m**3 for m, s in zip(mats, (a, b))]
+        m_eff = 1.0 / sum(1.0 / m for m in masses)
+        r_eff = 1.0 / (1.0 / a.radius_m + 1.0 / b.radius_m)
+        e_eff = 1.0 / sum(
+            (1.0 - m["poisson"] ** 2) / (m["young"] * self.solver.young_scale) for m in mats
+        )
+        return 2.87 * (m_eff**2 / (r_eff * e_eff**2 * speed_m_s)) ** 0.2
+
+    def steps_per_collision(self) -> dict[str, float]:
+        """Return integration steps per collision for every species pair.
+
+        The Hertz contact time (:meth:`contact_time_s`) at the worst-case
+        impact speed (:meth:`impact_speed_m_s`) divided by
+        :meth:`time_step_s`; the governing time-step criterion of
+        docs/scientific_rationale/02_time_step.md (>= 20 steps per pair).
+
+        Returns:
+            dict[str, float]: ``"<species>-<species>"`` to steps per collision.
+        """
+        v, dt = self.impact_speed_m_s(), self.time_step_s()
+        out = {}
+        for i, a in enumerate(self.species):
+            for b in self.species[i:]:
+                out[f"{a.name}-{b.name}"] = self.contact_time_s(a, b, v) / dt
+        return out
+
     def revolution_s(self) -> float:
         """Return the duration of one mill revolution (s)."""
         return 60.0 / abs(self.mill.speed_rpm)
@@ -420,22 +492,26 @@ class SimulationScenario:
 
         Returns:
             dict[str, float]: ``critical_speed_rpm``, ``fraction_critical``,
-            ``fill_fraction_J``, ``ball_volume_fraction``, ``rayleigh_dt_s``,
-            ``dt_over_rayleigh`` (``dt_s``, or ``dt_safety`` times the Rayleigh
-            step when ``dt_s`` is unset), ``revolution_s``,
+            ``fill_fraction_J``, ``ball_volume_fraction``, ``dt_s``
+            (:meth:`time_step_s`), ``rayleigh_dt_s``, ``dt_over_rayleigh``,
+            ``impact_speed_m_s``, ``min_steps_per_collision`` (fewest over the
+            species pairs of :meth:`steps_per_collision`), ``revolution_s``,
             ``lifter_gap_over_large_d``.
         """
         nc = self.critical_speed_rpm()
         dt_r = self.rayleigh_dt_s()
-        dt = self.solver.dt_s if self.solver.dt_s else self.solver.dt_safety * dt_r
+        dt = self.time_step_s()
         solids = sum(s.volume_m3 for s in self.species)
         return {
             "critical_speed_rpm": nc,
             "fraction_critical": abs(self.mill.speed_rpm) / nc,
             "fill_fraction_J": self.fill_fraction(),
             "ball_volume_fraction": self.large.volume_m3 / solids,
+            "dt_s": dt,
             "rayleigh_dt_s": dt_r,
             "dt_over_rayleigh": dt / dt_r,
+            "impact_speed_m_s": self.impact_speed_m_s(),
+            "min_steps_per_collision": min(self.steps_per_collision().values()),
             "revolution_s": self.revolution_s(),
             "lifter_gap_over_large_d": self.lifter_gap_m / (2.0 * self.large.radius_m),
         }
@@ -448,11 +524,13 @@ class SimulationScenario:
         """
         c = self.checks()
         out = []
-        if c["dt_over_rayleigh"] > 0.5:
-            out.append(
-                f"dt is {c['dt_over_rayleigh']:.2f} x the Rayleigh step; above ~0.5 the "
-                "contact integration loses accuracy (raise young_scale reduction or lower dt)."
-            )
+        for pair, steps in self.steps_per_collision().items():
+            if steps < MIN_STEPS_PER_COLLISION:
+                out.append(
+                    f"{pair} collisions get {steps:.1f} steps at the worst-case impact speed "
+                    f"{c['impact_speed_m_s']:.1f} m/s (dt = {c['dt_s']:.3g} s); at least "
+                    f"{MIN_STEPS_PER_COLLISION} are needed (lower dt or young_scale)."
+                )
         if not 0.6 <= c["fraction_critical"] <= 0.85:
             out.append(
                 f"Speed is {100 * c['fraction_critical']:.0f}% of critical; SAG mills "
@@ -469,8 +547,11 @@ class SimulationScenario:
                 "Slice is under 4 large diameters deep with frictional end walls; "
                 "consider end_walls='frictionless'."
             )
-        if self.solver.young_scale != 1.0:
-            out.append(f"Young's moduli scaled by {self.solver.young_scale:g}.")
+        if not math.isclose(self.solver.young_scale, YOUNG_SCALE):
+            out.append(
+                f"Young's moduli scaled by {self.solver.young_scale:g}, not the decided "
+                f"1/26 = {YOUNG_SCALE:.4g}."
+            )
         return out
 
 
@@ -495,10 +576,11 @@ def load_scenario(path: Path | str | None = None) -> SimulationScenario:
 
 
 def _default_species() -> list[Species]:
-    """Build the bidisperse rock/steel charge from the :mod:`pm_dem_sm.config` constants."""
+    """Build the bidisperse rock/steel charge with the provisional SAG_A counts."""
+    r_rock, r_ball = config.ROCK_DIAM_M / 2.0, config.BALL_DIAM_M / 2.0
     return [
-        Species("rock", "rock", config.ROCK_DIAM_M / 2.0, config.ROCK_COUNT, [1.0, 0.0, 0.0]),
-        Species("ball", "steel", config.BALL_DIAM_M / 2.0, config.BALL_COUNT, [0.0, 0.0, 1.0]),
+        Species("rock", "rock", r_rock, PROVISIONAL_ROCK_COUNT, [1.0, 0.0, 0.0]),
+        Species("ball", "steel", r_ball, PROVISIONAL_BALL_COUNT, [0.0, 0.0, 1.0]),
     ]
 
 

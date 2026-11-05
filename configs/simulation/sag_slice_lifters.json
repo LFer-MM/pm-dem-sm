@@ -3,9 +3,9 @@
   "seed": 0,
   "mill": {
     "source": "parametric",
-    "diameter_m": 11.9,
-    "depth_m": 0.375,
-    "speed_rpm": 9.0,
+    "diameter_m": 10.7128,
+    "depth_m": 0.6,
+    "speed_rpm": 9.5,
     "n_shell_segments": 192,
     "n_lifters": 64,
     "lifter_height_m": 0.25,
@@ -14,8 +14,9 @@
     "end_walls": "frictionless"
   },
   "species": [
-    {"name": "rock", "material": "rock", "radius_m": 0.0381, "count": 11581, "color": [1, 0, 0]},
-    {"name": "ball", "material": "steel", "radius_m": 0.06985, "count": 3195, "color": [0, 0, 1]}
+    {"name": "rock", "material": "rock", "radius_m": 0.034925, "count": 14650, "color": [1, 0, 0]},
+    {"name": "ball", "material": "steel", "radius_m": 0.06985, "count": 3750, "color": [0, 0, 1]}
   ],
+  "solver": {"dt_s": 2.5e-5, "young_scale": 0.038461538461538464},
   "record": {"duration_s": 20.0, "frame_interval_s": 0.05, "monitor_interval_s": 0.05}
 }

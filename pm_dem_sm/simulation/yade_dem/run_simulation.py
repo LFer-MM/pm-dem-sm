@@ -3,11 +3,16 @@ r"""Staged, headless DEM run of the SAG mill slice from a scenario JSON (YADE).
 Runs the stages of :data:`pm_dem_sm.simulation.scenario.STAGES` in order:
 
 1. ``build``  -- materials, mill (STL or parametric with lifters), engines, dt.
-2. ``fill``   -- chord-box ingress of the bidisperse charge (damped).
-3. ``settle`` -- damped settling until the unbalanced force is small.
-4. ``spinup`` -- undamped rotation from rest until the charge angle and drive
-   power stop changing (steady state), or ``max_revolutions``.
+2. ``fill``   -- chord-box ingress of the bidisperse charge.
+3. ``settle`` -- settling until the unbalanced force is small.
+4. ``spinup`` -- rotation from rest until the charge angle and drive power
+   stop changing (steady state), or ``max_revolutions``.
 5. ``record`` -- frame CSVs every ``frame_interval_s`` for ``duration_s``.
+
+Numerical damping is set explicitly to 0 in every stage (YADE's default
+differs between versions; docs/scientific_rationale/04_numerical_damping.md).
+YADE releases older than 2023.02 are refused at start-up
+(:mod:`~pm_dem_sm.simulation.yade_dem.version`).
 
 Each stage ends with a checkpoint ``<run-dir>/checkpoints/<stage>.yade.gz``
 and an update of ``<run-dir>/manifest.json`` (scenario, derived checks, dt,
@@ -58,11 +63,15 @@ from pm_dem_sm.simulation.yade_dem import (  # noqa: F401
     state,
     stl,
 )
+from pm_dem_sm.simulation.yade_dem.version import check_yade_version
 
 # --- Constants ---------------------------------------------------------------
 
 #: Material label given to frictionless end walls.
 END_WALL_MATERIAL = "end_wall"
+#: ``NewtonIntegrator.damping`` in every stage
+#: (docs/scientific_rationale/04_numerical_damping.md).
+NUMERICAL_DAMPING = 0.0
 
 
 # --- Public functions --------------------------------------------------------
@@ -83,7 +92,13 @@ def run(scenario_path=None, run_dir=None, from_stage="build", to_stage="record",
 
     Returns:
         dict: The final manifest.
+
+    Raises:
+        RuntimeError: If the running YADE is older than 2023.02.
     """
+    yade_version = str(getattr(yade.config, "version", "unknown"))
+    check_yade_version(yade_version)
+    print(f"[yade] version {yade_version}")
     first, last = STAGES.index(from_stage), STAGES.index(to_stage)
     if first > last:
         raise ValueError(f"from_stage {from_stage!r} comes after to_stage {to_stage!r}")
@@ -104,6 +119,7 @@ def run(scenario_path=None, run_dir=None, from_stage="build", to_stage="record",
     (run_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
     manifest = resume_manifest or _new_manifest(scenario)
     manifest["scenario"] = scenario.to_dict()
+    manifest["yade_version"] = yade_version
     for w in manifest["warnings"]:
         print(f"[scenario] WARNING: {w}")
 
@@ -169,9 +185,8 @@ def _stage_build(scenario, run_dir, manifest):
         contact_model_params={"restitution": materials.restitution_matchmaker(restitution)},
         rotation_engine=True,
     )
-    dt = scenario.solver.dt_s or scenario.solver.dt_safety * scenario.rayleigh_dt_s()
-    engines.set_dt(new_dt=dt)
-    engines.set_gravity_damping(scenario.fill.damping)
+    engines.set_dt(new_dt=scenario.time_step_s())
+    engines.set_gravity_damping(NUMERICAL_DAMPING)
 
     manifest["mill_body_ids"] = list(mill_ids)
     manifest["dt_s"] = O.dt
@@ -182,7 +197,7 @@ def _stage_build(scenario, run_dir, manifest):
 def _stage_fill(scenario, run_dir, manifest):
     """Pour the bidisperse charge in chord-box batches."""
     _start_monitor(scenario, run_dir, manifest, "fill", omega=0.0)
-    engines.set_gravity_damping(scenario.fill.damping)
+    engines.set_gravity_damping(NUMERICAL_DAMPING)
     small, large = scenario.small, scenario.large
     # Keep fill boxes clear of the lifters and the liner.
     inner_d = scenario.mill.diameter_m - 2 * (
@@ -211,10 +226,10 @@ def _stage_fill(scenario, run_dir, manifest):
 
 
 def _stage_settle(scenario, run_dir, manifest):
-    """Damp the charge to rest before the mill starts turning."""
+    """Let the charge come to rest, undamped, before the mill starts turning."""
     _start_monitor(scenario, run_dir, manifest, "settle", omega=0.0)
     opts = scenario.settle
-    engines.set_gravity_damping(opts.damping)
+    engines.set_gravity_damping(NUMERICAL_DAMPING)
     balanced = engines.run_until_forces_balanced(
         threshold=opts.unbalanced_force,
         interval=opts.check_every,
@@ -229,9 +244,9 @@ def _stage_settle(scenario, run_dir, manifest):
 
 
 def _stage_spinup(scenario, run_dir, manifest):
-    """Rotate undamped from rest until the mill log reaches steady state."""
+    """Rotate from rest until the mill log reaches steady state."""
     omega = _omega(scenario)
-    engines.set_gravity_damping(0.0)
+    engines.set_gravity_damping(NUMERICAL_DAMPING)
     engines._get_rotation_engine().angularVelocity = omega
     _start_monitor(scenario, run_dir, manifest, "spinup", omega=omega)
 
@@ -264,7 +279,7 @@ def _stage_spinup(scenario, run_dir, manifest):
 def _stage_record(scenario, run_dir, manifest):
     """Write frames at steady state for ``record.duration_s``."""
     omega = _omega(scenario)
-    engines.set_gravity_damping(0.0)
+    engines.set_gravity_damping(NUMERICAL_DAMPING)
     engines._get_rotation_engine().angularVelocity = omega
     _start_monitor(scenario, run_dir, manifest, "record", omega=omega)
 
@@ -307,7 +322,6 @@ def _new_manifest(scenario):
         "scenario": scenario.to_dict(),
         "checks": scenario.checks(),
         "warnings": scenario.warnings(),
-        "yade_version": getattr(yade.config, "version", "unknown"),
         "stages": {},
     }
 

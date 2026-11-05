@@ -84,13 +84,70 @@ def test_critical_speed_matches_classic_formula():
 
 
 def test_rayleigh_dt_scales_with_young():
+    stiff = SimulationScenario.from_dict({"solver": {"young_scale": 1.0}})
     soft = SimulationScenario.from_dict({"solver": {"young_scale": 0.01}})
-    assert soft.rayleigh_dt_s() == pytest.approx(10 * SimulationScenario().rayleigh_dt_s())
+    assert soft.rayleigh_dt_s() == pytest.approx(10 * stiff.rayleigh_dt_s())
 
 
-def test_dt_above_rayleigh_warns():
+def test_defaults_match_decisions():
+    s = SimulationScenario()
+    assert s.solver.dt_s == 2.5e-5
+    assert s.solver.young_scale == pytest.approx(1 / 26)
+    assert s.mill.diameter_m == 10.7128
+    assert s.mill.depth_m == 0.6
+    assert s.mill.speed_rpm == 9.5
+    assert s.mill.end_walls == "frictionless"
+    assert s.contact.model == "hertz_mindlin"
+    assert {sp.name: sp.count for sp in s.species} == {"rock": 14650, "ball": 3750}
+    assert s.materials["steel"]["young"] == 207e9
+    assert s.materials["rock"]["young"] == 55e9
+    assert s.materials["rock"]["density"] == 2850
+    assert s.materials["steel"]["friction_angle"] == s.materials["rock"]["friction_angle"]
+    assert math.tan(s.materials["rock"]["friction_angle"]) == pytest.approx(0.5)
+
+
+def test_damping_is_not_an_option():
+    with pytest.raises(ValueError, match="Unknown"):
+        SimulationScenario.from_dict({"fill": {"damping": 0.2}})
+    with pytest.raises(ValueError, match="Unknown"):
+        SimulationScenario.from_dict({"settle": {"damping": 0.2}})
+
+
+def test_cundall_strack_is_rejected():
+    with pytest.raises(ValueError, match="contact.model"):
+        SimulationScenario.from_dict({"contact": {"model": "cundall_strack"}})
+
+
+def test_impact_speed_is_free_fall_across_the_mill():
+    assert SimulationScenario().impact_speed_m_s() == pytest.approx(14.5, abs=0.01)
+
+
+@pytest.mark.parametrize(
+    ("pair", "steps"),
+    [("rock-rock", 20.9), ("rock-ball", 21.3), ("ball-ball", 36.6)],
+)
+def test_steps_per_collision_reproduce_time_step_table(pair, steps):
+    # docs/scientific_rationale/02_time_step.md, steps @ 2.5e-5 at 14.5 m/s.
+    assert SimulationScenario().steps_per_collision()[pair] == pytest.approx(steps, abs=0.05)
+
+
+def test_contact_time_matches_time_step_table():
+    s = SimulationScenario()
+    rock = s.small
+    assert s.contact_time_s(rock, rock, 14.5) == pytest.approx(5.23e-4, rel=2e-3)
+
+
+def test_default_dt_gives_no_steps_warning():
+    s = SimulationScenario()
+    assert s.checks()["min_steps_per_collision"] >= 20
+    assert not any("steps" in w for w in s.warnings())
+
+
+def test_dt_1e4_is_flagged():
     s = SimulationScenario.from_dict({"solver": {"dt_s": 1e-4}})
-    assert any("Rayleigh" in w for w in s.warnings())
+    assert s.checks()["min_steps_per_collision"] < 20
+    flagged = [w for w in s.warnings() if "steps" in w]
+    assert len(flagged) == 3
 
 
 def test_fill_fraction_counts_both_species():
