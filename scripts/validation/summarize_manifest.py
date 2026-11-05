@@ -7,7 +7,7 @@ steps per collision at that speed (V2), and the energy balance (V4).
 
 Run from the repository root (project venv)::
 
-    python scripts/validation/summarize_manifest.py scripts/validation/results/smoke/*/manifest.json
+    python scripts/validation/summarize_manifest.py data/raw/validation/results/smoke/*/manifest.json
 """
 
 import json

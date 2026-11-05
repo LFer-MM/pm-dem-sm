@@ -4,7 +4,7 @@
 # Starts from scenarios/grind_out_start.json: 3437 balls (the ball-stage result of a first,
 # mu_r = 0.25 attempt) and the provisional 14650 rocks.
 # Full run directories (with checkpoints) go to OUT; copy grind_out.json and the per-cycle
-# fill_level.json / manifest.json into scripts/validation/results/grind_out/ afterwards.
+# fill_level.json / manifest.json into data/raw/validation/results/grind_out/ afterwards.
 set -e
 cd "$(dirname "$0")/../.."
 OUT=${OUT:-data/raw/grind_out}

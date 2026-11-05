@@ -9,7 +9,7 @@ Run from the repository root::
 
     yadedaily -n -x scripts/validation/v1_onset_phase_sweep.py \
         --scenario configs/simulation/sag_slice_lifters.json --pair rock rock \
-        --speeds 5 14.5 --phases 6 --out scripts/validation/results/v1/onset_phase_sweep.json
+        --speeds 5 14.5 --phases 6 --out data/raw/validation/results/v1/onset_phase_sweep.json
 """
 
 import argparse

@@ -10,7 +10,7 @@ docs/scientific_rationale/06_rolling_resistance.md ("Heap test results").
 
 Run from the repository root (project venv)::
 
-    python scripts/validation/heap_refit.py --results-dir scripts/validation/results/heap
+    python scripts/validation/heap_refit.py --results-dir data/raw/validation/results/heap
 """
 
 import argparse
@@ -36,7 +36,7 @@ BASE_RADIUS = 17 * 2 * ROCK_R
 TARGETS = (33.0, 37.0, 41.0)
 
 p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-p.add_argument("--results-dir", default="scripts/validation/results/heap")
+p.add_argument("--results-dir", default="data/raw/validation/results/heap")
 p.add_argument("--out", default=None, help="JSON with the per-heap refits.")
 p.add_argument("--fit-max-mu", type=float, default=0.30)
 args = p.parse_args()

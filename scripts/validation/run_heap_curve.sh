@@ -2,10 +2,10 @@
 # Heap test (C06-3, C06-4): the 17 heaps behind the mu_r table of
 # docs/scientific_rationale/06_rolling_resistance.md, then the refit.
 # Each heap takes ~25 min on 4 threads; JOBS heaps run at once (default 4).
-# Writes results/heap/heap_<mu>_s<seed>.json and prints the curve.
+# Writes $OUT/heap_<mu>_s<seed>.json (OUT defaults to data/raw/validation/results/heap) and prints the curve.
 set -e
 cd "$(dirname "$0")/../.."
-OUT=${OUT:-scripts/validation/results/heap}
+OUT=${OUT:-data/raw/validation/results/heap}
 JOBS=${JOBS:-4}
 SCENARIO=configs/simulation/sag_slice_lifters.json
 mkdir -p "$OUT"
