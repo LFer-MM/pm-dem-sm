@@ -81,6 +81,23 @@ lies close to the mixed value.
 Cost per cycle (16 threads): ~15 min for a ball cycle; ~2-2.5 h for a mixed
 cycle (fill 42-58 min, settle 13-15 min, 2 revolutions 56-69 min).
 
+**At rest vs after turning (pilot, 2026-11-06).** The same counts poured
+randomly mixed and settled without turning (the `make_ic` starting
+packing) give **J = 0.2588, phi = 0.5845**: 1.8 points below Jc. The
+charge is the same; the bed is denser. phi = 0.5845 lies in Shi & Zhang's
+random packing of a 2:1 mixture (0.581-0.600), while a crash-stopped bed
+keeps the looser structure of the dilated, moving charge (0.548). The
+**crash-stop check** confirmed it on the pilot dataset run: after 3.17
+revolutions from that starting packing, stopped and settled like the
+plant (and the grind-out), the charge gives **J = 0.2770, phi = 0.5477**
+(grind-out 0.2766 / 0.548; target 0.276 +- 0.005). So the counts match
+the plant's Jc as defined (crash stop), and a starting packing at rest
+sitting below Jc is expected, not a deficit
+(`scripts/validation/crash_stop_check.py`, commit `fbfc35c`; data:
+`data/raw/validation/results/crash_stop/sag_a_dataset_rmic_s0_record.json`).
+The crash-stop J depends somewhat on friction: recheck it (one grind-out
+cycle) at the calibrated point.
+
 Data (not in git): `data/raw/validation/results/grind_out/final_mur013/`,
 see [`scripts/validation/README.md`](../../scripts/validation/README.md).
 The counts are the scenario defaults (`PROVISIONAL_ROCK_COUNT` /

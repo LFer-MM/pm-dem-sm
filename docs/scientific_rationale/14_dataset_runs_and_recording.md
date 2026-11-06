@@ -52,8 +52,8 @@ No spin-up stage before recording: spinning up first would destroy the IC.
 
 | Where | What |
 |---|---|
-| `config.py:204, 209, 210` | `start_frame = 66`, `dt0 = 4.05`, `dt_step = 0.05` (prediction seeded at ~3.3-4.05 s, from the old dataset) |
-| `config.py:252-253`, `configs/pipeline_example.json` | `MetricsOptions.cell_size = 0.3` (C14-2, commit `5c194ab`), `min_particles_per_cell = 15` |
+| `config.py:210, 215, 216` | `start_frame = 126`, `dt0 = 7.05`, `dt_step = 0.05`: training window 6.0-7.0 s after the pilot's quasi-steady time (C14-5, commit `10da406`); `configs/pipeline_example.json` keeps 66 / 4.05 for the old-dataset walkthrough |
+| `config.py:258-259`, `configs/pipeline_example.json` | `MetricsOptions.cell_size = 0.3` (C14-2, commit `5c194ab`), `min_particles_per_cell = 15` |
 | `scenario.py` (`RunOptions`, `RUN_TYPE_STAGES`), `run_simulation.py` (`_stage_save_ic`, `_stage_load_ic`) | Three run types (C14-1, commit `69e6ea0`): `calibrate` (build, fill, settle, spinup, record), `make_ic` (build, fill, settle, save_ic: velocities zeroed; `ic/positions.csv`, `ic/scene.yade.gz`, `ic/ic.json` with seed, counts, J, phi, settle result and the material-set id in the IC's name) and `dataset` (load_ic, record from rest at t = 0; refuses an IC whose material-set id differs). `--seed N` (`run_simulation.py`, `pm-dem-sm dem-sim`) makes replicate N and appends `_sN` to the run name; `{seed}` in a dataset's `run.ic_dir` pairs it with `make_ic` replicate N. SAG_A scenarios: `configs/simulation/sag_a_make_ic_{rmic,sic}.json`, `sag_a_dataset_{rmic,sic}.json` (20 / 35 s) |
 | `capture.py`, `simulation/postprocess.py` (`convert_frames`) | YADE writes one CSV per frame (its Python has no pandas / pyarrow); after a successful run `pm-dem-sm dem-sim` (or `dem-post <run-dir>`) converts them to float32 parquet (`id` int32, `m` string) and deletes the CSVs (C14-4, commit `69e6ea0`). Smoke test: 20 frames of 360 particles, 18 kB each |
 | `simulation/postprocess.py` (`segregation_profiles`, `lacey_series`) | `dataset` runs: radial large-particle fraction per frame (12 bins out to the radius inside liners) for the whole slice, the centre layer and the near-wall layers (one ball diameter from each end wall, V19), in `analysis/radial_fraction.parquet`; Lacey's index per frame on 0.3 m cells in `analysis/lacey.csv`; both summarised in the validation table (C14-3, commit `69e6ea0`) |
@@ -69,7 +69,7 @@ Compare in revolutions, not seconds:
 | RM-IC run | 10 s = 2.5 rev | 10 s = 1.6 rev | 15.8 s |
 | S-IC run | 20 s = 5 rev | 20 s = 3.2 rev | 31.6 s |
 | Training window | 3-4 s = 0.75-1.0 rev | 3-4 s = 0.48-0.63 rev | 4.7-6.3 s (if quasi-steady) |
-| Quasi-steady KE | 2.0 s = 0.5 rev | ? (measure) | -- |
+| Quasi-steady KE | 2.0 s = 0.5 rev | 4.0 s = 0.63 rev (pilot; power 6.0 s = 0.95 rev) | -- |
 
 - Copying Kishida's seconds gives the SAG run only 63 % of the revolutions.
 - Kishida chose 3-4 s *because* kinetic energy was quasi-steady there. The
@@ -108,6 +108,33 @@ Compare in revolutions, not seconds:
   axial segregation in the slice is an artefact; radial segregation is the
   result, and the axial profile only checks the artefact.
 
+### Pilot run (2026-11-06)
+
+`sag_a_make_ic_rmic.json` then `sag_a_dataset_rmic.json`, seed 0: the SAG_A
+slice with the grind-out counts (3,437 balls + 16,082 rocks), mu_r = 0.13,
+friction not yet calibrated. 16 threads.
+
+| | Result |
+|---|---|
+| Cost | make_ic: fill 51 min, settle 13 min (stop rule after 1.2 s); dataset: 20 s recorded in 95 min |
+| Starting packing at rest | J = 0.2588, phi = 0.5845 (see [12](12_charge_fill_and_particles.md), [13](13_initial_conditions.md)) |
+| Checks | V2 27.8 steps per collision; V3 mean 0.16 %, P99 1.7 %, max 8.1 % of d; V4 residual -0.2 %; V5, V6 (400 frames, constant counts), V14 pass |
+| **Quasi-steady (V7)** | kinetic energy 4.0 s (0.63 rev), charge angle 5.0 s (0.79 rev), **drive power 6.0 s (0.95 rev)** |
+| Lacey (V7) | plateau 0.997 (last vs previous window -0.002): the RMIC charge stays mixed over the 20 s |
+| Near-wall vs centre (V19, reported) | large-particle fraction by number over the last 20 frames: centre 0.25, near-wall layers 0.12, slice 0.18. Not yet interpreted: ball centres cannot come closer than one ball radius to an end wall, so a layer one ball diameter wide holds fewer ball centres by construction |
+
+**C14-5:** the 1 s training window starts after the slowest quasi-steady
+time: **6.0-7.0 s** (0.95-1.11 rev; Kishida 3-4 s = 0.75-1.0 rev at 15 rpm).
+With `frames_in` = 15 the prediction is seeded with frames 126-140
+(6.30-7.00 s): **`start_frame` = 126, `dt0` = 7.05 s** (commit `10da406`).
+Provisional on two counts, to confirm on the first calibrated datasets:
+the calibrated friction can change the spin-up, and an SIC charge may take
+longer than this RMIC one. The 20 s RMIC run leaves 13 s after the window
+for prediction; SIC runs are 35 s.
+
+Data (not in git): `data/raw/yade_runs/sag_a_make_ic_rmic_s0/`,
+`data/raw/yade_runs/sag_a_dataset_rmic_s0/` (`validation.json`).
+
 ## Verdict and how to defend it
 
 "Dataset runs start from the static IC and are recorded from t = 0 every
@@ -127,8 +154,10 @@ state of kinetic energy, the criterion used by Kishida et al. (§3, Fig. S1)."
   segregation next to the end walls has no counterpart in the real mill's
   belly.
 
-- Pilot RMIC run: measure the time to quasi-steady kinetic energy / power /
-  charge angle; set `start_frame` / `dt0` from it.
+- ~~Pilot RMIC run: measure the time to quasi-steady kinetic energy / power /
+  charge angle; set `start_frame` / `dt0` from it.~~ Done (C14-5, commit `10da406`):
+  6.0 s, window 6.0-7.0 s. Confirm on the first calibrated RMIC and SIC
+  datasets.
 - Check the Lacey index curves reach their plateau within the run length
   (SIC 5 rev); extend if not.
 - ~~Separate run types in the code: `calibrate` (spin-up, steady state),
@@ -142,5 +171,5 @@ state of kinetic energy, the criterion used by Kishida et al. (§3, Fig. S1)."
 | C14-2 | `MetricsOptions.cell_size = 0.3` | Done (`5c194ab`) | With C14-3 |
 | C14-3 | Radial large-particle fraction (result) and axial profile with near-wall vs centre layers (artefact check) | Done (`69e6ea0`) | Before datasets |
 | C14-4 | Frames to parquet float32 at the end of each run; drop the per-frame CSVs | Done (`69e6ea0`) | Any time |
-| C14-5 | `start_frame` / `dt0` from the pilot's quasi-steady time | 66 / 4.05 (old dataset) | After the pilot |
+| C14-5 | `start_frame` / `dt0` from the pilot's quasi-steady time | Done (`10da406`): 126 / 7.05 | After the pilot |
 

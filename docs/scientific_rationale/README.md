@@ -84,8 +84,9 @@ C06-3, C06-4, C12-2, C12-3) done 2026-11-05 in commits `494c1f3`, `9959f69`
 and `4ac94bb`, with mu_r = 0.13 from the heap test and the particle counts
 3,437 balls + 16,082 rocks from the grind-out; phase 5 (run types and
 outputs: C03-3, C14-1, C14-3, C14-4, C15-1, C16-1) done 2026-11-05 in commit
-`69e6ea0`; C15-2 done earlier outside the repository. Pending: C14-5 (after
-the pilot run) and C15-3 (after calibration).
+`69e6ea0`; C14-5 done 2026-11-06 in commit `10da406` from the pilot run
+(training window 6.0-7.0 s); C15-2 done earlier outside the repository.
+Pending: C15-3 (after calibration).
 
 | Topic | IDs | Must be done before any production run | Done |
 |---|---|---|---|
@@ -100,7 +101,7 @@ the pilot run) and C15-3 (after calibration).
 | [10](10_mill_geometry.md) | C10-1 ... C10-4 | **C10-1**, **C10-2**, **C10-3**, **C10-4** | C10-1, C10-2, C10-3, C10-4 |
 | [11](11_mill_speed.md) | C11-1 | **C11-1** | C11-1 |
 | [12](12_charge_fill_and_particles.md) | C12-1 ... C12-3 | **C12-1**, **C12-2**, **C12-3** | C12-1, C12-2, C12-3 |
-| [14](14_dataset_runs_and_recording.md) | C14-1 ... C14-5 | **C14-1**, C14-2, **C14-3** | C14-1 ... C14-4 |
+| [14](14_dataset_runs_and_recording.md) | C14-1 ... C14-5 | **C14-1**, C14-2, **C14-3** | C14-1 ... C14-5 |
 | [15](15_calibration_targets.md) | C15-1 ... C15-3 | **C15-1** | C15-1, C15-2 |
 | [16](16_validation_checks.md) | C16-1 | **C16-1** | C16-1 |
 
@@ -269,8 +270,8 @@ doc compares with the PPT's slide-12 set (33.16e9 / 2.868e9), it says so.
 `LFer-MM/pm-dem-sm` as re-reviewed on 2026-11-04 (commit `5084426`), with
 paths relative to `pm_dem_sm/` unless stated, updated for the phase-1
 changes (commit `5c194ab`), the phase-2 changes (commit `4bb17e4`), the
-phase-3 changes (commit `d73d750`), the phase-4 changes (`494c1f3` ... `4ac94bb`)
-and the phase-5 changes (`69e6ea0`). The existing datasets
+phase-3 changes (commit `d73d750`), the phase-4 changes (`494c1f3` ... `4ac94bb`),
+the phase-5 changes (`69e6ea0`) and C14-5 (`10da406`). The existing datasets
 (`data/raw/...`) were produced by older code, before the repository was
 renamed (pre-rename `main`, commit `bb04dfd`), with the friction and
 damping issues described in [04](04_numerical_damping.md) and

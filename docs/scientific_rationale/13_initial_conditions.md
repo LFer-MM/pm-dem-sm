@@ -115,6 +115,16 @@ therefore never reached; a geometric criterion is.
   surrogate must be trained on RM-IC data (uniform spatial coverage) to
   predict both ICs; SIC runs are mainly prediction / test cases.
 
+- **J of a starting packing is below Jc, by design.** The ICs are poured and
+  settled without turning, so they pack like a random 2:1 bed (pilot RMIC:
+  J = 0.2588, phi = 0.5845) rather than like the plant's crash-stopped
+  charge (J = 0.276). The plant's Jc is matched through the particle counts
+  (grind-out, [12](12_charge_fill_and_particles.md)); the pilot's crash-stop
+  check shows the same packing gives J = 0.2770 once it has turned 3.2
+  revolutions and is stopped. Turning the charge before saving an IC would
+  reach Jc at rest but destroy the defined mixing state (random or
+  segregated) that the IC exists to provide.
+
 ## Verdict and how to defend it
 
 "Both initial conditions are static packings (Kishida et al. 2025, §3): the
