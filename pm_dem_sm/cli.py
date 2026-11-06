@@ -82,17 +82,34 @@ def build_parser() -> argparse.ArgumentParser:
 
     view_parser = subparsers.add_parser(
         "dem-view",
-        help="View a DEM run directory in 2D (live while it runs), or save a PNG / GIF.",
+        help="View a DEM run directory in 2D or 3D (live while it runs), or save a PNG / GIF.",
         description=(
-            "End-on view of the slice: particles coloured by species or speed inside the "
-            "rotating liner outline, with the stage, time and mill-log values. Without "
-            "--save it opens a window that follows new frames; keys: left/right, up/down "
-            "(10 frames), home/end, space play/pause, f follow, c colours, s save PNG."
+            "End-on (or 3D) view of the slice: particles coloured by species or speed "
+            "inside the rotating liner, with angle marks, the toe / shoulder targets and "
+            "the stage, time and mill-log values. Shows the recorded frames and the preview "
+            "snapshots of every stage. Without --save it opens a window that follows new "
+            "views; keys: left/right, up/down (10 views), home/end, space play/pause, "
+            "f follow, c colours, m angle marks, s save PNG; in 3D drag to turn."
         ),
     )
     view_parser.add_argument("run_dir", type=Path, help="Run directory of run_simulation.py.")
     view_parser.add_argument(
-        "--frame", type=int, default=None, help="Frame to show (default: newest, following)."
+        "--frame",
+        type=int,
+        default=None,
+        help="Frame (or preview snapshot) to show (default: newest, following).",
+    )
+    view_parser.add_argument(
+        "--3d", dest="three_d", action="store_true", help="3D view (drag to turn it)."
+    )
+    view_parser.add_argument(
+        "--no-marks", action="store_true", help="Hide the angle marks and target guides."
+    )
+    view_parser.add_argument(
+        "--source",
+        choices=("all", "frames", "preview"),
+        default="all",
+        help="Recorded frames, preview snapshots, or both (default).",
     )
     view_parser.add_argument(
         "--color", choices=("species", "speed"), default="species", help="Particle colours."
@@ -417,7 +434,7 @@ def _run_dem_view(args: argparse.Namespace) -> int:
     if not (Path(args.run_dir) / "manifest.json").exists():
         print(f"No manifest.json in {args.run_dir}: not a run directory.")
         return 1
-    view = run_viewer.RunView.open(args.run_dir)
+    view = run_viewer.RunView.open(args.run_dir, source=args.source)
     try:
         if args.save is not None:
             out = run_viewer.save(
@@ -428,10 +445,20 @@ def _run_dem_view(args: argparse.Namespace) -> int:
                 every=args.every,
                 fps=args.fps,
                 vmax=args.vmax,
+                three_d=args.three_d,
+                marks=not args.no_marks,
             )
             print(f"[dem-view] wrote {out}")
         else:
-            run_viewer.show(view, frame=args.frame, color=args.color, vmax=args.vmax, fps=args.fps)
+            run_viewer.show(
+                view,
+                frame=args.frame,
+                color=args.color,
+                vmax=args.vmax,
+                fps=args.fps,
+                three_d=args.three_d,
+                marks=not args.no_marks,
+            )
     except ValueError as err:
         print(f"[dem-view] {err}")
         return 1

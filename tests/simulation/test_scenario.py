@@ -387,3 +387,53 @@ def test_sag_a_dataset_scenarios_pair_with_make_ic():
         assert ic.material_set_id() == ds.material_set_id()
         assert str(ds.run.ic_dir).endswith(f"sag_a_make_ic_{kind}_s{{seed}}")
     assert load_scenario(root / "sag_a_make_ic_sic.json").fill.method == "segregated"
+
+
+def test_existing_material_set_ids_unchanged():
+    # The ids the saved ICs carry (smoke ICs of phase 5, the pilot's SAG_A IC).
+    root = REPO_ROOT / "configs" / "simulation"
+    assert load_scenario(root / "smoke_make_ic.json").material_set_id() == "d66a6a9c9eb0"
+    assert load_scenario(root / "sag_a_make_ic_rmic.json").material_set_id() == "cb4108570cb2"
+
+
+def test_material_set_id_ignore_friction():
+    base = _valid()
+    other = _from({"contact": {"particle_friction": 0.3, "wall_friction": 0.7}})
+    assert base.material_set_id() != other.material_set_id()
+    assert base.material_set_id(ignore_friction=True) == other.material_set_id(
+        ignore_friction=True
+    )
+    # Everything else still counts.
+    assert _from({"contact": {"rolling_resistance": 0.2}}).material_set_id(
+        ignore_friction=True
+    ) != base.material_set_id(ignore_friction=True)
+
+
+def test_calibrate_ic_run_type():
+    s = _from({"run": {"type": "calibrate_ic", "ic_dir": "data/raw/yade_runs/x"}})
+    assert s.stages == ("load_ic", "spinup", "record")
+    with pytest.raises(ValueError, match="ic_dir is required for a calibrate_ic run"):
+        _from({"run": {"type": "calibrate_ic"}})
+
+
+def test_preview_interval():
+    assert _valid().record.preview_interval_s == 0.5
+    assert _from({"record": {"preview_interval_s": 0}}).record.preview_interval_s == 0
+    with pytest.raises(ValueError, match="preview_interval_s"):
+        _from({"record": {"preview_interval_s": -1}})
+
+
+def test_calibration_grid_scenarios_share_the_pilot_ic():
+    root = REPO_ROOT / "configs" / "simulation"
+    ic = load_scenario(root / "sag_a_make_ic_rmic.json")
+    grid = sorted((root / "calibration").glob("cal_*.json"))
+    assert len(grid) == 9
+    pairs = set()
+    for path in grid:
+        s = load_scenario(path)
+        assert s.run.type == "calibrate_ic"
+        assert str(s.run.ic_dir) == "data/raw/yade_runs/sag_a_make_ic_rmic_s0"
+        assert s.material_set_id(ignore_friction=True) == ic.material_set_id(ignore_friction=True)
+        assert s.record.duration_s == pytest.approx(2 * s.revolution_s(), abs=1e-3)
+        pairs.add((s.contact.particle_friction, s.contact.wall_friction))
+    assert pairs == {(p, w) for p in (0.3, 0.5, 0.7) for w in (0.3, 0.5, 0.7)}

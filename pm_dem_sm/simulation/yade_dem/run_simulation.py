@@ -63,7 +63,7 @@ import yade
 from yade.wrapper import O
 
 from pm_dem_sm.simulation import checks, mill_geometry
-from pm_dem_sm.simulation.scenario import STAGES, load_scenario
+from pm_dem_sm.simulation.scenario import STAGES, SimulationScenario, load_scenario
 from pm_dem_sm.simulation.yade_dem import (
     capture,
     diagnostics,
@@ -123,8 +123,6 @@ def run(scenario_path=None, run_dir=None, from_stage=None, to_stage=None, gui=Fa
     ).exists()
     resume_manifest = _read_manifest(Path(run_dir)) if resuming else None
     if scenario_path is None and resume_manifest is not None:
-        from pm_dem_sm.simulation.scenario import SimulationScenario
-
         scenario = SimulationScenario.from_dict(resume_manifest["scenario"])
     else:
         scenario = load_scenario(scenario_path)
@@ -171,7 +169,10 @@ def run(scenario_path=None, run_dir=None, from_stage=None, to_stage=None, gui=Fa
             # (build and load_ic create the engines and check it themselves).
             engines.set_gravity_damping(NUMERICAL_DAMPING)
             engines.assert_no_damping()
+        _ensure_preview(scenario, run_dir, manifest, name)
         outcome = _stage_function(name)(scenario, run_dir, manifest) or {}
+        # build and load_ic replace O.engines: re-attach the preview runner.
+        _ensure_preview(scenario, run_dir, manifest, name)
         stage_checks = _stage_checks(scenario, name)
         O.save(str(run_dir / "checkpoints" / f"{name}.yade.gz"))
         manifest["stages"][name] = {
@@ -376,11 +377,15 @@ def _stage_save_ic(scenario, run_dir, manifest):
 
 
 def _stage_load_ic(scenario, run_dir, manifest):
-    """Build the scene and load a saved initial condition at rest (``dataset``).
+    """Build the scene and load a saved initial condition at rest (``dataset``, ``calibrate_ic``).
 
-    The IC (``<run.ic_dir>/ic/``) must carry this scenario's material-set id;
-    the mill then starts from rest at t = 0 in the record stage
-    (docs/scientific_rationale/14_dataset_runs_and_recording.md).
+    For ``dataset`` the IC (``<run.ic_dir>/ic/``) must carry this scenario's
+    material-set id; the mill then starts from rest at t = 0 in the record
+    stage (docs/scientific_rationale/14_dataset_runs_and_recording.md). For
+    ``calibrate_ic`` the ids must agree except for friction (the friction
+    grid shares one settled IC, docs/scientific_rationale/05_friction.md);
+    the IC's friction is recorded in the manifest. Either way the contacts
+    are rebuilt with this scenario's materials.
 
     Raises:
         ValueError: If the IC's material-set id differs from the scenario's.
@@ -390,17 +395,43 @@ def _stage_load_ic(scenario, run_dir, manifest):
     if not ic_root.is_absolute():
         ic_root = Path(_REPO_ROOT) / ic_root
     info = json.loads((ic_root / "ic" / "ic.json").read_text(encoding="utf-8"))
-    msid = scenario.material_set_id()
-    if info["material_set_id"] != msid:
+    if scenario.run.type == "calibrate_ic":
+        ic_scenario = SimulationScenario.from_dict(_read_manifest(ic_root)["scenario"])
+        theirs = ic_scenario.material_set_id(ignore_friction=True)
+        msid = scenario.material_set_id(ignore_friction=True)
+        info = {
+            **info,
+            "material_set_id_without_friction": theirs,
+            "ic_friction": ic_scenario.contact_tables()["friction"],
+        }
+        what = "materials other than friction"
+    else:
+        theirs, msid = info["material_set_id"], scenario.material_set_id()
+        what = "materials"
+    if theirs != msid:
         raise ValueError(
-            f"IC {info['name']} was made with material set {info['material_set_id']}, "
-            f"this scenario has {msid}: an IC is never reused with different materials"
+            f"IC {info['name']} was made with material set {theirs}, this scenario has "
+            f"{msid} ({what}): an IC is never reused with different materials"
         )
     outcome = _stage_build(scenario, run_dir, manifest)
     ids = state.load_particle_positions(str(ic_root / "ic" / "positions.csv"))
     manifest["initial_condition"] = info
-    print(f"[dataset] loaded IC {info['name']}: {len(ids)} particles at rest")
+    print(f"[{scenario.run.type}] loaded IC {info['name']}: {len(ids)} particles at rest")
     return {**outcome, "initial_condition": info["name"], "n_particles": len(ids)}
+
+
+def _ensure_preview(scenario, run_dir, manifest, stage):
+    """Label preview snapshots with ``stage`` and attach the preview runner if missing."""
+    interval = scenario.record.preview_interval_s
+    if interval <= 0 or not O.engines:
+        return
+    capture.set_preview_stage(stage)
+    if not capture.has_runner("preview"):
+        ids = manifest.get("liner_body_ids") or manifest.get("mill_body_ids") or [None]
+        capture.start_preview(
+            run_dir / "preview", run_dir / "preview_index.csv", interval, angle_body_id=ids[0]
+        )
+        capture.set_preview_stage(stage)
 
 
 def _start_monitor(scenario, run_dir, manifest, stage, omega):
@@ -460,7 +491,7 @@ def _load_checkpoint(run_dir, stage, manifest):
     O.load(str(path))
     materials.rebuild_materials_map()
     stl.SAG_MILL_SLICE_BODY_GROUP = list(manifest["mill_body_ids"])
-    for label in ("monitor", "recorder"):
+    for label in ("monitor", "recorder", "preview"):
         O.engines = [e for e in O.engines if getattr(e, "label", None) != label]
 
 

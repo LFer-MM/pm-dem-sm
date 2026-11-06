@@ -35,14 +35,22 @@ STAGES = ("build", "fill", "settle", "spinup", "record", "save_ic", "load_ic")
 #: Stages of each run type (docs/scientific_rationale/14_dataset_runs_and_recording.md):
 #: ``calibrate`` spins the charge up to steady state, then records;
 #: ``make_ic`` pours and settles an initial condition and saves it at rest;
-#: ``dataset`` loads a saved IC and records from rest at t = 0.
+#: ``dataset`` loads a saved IC and records from rest at t = 0;
+#: ``calibrate_ic`` loads a shared settled IC (made with any friction), then
+#: spins up and records like ``calibrate`` (the friction grid,
+#: docs/scientific_rationale/05_friction.md).
 RUN_TYPE_STAGES = {
     "calibrate": ("build", "fill", "settle", "spinup", "record"),
     "make_ic": ("build", "fill", "settle", "save_ic"),
     "dataset": ("load_ic", "record"),
+    "calibrate_ic": ("load_ic", "spinup", "record"),
 }
 #: Valid ``RunOptions.type`` values.
 RUN_TYPES = tuple(RUN_TYPE_STAGES)
+#: Run types that spin up to steady state and measure the charge shape (V8).
+CALIBRATION_RUN_TYPES = ("calibrate", "calibrate_ic")
+#: Run types that load a saved IC (``run.ic_dir`` required).
+IC_RUN_TYPES = ("dataset", "calibrate_ic")
 #: Valid ``MillGeometry.end_walls`` values.
 END_WALLS = ("liner", "frictionless")
 #: Valid ``ContactOptions.model`` values.
@@ -294,13 +302,18 @@ class RunOptions:
     Attributes:
         type: One of :data:`RUN_TYPES`: ``"calibrate"`` (fill, settle, spin
             up to steady state, record), ``"make_ic"`` (fill, settle, save
-            the initial condition at rest) or ``"dataset"`` (load an IC, record
-            from rest at t = 0). The stages are :data:`RUN_TYPE_STAGES`.
-        ic_dir: For ``dataset`` runs: the run directory of the ``make_ic`` run
-            whose IC is loaded (its ``ic/`` holds the positions and the
-            manifest with the material-set id, which must match this
-            scenario's). A ``{seed}`` in the path is replaced by the seed, so
-            dataset replicate N loads the IC of ``make_ic`` replicate N.
+            the initial condition at rest), ``"dataset"`` (load an IC, record
+            from rest at t = 0) or ``"calibrate_ic"`` (load a shared IC, spin
+            up, record). The stages are :data:`RUN_TYPE_STAGES`.
+        ic_dir: For ``dataset`` and ``calibrate_ic`` runs: the run directory
+            of the ``make_ic`` run whose IC is loaded (its ``ic/`` holds the
+            positions and the material-set id). A ``dataset`` run needs the
+            IC's material-set id to equal its own; a ``calibrate_ic`` run
+            needs it equal except for friction
+            (:meth:`SimulationScenario.material_set_id` with
+            ``ignore_friction``), since the friction grid shares one IC. A
+            ``{seed}`` in the path is replaced by the seed, so dataset
+            replicate N loads the IC of ``make_ic`` replicate N.
     """
 
     type: str = "calibrate"
@@ -316,11 +329,15 @@ class RecordOptions:
         frame_interval_s: Simulated time between frame CSVs (s).
         monitor_interval_s: Simulated time between mill-log rows (s), in
             every stage from ``fill`` on.
+        preview_interval_s: Simulated time between preview snapshots (s), in
+            every stage (``preview/snap_*.csv`` and ``preview_index.csv``, for
+            ``pm-dem-sm dem-view``); 0 turns them off. Not training data.
     """
 
     duration_s: float = 20.0
     frame_interval_s: float = 0.05
     monitor_interval_s: float = 0.05
+    preview_interval_s: float = 0.5
 
 
 @dataclass
@@ -379,7 +396,9 @@ class SimulationScenario:
         default_factory=lambda: {k: dict(v) for k, v in config.MATERIALS.items()}
     )
     restitution: list[list[Any]] = field(
-        default_factory=lambda: [[a, b, e] for (a, b), e in config.RESTITUTION_COEFFICIENTS.items()]
+        default_factory=lambda: [
+            [a, b, e] for (a, b), e in config.RESTITUTION_COEFFICIENTS.items()
+        ]
     )
     contact: ContactOptions = field(default_factory=ContactOptions)
     solver: SolverOptions = field(default_factory=SolverOptions)
@@ -456,9 +475,11 @@ class SimulationScenario:
         )
         _check_choice("fill.method", self.fill.method, FILL_METHODS)
         _check_choice("run.type", self.run.type, RUN_TYPES)
-        if self.run.type == "dataset" and self.run.ic_dir is None:
+        if self.record.preview_interval_s < 0:
+            raise ValueError("record.preview_interval_s must be >= 0 (0 turns previews off)")
+        if self.run.type in IC_RUN_TYPES and self.run.ic_dir is None:
             raise ValueError(
-                "run.ic_dir is required for a dataset run (the make_ic run directory)"
+                f"run.ic_dir is required for a {self.run.type} run (the make_ic run directory)"
             )
         if len(self.species) != 2:
             raise ValueError(f"Exactly two species are supported, got {len(self.species)}")
@@ -734,7 +755,7 @@ class SimulationScenario:
         """The stages of this scenario's run type, in order (:data:`RUN_TYPE_STAGES`)."""
         return RUN_TYPE_STAGES[self.run.type]
 
-    def material_set_id(self) -> str:
+    def material_set_id(self, ignore_friction: bool = False) -> str:
         """Return a short hash of everything a saved initial condition depends on.
 
         Materials and per-pair contact tables, stiffness scaling, rolling
@@ -744,14 +765,26 @@ class SimulationScenario:
         differs from its own (docs/scientific_rationale/13_initial_conditions.md:
         "an IC is never reused with different materials").
 
+        Args:
+            ignore_friction: Leave the friction (per-pair table and each
+                material's friction angle) out of the hash, for
+                ``calibrate_ic`` runs, which share one IC across a friction
+                grid. The default id is unchanged by this option.
+
         Returns:
             str: 12 hex characters of a SHA-256.
         """
         tables = self.contact_tables()
+        materials = tables["materials"]
+        if ignore_friction:
+            materials = {
+                k: {a: v for a, v in m.items() if a != "friction_angle"}
+                for k, m in materials.items()
+            }
         payload = {
-            "materials": tables["materials"],
+            "materials": materials,
             "restitution": tables["restitution"],
-            "friction": tables["friction"],
+            "friction": None if ignore_friction else tables["friction"],
             "young_scale": self.solver.young_scale,
             "rolling_resistance": self.contact.rolling_resistance,
             "rolling_stiffness": round(self.rolling_stiffness(), 6),

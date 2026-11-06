@@ -37,7 +37,7 @@ import pandas as pd
 from ..metrics.lacey_mixing_index import detect_tracer_radius, lacey_index_for_frame
 from ..metrics.segregation_profile import radial_fraction_profile
 from . import checks
-from .scenario import SimulationScenario
+from .scenario import CALIBRATION_RUN_TYPES, SimulationScenario
 
 # --- Constants ---------------------------------------------------------------
 
@@ -364,13 +364,15 @@ def postprocess_run(run_dir: Path | str, delete_csv: bool = True) -> dict:
     log = _mill_log(run_dir)
     rec = None if log is None else log[log["stage"] == "record"]
     spin = manifest.get("stages", {}).get("spinup", {}).get("steady_state")
-    if scenario.run.type == "calibrate":
+    if scenario.run.type in CALIBRATION_RUN_TYPES:
         # V7 for calibration: the record starts after spin-up reached steady state.
         extras["quasi_steady"] = {"spinup_steady_state": spin}
         extras["quasi_steady_ok"] = bool(spin and spin.get("steady"))
     elif rec is not None and len(rec) > 2:
         t = rec["time"].to_numpy(float) - float(rec["time"].iloc[0])
-        window = 0.5 * scenario.revolution_s() if scenario.run.type == "calibrate" else 1.0
+        window = (
+            0.5 * scenario.revolution_s() if scenario.run.type in CALIBRATION_RUN_TYPES else 1.0
+        )
         qs = {
             "kinetic_s": checks.quasi_steady_time(t, rec["kinetic_J"], window),
             "power_s": checks.quasi_steady_time(t, rec["power_kW"], window),
@@ -405,7 +407,7 @@ def postprocess_run(run_dir: Path | str, delete_csv: bool = True) -> dict:
             ),
         }
 
-    if scenario.run.type == "calibrate" and post["frames"]["parquet"]:
+    if scenario.run.type in CALIBRATION_RUN_TYPES and post["frames"]["parquet"]:
         shape = charge_shape(run_dir, load_frames(run_dir), scenario)
         (analysis / "charge_shape.json").write_text(json.dumps(shape, indent=2), encoding="utf-8")
         extras["charge_shape"] = shape
