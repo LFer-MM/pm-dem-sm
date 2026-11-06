@@ -39,7 +39,11 @@ written to the run manifest so each dataset can be defended individually.
   - V3 is judged over the settle, spin-up and record stages; the pouring
     transient of the fill stage stays recorded in the manifest. The mean is
     the time average of the logged per-row means.
-  - V4 passes at |residual| <= 5 % over the record stage.
+  - V4 passes at |residual| <= 5 % over the record stage. On the 360-particle
+    smoke mill with a 1 s record the residual scatters run to run by about
+    +-20 % (four repeats: +19 %, +20 %, +8 %, -11 %; the rolling dissipation is
+    a sampled estimate), so a smoke-test V4 failure says nothing; at full
+    scale the pilot's 20 s record gave -0.2 %.
   - V7 is the spin-up's steady-state verdict for `calibrate` runs. For
     `dataset` runs it needs the quasi-steady time of kinetic energy, power
     and charge angle to leave the 1 s training window before the end,

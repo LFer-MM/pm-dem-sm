@@ -67,6 +67,8 @@ shape, friction is treated as the main calibration variable.
 | `config.py` | `PARTICLE_FRICTION = 0.5` (mu_p, C05-1, commit `5c194ab`), `WALL_FRICTION = 0.5` (mu_w), `OWEN_PARTICLE_FRICTION` (0.4 / 0.5 / 0.8); `MATERIALS` has a `"liner"` entry (steel density, modulus and Poisson ratio) and no per-material friction (C05-3, commit `4bb17e4`) |
 | `simulation/scenario.py` (`ContactOptions`, `contact_tables()`, `friction_for()`) | `contact.particle_friction` (mu_p), `contact.wall_friction` (mu_w) and `contact.particle_friction_set` (`"uniform"` or `"owen"`) give one friction value per material pair: particle pairs mu_p (or Owen), particle-liner mu_w, particle-end-wall 0. `mill.liner_material = "liner"` by default, and a liner that is also a particle material, or a material with its own `friction_angle`, is rejected (C05-2, C05-3, commit `4bb17e4`) |
 | `simulation/yade_dem/engines.py:66-72`, `materials.py` (`pair_matchmaker`) | The pair table becomes a `frictAngle` `MatchMaker` (angles in radians, atan(mu)) keyed by the YADE ids of the material labels: no min rule. Each material's own `frictionAngle` is set to the same value (YADE's fallback for pairs not in the table, of which there are none). The table is written to the run manifest (`contact_tables`). Checked in the smoke run: every contact carries the friction of its pair |
+| `simulation/scenario.py` (`RUN_TYPE_STAGES`, `material_set_id(ignore_friction)`), `run_simulation.py` (`_stage_load_ic`) | Run type `calibrate_ic` (load_ic, spinup, record) for the grid: every point starts from **one shared settled IC**, checked to match in everything but friction (the material-set id without the friction table and friction angles); the IC's friction is recorded in the manifest, and the contacts are rebuilt with the point's friction (commit `8e1d4aa`) |
+| `configs/simulation/calibration/`, `scripts/calibration/` | The 3 x 3 grid (`cal_mup<mu_p>_muw<mu_w>.json`) from the pilot's RMIC IC (`sag_a_make_ic_rmic_s0`, settled with mu_p = mu_w = 0.5), recording **2 revolutions** (12.63 s) after the spin-up's steady state, enough for the time-averaged toe / shoulder; `make_grid_scenarios.py` regenerates or refines it, `run_grid.sh` runs `PARALLEL` points with `THREADS` threads each (default 2 x 10 on the 12-core / 24-thread machine), `grid_summary.py` ranks the points by the distance of the bulk toe / shoulder from the SAG_A targets (commit `8e1d4aa`) |
 
 Consequence: any run made with the old code (before commit `543208a`) -- including, if it used that code,
 the 212 deg / 26.5 deg match of slide 31 -- had practically frictionless
@@ -155,6 +157,18 @@ Cleary & Morrison 2016 (Table 2), with Owen's set as a sensitivity case."
   in [07](07_restitution.md).
 - Re-measure the packing fraction after calibration ([12](12_charge_fill_and_particles.md)):
   packing depends on friction.
+- **Run the grid** (`scripts/calibration/run_grid.sh`). Cost from the pilot's
+  timings (16 threads: 20 s simulated in 95 min): a spin-up of 2-4 revolutions
+  (12.6-25 s) plus 2 recorded revolutions is roughly 2-3.5 h per point alone;
+  two points side by side at 10 threads each share the 12 physical cores, so
+  each is slower, the pair faster than one after the other -- to measure on
+  the first pair. Then refine around the best point (mu_w up to 0.8-0.9 if
+  the toe is not reached).
+- The shared IC was settled with mu_p = mu_w = 0.5; with another friction a
+  freshly poured bed would pack slightly differently. Sharing it is the
+  decision (differences between points come from the friction during
+  turning only); the spin-up to steady state removes the bed's memory of
+  how it was poured.
 
 ## Pending code changes
 

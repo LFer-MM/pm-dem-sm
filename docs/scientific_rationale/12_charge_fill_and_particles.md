@@ -150,8 +150,8 @@ estimate.
 | `config.py` | `ROCK_COUNT` / `BALL_COUNT` removed (C12-1, commit `5c194ab`): counts are `Species.count` scenario inputs only |
 | `scenario.py` (`PROVISIONAL_ROCK_COUNT`, `PROVISIONAL_BALL_COUNT`), `configs/simulation/sag_slice_lifters.json` | Default species carry the grind-out counts, 16,082 rocks + 3,437 balls (C12-3, commit `4ac94bb`), provisional until the procedure is rerun with the calibrated friction |
 | `config.py:87, 90` | `ROCK_DIAM_M = 0.06985`, `BALL_DIAM_M = 0.1397` -- match |
-| `scenario.py:800-811` | `fill_fraction(packing=0.6)`: gross cylinder pi R^2 L (Morrell-consistent denominator) but an **assumed** packing 0.6 and the solid volume of all particles, so it reports J of a lifter-free, perfectly packed charge |
-| `scenario.py:377` | Species counts are scenario inputs (no derivation from Jc / Jb) |
+| `scenario.py:833-844` | `fill_fraction(packing=0.6)`: gross cylinder pi R^2 L (Morrell-consistent denominator) but an **assumed** packing 0.6 and the solid volume of all particles, so it reports J of a lifter-free, perfectly packed charge |
+| `scenario.py:394` | Species counts are scenario inputs (no derivation from Jc / Jb) |
 | Existing `sic_dataset_20s_dt0p0001` | 11,581 rocks with **r = 0.0381 m** (3 in) + 3,195 balls -- matches neither the slides nor this procedure |
 
 ## Analysis

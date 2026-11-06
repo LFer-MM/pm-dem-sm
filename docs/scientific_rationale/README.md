@@ -271,7 +271,8 @@ doc compares with the PPT's slide-12 set (33.16e9 / 2.868e9), it says so.
 paths relative to `pm_dem_sm/` unless stated, updated for the phase-1
 changes (commit `5c194ab`), the phase-2 changes (commit `4bb17e4`), the
 phase-3 changes (commit `d73d750`), the phase-4 changes (`494c1f3` ... `4ac94bb`),
-the phase-5 changes (`69e6ea0`) and C14-5 (`10da406`). The existing datasets
+the phase-5 changes (`69e6ea0`), C14-5 (`10da406`) and the calibration grid
+tooling (`8e1d4aa`). The existing datasets
 (`data/raw/...`) were produced by older code, before the repository was
 renamed (pre-rename `main`, commit `bb04dfd`), with the friction and
 damping issues described in [04](04_numerical_damping.md) and

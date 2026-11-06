@@ -36,6 +36,11 @@ re-checked with the calibrated friction. Scenarios in ``configs/simulation/``:
 ``sensitivity/``
    The one-off sensitivity runs (V9, V10, V11, V11b-e), each one change
    from ``sens_baseline.json``.
+``calibration/``
+   The friction grid, mu_p x mu_w in {0.3, 0.5, 0.7}\ :sup:`2`, ``calibrate_ic``
+   runs from the pilot's RMIC IC recording 2 revolutions; written by
+   ``scripts/calibration/make_grid_scenarios.py``. ``smoke_calibrate_ic.json``
+   is its smoke-scale counterpart.
 
 Check a scenario before spending DEM time on it:
 
@@ -66,6 +71,10 @@ Run types and stages
    ``load_ic``, ``record``: the IC of ``run.ic_dir`` is loaded (refused if its
    material-set id differs) and recorded from rest at t = 0 for
    ``record.duration_s`` (20 s RMIC, 35 s SIC).
+``calibrate_ic``
+   ``load_ic``, ``spinup``, ``record``: like ``calibrate``, but from a shared
+   saved IC, which must match in everything except friction (the friction
+   grid, ``configs/simulation/calibration/``).
 
 The stages:
 
@@ -106,8 +115,12 @@ Running
    # Post-process a run directory again (dem-sim does it after every successful run):
    pm-dem-sm dem-post data/raw/yade_runs/sag_a_dataset_rmic_s0
 
-   # Watch it from another terminal, while it records or afterwards:
+   # Watch it from another terminal, while it runs or afterwards:
    pm-dem-sm dem-view data/raw/yade_runs/sag_a_dataset_rmic_s0
+
+   # The friction grid, two points at a time with 10 threads each, then the ranking:
+   PARALLEL=2 THREADS=10 scripts/calibration/run_grid.sh
+   python scripts/calibration/grid_summary.py
 
 From Python:
 
@@ -158,6 +171,10 @@ Everything lands in the run directory:
    cross-check (calibrate runs).
 ``ic/`` (make_ic runs)
    ``positions.csv``, ``scene.yade.gz``, ``ic.json``.
+``preview/snap_00000.csv`` ...
+   Snapshots in every stage every ``record.preview_interval_s`` (0.5 s by
+   default, 0 = off), for ``dem-view``; ``preview_index.csv`` gives each
+   one's time, stage and mill angle. Not training data.
 ``checkpoints/<stage>.yade.gz``
    YADE scenes to resume from or open in the viewer.
 
