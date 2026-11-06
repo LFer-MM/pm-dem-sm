@@ -106,6 +106,9 @@ Running
    # Post-process a run directory again (dem-sim does it after every successful run):
    pm-dem-sm dem-post data/raw/yade_runs/sag_a_dataset_rmic_s0
 
+   # Watch it from another terminal, while it records or afterwards:
+   pm-dem-sm dem-view data/raw/yade_runs/sag_a_dataset_rmic_s0
+
 From Python:
 
 .. code-block:: python
@@ -118,6 +121,11 @@ From Python:
        threads=4,
    )
    print(result.returncode)  # nonzero exit codes are returned, not raised
+
+``--gui`` needs a working desktop session for YADE's Qt window; when that
+fails (or for long runs), use ``pm-dem-sm dem-view`` instead, which reads
+the run's files and never touches the YADE process (see
+:doc:`visualization`).
 
 ``FileNotFoundError`` is raised when neither ``yade`` nor ``yadedaily`` is on
 ``PATH``; an invalid scenario raises ``ValueError`` before YADE starts.

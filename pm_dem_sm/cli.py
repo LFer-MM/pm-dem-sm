@@ -1,6 +1,6 @@
 """Command-line interface for the bidisperse DEM surrogate-model toolkit.
 
-Two subcommands, matching the project's two runtimes:
+Subcommands:
 
 - ``dem-sim``: launches a DEM simulation as a subprocess (``--dem-backend
   yade``, the default, requires YADE installed and on PATH; ``blaze`` is not
@@ -10,6 +10,9 @@ Two subcommands, matching the project's two runtimes:
 - ``dem-post``: post-processes a finished run directory (frames to float32
   parquet, segregation profiles, toe / shoulder, validation summary; see
   :mod:`pm_dem_sm.simulation.postprocess`).
+- ``dem-view``: 2D end-on view of a run directory, live while the run
+  writes frames or afterwards; or saves a PNG / GIF (see
+  :mod:`pm_dem_sm.visualization.run_viewer`).
 - ``ml-pipeline``: runs the experiment pipeline (simulate / process / train /
   predict / metrics / visualization). Config can be supplied either as
   individual flags or as a JSON file via ``--config``. When ``--config`` is
@@ -77,6 +80,42 @@ def build_parser() -> argparse.ArgumentParser:
         "--keep-csv", action="store_true", help="Keep the frame CSVs after conversion."
     )
 
+    view_parser = subparsers.add_parser(
+        "dem-view",
+        help="View a DEM run directory in 2D (live while it runs), or save a PNG / GIF.",
+        description=(
+            "End-on view of the slice: particles coloured by species or speed inside the "
+            "rotating liner outline, with the stage, time and mill-log values. Without "
+            "--save it opens a window that follows new frames; keys: left/right, up/down "
+            "(10 frames), home/end, space play/pause, f follow, c colours, s save PNG."
+        ),
+    )
+    view_parser.add_argument("run_dir", type=Path, help="Run directory of run_simulation.py.")
+    view_parser.add_argument(
+        "--frame", type=int, default=None, help="Frame to show (default: newest, following)."
+    )
+    view_parser.add_argument(
+        "--color", choices=("species", "speed"), default="species", help="Particle colours."
+    )
+    view_parser.add_argument(
+        "--vmax",
+        type=float,
+        default=None,
+        help="Top of the speed scale, m/s (default 1.5 x liner speed).",
+    )
+    view_parser.add_argument(
+        "--save",
+        type=Path,
+        default=None,
+        help="Write instead of opening a window: .png (one frame) or .gif / .mp4 (all frames).",
+    )
+    view_parser.add_argument(
+        "--every", type=int, default=1, help="Animation: use every N-th frame."
+    )
+    view_parser.add_argument(
+        "--fps", type=int, default=10, help="Playback / animation frames per second."
+    )
+
     ml_parser = subparsers.add_parser(
         "ml-pipeline",
         help="Run the experiment pipeline (simulate / process / train / predict / metrics / visualization).",
@@ -135,6 +174,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _run_dem_sim(args)
     if args.command == "dem-post":
         return _run_dem_post(args.run_dir, keep_csv=args.keep_csv)
+    if args.command == "dem-view":
+        return _run_dem_view(args)
     return _run_ml_pipeline(args)
 
 
@@ -366,6 +407,34 @@ def _run_dem_post(run_dir: Path, keep_csv: bool = False) -> int:
     failed = [k for k, v in validation.items() if v["status"] == "fail"]
     if failed:
         print(f"[validation] failed checks: {', '.join(failed)} (see {run_dir}/validation.json)")
+    return 0
+
+
+def _run_dem_view(args: argparse.Namespace) -> int:
+    """Handle ``dem-view``; return an exit code."""
+    from .visualization import run_viewer
+
+    if not (Path(args.run_dir) / "manifest.json").exists():
+        print(f"No manifest.json in {args.run_dir}: not a run directory.")
+        return 1
+    view = run_viewer.RunView.open(args.run_dir)
+    try:
+        if args.save is not None:
+            out = run_viewer.save(
+                view,
+                args.save,
+                frame=args.frame,
+                color=args.color,
+                every=args.every,
+                fps=args.fps,
+                vmax=args.vmax,
+            )
+            print(f"[dem-view] wrote {out}")
+        else:
+            run_viewer.show(view, frame=args.frame, color=args.color, vmax=args.vmax, fps=args.fps)
+    except ValueError as err:
+        print(f"[dem-view] {err}")
+        return 1
     return 0
 
 

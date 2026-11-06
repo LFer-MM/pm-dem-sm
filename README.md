@@ -21,7 +21,7 @@ two sides never call each other in-process.
 - **`model/`** — The extended-RNNSR surrogate: the GRU (`rnn/`: model, training, loading), the stochastic-random (SR) model (`sr/`: model, fitting, loading), and the two steps that combine them, `training.py` (train the GRU, fit the SR) and `prediction.py` (sliding-window prediction plus SR noise).
 - **`metrics/`** — Post-hoc computation over ground-truth/predicted frames: Lacey's mixing index, radial/axial segregation profile, velocity distribution and granular temperature, and dimensionless computing speed (`run_metrics.py`). Computation only — no plotting.
 - **`visualization/`** — All plotting and animation: frame snapshots with a cell-grid overlay (`cell_grid.py`), 2D particle animation (`animate_particles.py`, `run_visualization.py`), training loss curves (`training_curves.py`), and the ground-truth-vs-surrogate comparison plots for every `metrics` computation (`metrics_plots.py`).
-- **`config.py` / `pipeline.py` / `cli.py` / `progress.py` / `tf_quiet.py`** — Top-level configuration, end-to-end orchestration, the `pm-dem-sm` CLI (`dem-sim` / `ml-pipeline` subcommands), progress banners, and TensorFlow startup-noise suppression.
+- **`config.py` / `pipeline.py` / `cli.py` / `progress.py` / `tf_quiet.py`** — Top-level configuration, end-to-end orchestration, the `pm-dem-sm` CLI (`dem-sim`, `dem-post`, `dem-view`, `ml-pipeline` subcommands), progress banners, and TensorFlow startup-noise suppression.
 - **`tests/`** — Mirrors the package layout above. YADE-backed tests are skipped when YADE is not installed.
 
 ## Development

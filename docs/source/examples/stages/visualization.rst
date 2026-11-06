@@ -129,6 +129,51 @@ those values from a config.
 
    Frame 0 of the SiC dataset with the Lacey grid (0.44 m, left) and the SR grid (0.5588 m, right).
 
+Watching a DEM run
+------------------
+
+``pm-dem-sm dem-view <run-dir>``
+(:mod:`~pm_dem_sm.visualization.run_viewer`) shows a run directory end-on:
+the particles projected on the x-y plane, coloured by species (balls blue,
+rocks orange) or by speed, inside the liner outline rotated to the mill
+angle of that moment, with the stage, time, revolutions, charge angle,
+power, kinetic energy and mean speed from ``mill_log.csv`` below the plot.
+It reads only the files the run writes, so it can follow a run from another
+terminal while YADE records, without slowing it or depending on YADE's Qt
+window:
+
+.. code-block:: bash
+
+   # Live: opens on the newest frame and follows new ones (checks every 2 s).
+   pm-dem-sm dem-view data/raw/yade_runs/sag_a_dataset_rmic_s0
+
+   # Speed colours, starting on frame 100 (not following).
+   pm-dem-sm dem-view data/raw/yade_runs/sag_a_dataset_rmic_s0 --color speed --frame 100
+
+   # Files instead of a window: one frame as PNG, or every 4th frame as GIF.
+   pm-dem-sm dem-view data/raw/yade_runs/sag_a_dataset_rmic_s0 --save frame.png
+   pm-dem-sm dem-view data/raw/yade_runs/sag_a_dataset_rmic_s0 --save run.gif --every 4
+
+Keys in the window: left / right one frame, down / up ten frames, home /
+end first / last, space play / pause (``--fps``), ``f`` follow new frames,
+``c`` species / speed colours, ``s`` save the current view as
+``<run-dir>/view_frame_NNNNN.png``.
+
+Inputs (read only): ``manifest.json`` (scenario, mill design, stage times),
+``frames_index.csv`` with ``frames/frame_*.csv`` or ``.parquet`` (a frame is
+shown once its index row exists, which YADE writes after the file), and
+``mill_log.csv``. A ``make_ic`` run has no frames; it shows the saved
+starting packing (``ic/positions.csv``) at the time it was saved. The mill
+outline comes from the scenario's liner design
+(:func:`~pm_dem_sm.simulation.mill_geometry.liner_profile`), turned
+counter-clockwise at the scenario speed from the start of the first rotating
+stage (``spinup`` or ``record``).
+
+At full scale (19,519 particles) a frame takes about 0.6 s to draw, so a GIF
+of a 20 s dataset (400 frames) takes about 4 minutes. MP4 output needs
+``ffmpeg`` on ``PATH``. Stages without frames (fill, settle, spin-up) are not
+shown yet; the stage checkpoints can be opened in YADE instead.
+
 Animating frames
 ----------------
 

@@ -149,6 +149,10 @@ Visualization
    :members:
    :show-inheritance:
 
+.. automodule:: pm_dem_sm.visualization.run_viewer
+   :members:
+   :show-inheritance:
+
 .. automodule:: pm_dem_sm.visualization.cell_grid
    :members:
    :show-inheritance:

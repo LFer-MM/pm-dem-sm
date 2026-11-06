@@ -13,9 +13,10 @@ From the repository root (Python 3.12):
    pip install -r requirements.txt
    pip install -e .
 
-This registers the ``pm-dem-sm`` console script, with two subcommands:
-``dem-sim`` (launch a DEM simulation) and ``ml-pipeline`` (run the
-experiment pipeline).
+This registers the ``pm-dem-sm`` console script, with four subcommands:
+``dem-sim`` (launch a DEM simulation), ``dem-post`` (post-process a run
+directory), ``dem-view`` (look at a run, live or afterwards) and
+``ml-pipeline`` (run the experiment pipeline).
 
 Run the pipeline (CLI)
 ----------------------
