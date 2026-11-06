@@ -29,7 +29,7 @@ import pandas as pd
 
 from ..simulation import mill_geometry
 from ..simulation.postprocess import SHOULDER_TARGET_DEG, TOE_TARGET_DEG
-from ..simulation.scenario import RUN_TYPE_STAGES, SimulationScenario
+from ..simulation.scenario import SimulationScenario
 
 # --- Constants ---------------------------------------------------------------
 
@@ -123,7 +123,7 @@ class RunView:
 def rotation_start(manifest: dict, scenario: SimulationScenario) -> float | None:
     """Return the simulated time at which the mill starts turning.
 
-    The first rotating stage of the run type starts it. If that stage is
+    The first rotating stage of the run starts it. If that stage is
     still running (not yet in the manifest), it started when the last
     finished stage ended.
 
@@ -134,7 +134,7 @@ def rotation_start(manifest: dict, scenario: SimulationScenario) -> float | None
     Returns:
         float | None: Start time (s), or ``None`` for run types that never rotate.
     """
-    stages = RUN_TYPE_STAGES[scenario.run.type]
+    stages = scenario.stages
     first = next((s for s in stages if s in ROTATING_STAGES), None)
     if first is None:
         return None

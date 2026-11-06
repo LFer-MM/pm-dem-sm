@@ -1,11 +1,12 @@
-"""Write the friction-calibration grid scenarios (mu_p x mu_w), ``calibrate_ic`` runs.
+"""Write the friction-calibration grid scenarios (mu_p x mu_w), ``calibrate`` runs from one IC.
 
 docs/scientific_rationale/05_friction.md: mu_p x mu_w in {0.3, 0.5, 0.7} x
 {0.3, 0.5, 0.7}, every run starting from one shared settled initial
 condition. Each scenario is the base ``make_ic`` scenario (the IC's own, so
 everything but friction matches) with:
 
-- ``run.type = "calibrate_ic"`` and ``run.ic_dir`` = that ``make_ic`` run;
+- ``run.type = "calibrate"`` with ``run.ic_dir`` = that ``make_ic`` run (it
+  loads the IC instead of pouring its own);
 - ``contact.particle_friction`` = mu_p and ``contact.wall_friction`` = mu_w;
 - ``record.duration_s`` = ``--record-revolutions`` revolutions (default 2:
   enough for the time-averaged toe / shoulder, docs/scientific_rationale/15_...).
@@ -44,7 +45,7 @@ def grid_scenario(base, mu_p, mu_w, ic_dir, record_revolutions):
     """Return the scenario dict of one grid point (``base`` is not modified)."""
     data = json.loads(json.dumps(base))
     data["name"] = f"cal_mup{tag(mu_p)}_muw{tag(mu_w)}"
-    data["run"] = {"type": "calibrate_ic", "ic_dir": ic_dir}
+    data["run"] = {"type": "calibrate", "ic_dir": ic_dir}
     data.setdefault("contact", {}).update(particle_friction=mu_p, wall_friction=mu_w)
     revolution_s = 60.0 / data["mill"]["speed_rpm"]
     data["record"]["duration_s"] = round(record_revolutions * revolution_s, 4)

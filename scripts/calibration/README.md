@@ -5,7 +5,8 @@ The friction calibration of
 particle-particle friction mu_p x particle-liner friction mu_w, scored on the
 bulk toe / shoulder against SAG_A
 ([15](../../docs/scientific_rationale/15_calibration_targets.md)). Every grid
-point is a `calibrate_ic` run: it loads one shared settled initial condition
+point is a `calibrate` run with `run.ic_dir` set: it loads one shared settled
+initial condition
 (the pilot's RMIC IC, `data/raw/yade_runs/sag_a_make_ic_rmic_s0`), spins up
 to steady state and records 2 revolutions. Run from the repository root with
 the project environment active (`source .venv/bin/activate`).

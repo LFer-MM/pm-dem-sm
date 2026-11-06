@@ -1,7 +1,8 @@
 #!/bin/bash
 # Run the friction-calibration grid (docs/scientific_rationale/05_friction.md), PARALLEL grid
-# points at a time with THREADS threads each. Each point is a calibrate_ic run through
-# `python -m pm_dem_sm dem-sim` (post-processed when it succeeds), in data/raw/yade_runs/<name>/.
+# points at a time with THREADS threads each. Each point is a calibrate run from the shared IC,
+# through `python -m pm_dem_sm dem-sim` (post-processed when it succeeds), in
+# data/raw/yade_runs/<name>/.
 #
 #   source .venv/bin/activate
 #   scripts/calibration/run_grid.sh                       # all of configs/simulation/calibration/

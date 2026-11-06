@@ -377,13 +377,13 @@ def _stage_save_ic(scenario, run_dir, manifest):
 
 
 def _stage_load_ic(scenario, run_dir, manifest):
-    """Build the scene and load a saved initial condition at rest (``dataset``, ``calibrate_ic``).
+    """Build the scene and load a saved initial condition at rest (``dataset``, ``calibrate``).
 
     For ``dataset`` the IC (``<run.ic_dir>/ic/``) must carry this scenario's
     material-set id; the mill then starts from rest at t = 0 in the record
     stage (docs/scientific_rationale/14_dataset_runs_and_recording.md). For
-    ``calibrate_ic`` the ids must agree except for friction (the friction
-    grid shares one settled IC, docs/scientific_rationale/05_friction.md);
+    ``calibrate`` with ``run.ic_dir`` the ids must agree except for friction
+    (the friction grid shares one settled IC, docs/scientific_rationale/05_friction.md);
     the IC's friction is recorded in the manifest. Either way the contacts
     are rebuilt with this scenario's materials.
 
@@ -395,7 +395,7 @@ def _stage_load_ic(scenario, run_dir, manifest):
     if not ic_root.is_absolute():
         ic_root = Path(_REPO_ROOT) / ic_root
     info = json.loads((ic_root / "ic" / "ic.json").read_text(encoding="utf-8"))
-    if scenario.run.type == "calibrate_ic":
+    if scenario.run.type == "calibrate":
         ic_scenario = SimulationScenario.from_dict(_read_manifest(ic_root)["scenario"])
         theirs = ic_scenario.material_set_id(ignore_friction=True)
         msid = scenario.material_set_id(ignore_friction=True)

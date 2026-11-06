@@ -35,22 +35,18 @@ STAGES = ("build", "fill", "settle", "spinup", "record", "save_ic", "load_ic")
 #: Stages of each run type (docs/scientific_rationale/14_dataset_runs_and_recording.md):
 #: ``calibrate`` spins the charge up to steady state, then records;
 #: ``make_ic`` pours and settles an initial condition and saves it at rest;
-#: ``dataset`` loads a saved IC and records from rest at t = 0;
-#: ``calibrate_ic`` loads a shared settled IC (made with any friction), then
-#: spins up and records like ``calibrate`` (the friction grid,
-#: docs/scientific_rationale/05_friction.md).
+#: ``dataset`` loads a saved IC and records from rest at t = 0.
 RUN_TYPE_STAGES = {
     "calibrate": ("build", "fill", "settle", "spinup", "record"),
     "make_ic": ("build", "fill", "settle", "save_ic"),
     "dataset": ("load_ic", "record"),
-    "calibrate_ic": ("load_ic", "spinup", "record"),
 }
+#: Stages of a ``calibrate`` run with ``run.ic_dir``: it loads a shared settled
+#: IC instead of pouring and settling its own (the friction grid,
+#: docs/scientific_rationale/05_friction.md).
+CALIBRATE_FROM_IC_STAGES = ("load_ic", "spinup", "record")
 #: Valid ``RunOptions.type`` values.
 RUN_TYPES = tuple(RUN_TYPE_STAGES)
-#: Run types that spin up to steady state and measure the charge shape (V8).
-CALIBRATION_RUN_TYPES = ("calibrate", "calibrate_ic")
-#: Run types that load a saved IC (``run.ic_dir`` required).
-IC_RUN_TYPES = ("dataset", "calibrate_ic")
 #: Valid ``MillGeometry.end_walls`` values.
 END_WALLS = ("liner", "frictionless")
 #: Valid ``ContactOptions.model`` values.
@@ -302,18 +298,20 @@ class RunOptions:
     Attributes:
         type: One of :data:`RUN_TYPES`: ``"calibrate"`` (fill, settle, spin
             up to steady state, record), ``"make_ic"`` (fill, settle, save
-            the initial condition at rest), ``"dataset"`` (load an IC, record
-            from rest at t = 0) or ``"calibrate_ic"`` (load a shared IC, spin
-            up, record). The stages are :data:`RUN_TYPE_STAGES`.
-        ic_dir: For ``dataset`` and ``calibrate_ic`` runs: the run directory
-            of the ``make_ic`` run whose IC is loaded (its ``ic/`` holds the
-            positions and the material-set id). A ``dataset`` run needs the
-            IC's material-set id to equal its own; a ``calibrate_ic`` run
-            needs it equal except for friction
-            (:meth:`SimulationScenario.material_set_id` with
-            ``ignore_friction``), since the friction grid shares one IC. A
-            ``{seed}`` in the path is replaced by the seed, so dataset
-            replicate N loads the IC of ``make_ic`` replicate N.
+            the initial condition at rest) or ``"dataset"`` (load an IC,
+            record from rest at t = 0). The stages are :data:`RUN_TYPE_STAGES`
+            (:data:`CALIBRATE_FROM_IC_STAGES` for ``calibrate`` with
+            ``ic_dir``).
+        ic_dir: The run directory of the ``make_ic`` run whose IC is loaded
+            (its ``ic/`` holds the positions and the material-set id).
+            Required for ``dataset``: the IC's material-set id must equal
+            the run's. Optional for ``calibrate``: with it the run loads that
+            IC instead of pouring its own, and the ids must agree except for
+            friction (:meth:`SimulationScenario.material_set_id` with
+            ``ignore_friction``), since the friction grid shares one IC.
+            Ignored by ``make_ic``. A ``{seed}`` in the path is replaced by
+            the seed, so dataset replicate N loads the IC of ``make_ic``
+            replicate N.
     """
 
     type: str = "calibrate"
@@ -477,9 +475,9 @@ class SimulationScenario:
         _check_choice("run.type", self.run.type, RUN_TYPES)
         if self.record.preview_interval_s < 0:
             raise ValueError("record.preview_interval_s must be >= 0 (0 turns previews off)")
-        if self.run.type in IC_RUN_TYPES and self.run.ic_dir is None:
+        if self.run.type == "dataset" and self.run.ic_dir is None:
             raise ValueError(
-                f"run.ic_dir is required for a {self.run.type} run (the make_ic run directory)"
+                "run.ic_dir is required for a dataset run (the make_ic run directory)"
             )
         if len(self.species) != 2:
             raise ValueError(f"Exactly two species are supported, got {len(self.species)}")
@@ -752,7 +750,13 @@ class SimulationScenario:
 
     @property
     def stages(self) -> tuple[str, ...]:
-        """The stages of this scenario's run type, in order (:data:`RUN_TYPE_STAGES`)."""
+        """The stages of this scenario's run, in order.
+
+        :data:`RUN_TYPE_STAGES` of the run type, except a ``calibrate`` run
+        with ``run.ic_dir``: :data:`CALIBRATE_FROM_IC_STAGES`.
+        """
+        if self.run.type == "calibrate" and self.run.ic_dir is not None:
+            return CALIBRATE_FROM_IC_STAGES
         return RUN_TYPE_STAGES[self.run.type]
 
     def material_set_id(self, ignore_friction: bool = False) -> str:
@@ -768,7 +772,7 @@ class SimulationScenario:
         Args:
             ignore_friction: Leave the friction (per-pair table and each
                 material's friction angle) out of the hash, for
-                ``calibrate_ic`` runs, which share one IC across a friction
+                ``calibrate`` runs that load a shared IC across a friction
                 grid. The default id is unchanged by this option.
 
         Returns:

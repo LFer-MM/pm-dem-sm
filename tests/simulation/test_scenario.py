@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from pm_dem_sm.simulation.scenario import SimulationScenario, load_scenario
+from pm_dem_sm.simulation.scenario import RUN_TYPE_STAGES, SimulationScenario, load_scenario
 
 # --- Setup -------------------------------------------------------------------
 
@@ -409,11 +409,14 @@ def test_material_set_id_ignore_friction():
     ) != base.material_set_id(ignore_friction=True)
 
 
-def test_calibrate_ic_run_type():
-    s = _from({"run": {"type": "calibrate_ic", "ic_dir": "data/raw/yade_runs/x"}})
+def test_calibrate_from_a_shared_ic():
+    s = _from({"run": {"type": "calibrate", "ic_dir": "data/raw/yade_runs/x"}})
     assert s.stages == ("load_ic", "spinup", "record")
-    with pytest.raises(ValueError, match="ic_dir is required for a calibrate_ic run"):
-        _from({"run": {"type": "calibrate_ic"}})
+    # Without ic_dir a calibrate run pours its own bed, as before.
+    assert _from({"run": {"type": "calibrate"}}).stages == (
+        "build", "fill", "settle", "spinup", "record"
+    )
+    assert set(RUN_TYPE_STAGES) == {"calibrate", "make_ic", "dataset"}
 
 
 def test_preview_interval():
@@ -431,7 +434,8 @@ def test_calibration_grid_scenarios_share_the_pilot_ic():
     pairs = set()
     for path in grid:
         s = load_scenario(path)
-        assert s.run.type == "calibrate_ic"
+        assert s.run.type == "calibrate"
+        assert s.stages == ("load_ic", "spinup", "record")
         assert str(s.run.ic_dir) == "data/raw/yade_runs/sag_a_make_ic_rmic_s0"
         assert s.material_set_id(ignore_friction=True) == ic.material_set_id(ignore_friction=True)
         assert s.record.duration_s == pytest.approx(2 * s.revolution_s(), abs=1e-3)

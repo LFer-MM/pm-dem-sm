@@ -2,7 +2,7 @@
   "name": "cal_mup0p3_muw0p5",
   "seed": 0,
   "run": {
-    "type": "calibrate_ic",
+    "type": "calibrate",
     "ic_dir": "data/raw/yade_runs/sag_a_make_ic_rmic_s0"
   },
   "mill": {

@@ -37,10 +37,10 @@ re-checked with the calibrated friction. Scenarios in ``configs/simulation/``:
    The one-off sensitivity runs (V9, V10, V11, V11b-e), each one change
    from ``sens_baseline.json``.
 ``calibration/``
-   The friction grid, mu_p x mu_w in {0.3, 0.5, 0.7}\ :sup:`2`, ``calibrate_ic``
-   runs from the pilot's RMIC IC recording 2 revolutions; written by
-   ``scripts/calibration/make_grid_scenarios.py``. ``smoke_calibrate_ic.json``
-   is its smoke-scale counterpart.
+   The friction grid, mu_p x mu_w in {0.3, 0.5, 0.7}\ :sup:`2`: ``calibrate``
+   runs that load the pilot's RMIC IC (``run.ic_dir``) and record 2
+   revolutions; written by ``scripts/calibration/make_grid_scenarios.py``.
+   ``smoke_calibrate_from_ic.json`` is its smoke-scale counterpart.
 
 Check a scenario before spending DEM time on it:
 
@@ -62,6 +62,10 @@ Run types and stages
    ``build``, ``fill``, ``settle``, ``spinup``, ``record``: the charge is
    spun up to steady state and then recorded; used for the friction
    calibration and the sensitivity runs (``configs/simulation/sensitivity/``).
+   With ``run.ic_dir`` set it loads that saved IC instead of pouring its own
+   (``load_ic``, ``spinup``, ``record``); the IC must match in everything
+   except friction, so one settled IC serves the whole friction grid
+   (``configs/simulation/calibration/``).
 ``make_ic``
    ``build``, ``fill``, ``settle``, ``save_ic``: an initial condition is
    poured (``fill.method`` ``random`` for RMIC, ``segregated`` for SIC),
@@ -71,10 +75,6 @@ Run types and stages
    ``load_ic``, ``record``: the IC of ``run.ic_dir`` is loaded (refused if its
    material-set id differs) and recorded from rest at t = 0 for
    ``record.duration_s`` (20 s RMIC, 35 s SIC).
-``calibrate_ic``
-   ``load_ic``, ``spinup``, ``record``: like ``calibrate``, but from a shared
-   saved IC, which must match in everything except friction (the friction
-   grid, ``configs/simulation/calibration/``).
 
 The stages:
 

@@ -41,12 +41,13 @@ def _frame(rng, n_small=300, n_large=60, arc=(214.0, 387.0)):
     return pd.DataFrame(rows)
 
 
-def _run_dir(tmp_path, run_type, n_frames=40, duration=4.0):
+def _run_dir(tmp_path, run_type, n_frames=40, duration=4.0, ic_dir=None):
     """Write a synthetic run directory of the given run type."""
     rng = np.random.default_rng(0)
     scen = load_scenario(SMOKE).to_dict()
-    scen["run"] = {"type": run_type,
-                   "ic_dir": "x" if run_type in ("dataset", "calibrate_ic") else None}
+    if run_type == "dataset":
+        ic_dir = ic_dir or "x"
+    scen["run"] = {"type": run_type, "ic_dir": ic_dir}
     run = tmp_path / run_type
     (run / "frames").mkdir(parents=True)
     times = np.linspace(0, duration, n_frames)
@@ -70,10 +71,10 @@ def _run_dir(tmp_path, run_type, n_frames=40, duration=4.0):
                  "overlap_max_rel_d_max": 0.01, "steps_per_collision_at_p99": 30.0,
                  "energy_balance": {"residual_rel": 0.02}}
     stages = {"record": {"wall_s": 1.0, "checks": checks_ok}}
-    if run_type in ("calibrate", "calibrate_ic"):
+    if run_type == "calibrate":
         stages["spinup"] = {"checks": {"damping": 0.0, "escaped": 0},
                             "steady_state": {"steady": True}}
-    if run_type != "calibrate":
+    if run_type != "calibrate" or ic_dir is not None:
         stages["load_ic"] = {"checks": {"damping": 0.0, "escaped": 0}}
     (run / "manifest.json").write_text(json.dumps({"scenario": scen, "stages": stages}))
     return run
@@ -112,9 +113,9 @@ def test_postprocess_dataset_run(tmp_path):
     assert json.loads((run / "validation.json").read_text()) == manifest["validation"]
 
 
-@pytest.mark.parametrize("run_type", ["calibrate", "calibrate_ic"])
-def test_postprocess_calibrate_run_charge_shape(tmp_path, run_type):
-    run = _run_dir(tmp_path, run_type)
+@pytest.mark.parametrize("ic_dir", [None, "x"])
+def test_postprocess_calibrate_run_charge_shape(tmp_path, ic_dir):
+    run = _run_dir(tmp_path, "calibrate", ic_dir=ic_dir)
     validation = postprocess.postprocess_run(run)
     shape = json.loads((run / "analysis" / "charge_shape.json").read_text())
     assert shape["bulk"]["toe_deg"] == pytest.approx(214.0, abs=2.0)

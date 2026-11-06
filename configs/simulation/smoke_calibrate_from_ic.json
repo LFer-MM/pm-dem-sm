@@ -1,6 +1,6 @@
 {
-  "name": "smoke_calibrate_ic",
-  "run": {"type": "calibrate_ic", "ic_dir": "data/raw/yade_runs/smoke_make_ic_s{seed}"},
+  "name": "smoke_calibrate_from_ic",
+  "run": {"type": "calibrate", "ic_dir": "data/raw/yade_runs/smoke_make_ic_s{seed}"},
   "seed": 1,
   "mill": {
     "shell_diameter_m": 2.06,
