@@ -24,7 +24,9 @@ def test_from_dict_coerces_paths_and_bools():
     assert cfg.do_train is True
     assert cfg.frames_in == 10
     assert cfg.training.epochs == 20
-    assert cfg.prediction.start_frame == 66
+    # C14-5 defaults: seed frames 126-140 (6.30-7.00 s), first prediction at 7.05 s.
+    assert cfg.prediction.start_frame == 126
+    assert cfg.prediction.dt0 == 7.05
 
 
 def test_from_dict_nested_groups():

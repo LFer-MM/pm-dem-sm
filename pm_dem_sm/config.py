@@ -187,7 +187,12 @@ class PredictionOptions:
     """Sliding-window prediction settings and output paths.
 
     Attributes:
-        start_frame: Index of the first seed frame in ``data_dir``.
+        start_frame: Index of the first seed frame in ``data_dir``. The
+            default seeds with frames 126-140 (6.30-7.00 s at 0.05 s, with
+            ``frames_in`` = 15): the end of the 1 s training window 6.0-7.0 s,
+            placed after the pilot run's quasi-steady time (6.0 s for the drive
+            power, 5.0 s charge angle, 4.0 s kinetic energy; RMIC, C14-5,
+            docs/scientific_rationale/14_dataset_runs_and_recording.md).
         autoregressive: If ``True``, feed each prediction back as the next
             input; otherwise slide over ground-truth frames.
         predict_until_end: If ``True``, predict through the last available
@@ -195,18 +200,19 @@ class PredictionOptions:
         max_steps: Number of steps to predict when ``predict_until_end`` is
             ``False``.
         predict_batch_size: Particles per model forward pass.
-        dt0: Time stamp (s) written for the first predicted frame.
+        dt0: Time stamp (s) written for the first predicted frame (7.05 s:
+            the frame after the training window).
         dt_step: Time (s) between predicted frames; also the SR term's
             Delta t_RNN.
         pred_out_dir: Root directory for prediction outputs.
     """
 
-    start_frame: int = 66
+    start_frame: int = 126
     autoregressive: bool = False
     predict_until_end: bool = True
     max_steps: int = 200
     predict_batch_size: int = 2048
-    dt0: float = 4.05
+    dt0: float = 7.05
     dt_step: float = 0.05
     pred_out_dir: Path = INTERIM_DIR / "rnn_predictions"
 
