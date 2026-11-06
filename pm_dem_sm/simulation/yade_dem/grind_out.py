@@ -17,7 +17,8 @@ from the stopped bed), not by an assumed packing:
 Each cycle runs the stages build -> fill -> settle -> spinup of
 :mod:`~pm_dem_sm.simulation.yade_dem.run_simulation` (so every per-stage
 check applies), with spin-up fixed to ``--revolutions``, then stops the mill,
-settles and measures J with :func:`pm_dem_sm.simulation.checks.fill_level`.
+settles and measures J with :func:`pm_dem_sm.simulation.checks.fill_level`
+(:func:`crash_stop`, also used by ``scripts/validation/crash_stop_check.py``).
 
 Run it with YADE (hours at full scale)::
 
@@ -60,6 +61,45 @@ MAX_ITERATIONS = 5
 # --- Public functions --------------------------------------------------------
 
 
+def crash_stop(scenario):
+    """Stop the mill, settle undamped by the geometric rule and measure J.
+
+    Works on the scene in memory (a cycle after its spin-up, or a loaded
+    checkpoint of a turning charge).
+
+    Args:
+        scenario: The scene's :class:`~pm_dem_sm.simulation.scenario.SimulationScenario`.
+
+    Returns:
+        tuple: ``(settle, escaped, fill)`` -- the
+        :func:`~pm_dem_sm.simulation.yade_dem.monitor.run_until_settled`
+        result, the number of particles outside the mill, and the
+        :func:`~pm_dem_sm.simulation.checks.fill_level` result (J, phi, ...).
+    """
+    engines._get_rotation_engine().angularVelocity = 0.0
+    engines.assert_no_damping()
+    o = scenario.settle
+    settle = monitor.run_until_settled(
+        2.0 * scenario.small.radius_m,
+        o.max_time_s,
+        0.5 * (scenario.small.radius_m + scenario.large.radius_m),
+        o.sample_s,
+        window_s=o.window_s,
+        angle_tol_deg=o.angle_tol_deg,
+        height_tol_rel_d=o.height_tol_rel_d,
+        speed_tol_m_s=o.speed_tol_m_s,
+    )
+    spheres = diagnostics.spheres()
+    escaped = diagnostics.count_escapes(
+        scenario.mill.shell_diameter_m / 2.0, scenario.mill.depth_m
+    )
+    profile = mill_geometry.liner_profile(scenario.mill)
+    fill = checks.fill_level(
+        spheres, scenario.mill.diameter_m / 2.0, scenario.mill.depth_m, liner_profile=profile
+    )
+    return settle, escaped, fill
+
+
 def cycle(base, out_dir, label, n_balls, n_rocks, seed, revolutions):
     """Run one fill / turn / stop / settle cycle and measure J.
 
@@ -95,28 +135,7 @@ def cycle(base, out_dir, label, n_balls, n_rocks, seed, revolutions):
     manifest = run_simulation.run(str(path), str(run_dir), to_stage="spinup")
     scenario = load_scenario(path)
 
-    # Crash stop, then settle undamped by the geometric rule.
-    engines._get_rotation_engine().angularVelocity = 0.0
-    engines.assert_no_damping()
-    o = scenario.settle
-    settle = monitor.run_until_settled(
-        2.0 * scenario.small.radius_m,
-        o.max_time_s,
-        0.5 * (scenario.small.radius_m + scenario.large.radius_m),
-        o.sample_s,
-        window_s=o.window_s,
-        angle_tol_deg=o.angle_tol_deg,
-        height_tol_rel_d=o.height_tol_rel_d,
-        speed_tol_m_s=o.speed_tol_m_s,
-    )
-    spheres = diagnostics.spheres()
-    escaped = diagnostics.count_escapes(
-        scenario.mill.shell_diameter_m / 2.0, scenario.mill.depth_m
-    )
-    profile = mill_geometry.liner_profile(scenario.mill)
-    fill = checks.fill_level(
-        spheres, scenario.mill.diameter_m / 2.0, scenario.mill.depth_m, liner_profile=profile
-    )
+    settle, escaped, fill = crash_stop(scenario)
     result = {
         "label": label,
         "seed": seed,
