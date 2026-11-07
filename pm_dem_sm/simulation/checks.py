@@ -561,6 +561,7 @@ def toe_shoulder(
     band_outer: float,
     bin_deg: float = 1.0,
     threshold_rel: float = 0.1,
+    smooth_deg: float = 5.0,
 ) -> dict:
     """Return the bulk toe and shoulder angles from the time-averaged position density.
 
@@ -568,8 +569,10 @@ def toe_shoulder(
     main charge body is where particles are ~10 times less likely than in
     the charge. Particle centres of all ``frames_xy`` in the annulus
     ``band_inner <= r <= band_outer`` (the layer next to the liner) are
-    counted per ``bin_deg`` angular bin; the threshold is ``threshold_rel``
-    times the 90th percentile of the occupied bins. The occupied arc through
+    counted per ``bin_deg`` angular bin and averaged over ``smooth_deg``
+    (a circular moving average, so a single noisy bin cannot end the arc);
+    the threshold is ``threshold_rel`` times the 90th percentile of the
+    occupied bins. The occupied arc through
     the bottom of the mill ends at the bulk **toe** (clockwise end) and the
     **shoulder** (counter-clockwise end, the side the charge is lifted on,
     for a mill turning counter-clockwise; 0 deg at 3 o'clock).
@@ -580,10 +583,12 @@ def toe_shoulder(
         band_outer: Outer radius of the annulus (m).
         bin_deg: Angular bin width (deg).
         threshold_rel: Threshold relative to the 90th percentile density.
+        smooth_deg: Width of the moving average (deg); <= ``bin_deg`` turns
+            it off.
 
     Returns:
         dict: ``toe_deg``, ``shoulder_deg``, ``threshold``, ``frames``, and
-        the averaged ``density`` per bin (particles per frame).
+        the averaged, smoothed ``density`` per bin (particles per frame).
     """
     n_bins = round(360.0 / bin_deg)
     counts = np.zeros(n_bins)
@@ -596,6 +601,12 @@ def toe_shoulder(
         counts += np.bincount((ang // bin_deg).astype(int) % n_bins, minlength=n_bins)
         n_frames += 1
     density = counts / max(n_frames, 1)
+    width = round(smooth_deg / bin_deg)
+    if width > 1:
+        # Circular moving average, centred (odd width).
+        width += 1 - width % 2
+        padded = np.concatenate([density[-(width // 2) :], density, density[: width // 2]])
+        density = np.convolve(padded, np.ones(width) / width, mode="valid")
     occupied = density[density > 0]
     ref = float(np.percentile(occupied, 90)) if occupied.size else 0.0
     thr = threshold_rel * ref

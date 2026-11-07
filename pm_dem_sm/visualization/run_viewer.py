@@ -261,6 +261,23 @@ def angle_marks(radius: float) -> dict:
     return {"ticks": ticks, "labels": labels, "targets": targets}
 
 
+def measured_angles(view: RunView) -> list[tuple[float, str]]:
+    """Return the run's measured bulk toe / shoulder as ``(angle_deg, label)`` pairs.
+
+    Read from ``analysis/charge_shape.json`` (written by the post-processing
+    of a ``calibrate`` run); empty if there is none.
+    """
+    path = view.run_dir / "analysis" / "charge_shape.json"
+    if not path.exists():
+        return []
+    bulk = json.loads(path.read_text()).get("bulk") or {}
+    out = []
+    for key, name in (("toe_deg", "toe"), ("shoulder_deg", "shoulder")):
+        if bulk.get(key) is not None:
+            out.append((float(bulk[key]), f"{name}\nmeasured {bulk[key]:.0f}°"))
+    return out
+
+
 def draw(
     ax,
     view: RunView,
@@ -280,7 +297,8 @@ def draw(
         vmax: Top of the speed scale (m/s); ``None`` uses :func:`speed_limit`.
         live: Mark the title as following a running simulation.
         marks: Draw the angle marks and, when the mill turns, the toe /
-            shoulder target guides.
+            shoulder target guides (dashed) and the measured bulk toe /
+            shoulder of a post-processed ``calibrate`` run (solid).
 
     Returns:
         The particle collection (for a colour bar in speed mode).
@@ -318,6 +336,26 @@ def draw(
         for x, y, text in m["labels"]:
             ax.text(x, y, text, ha="center", va="center", fontsize=8, color=GUIDE_COLOR)
         if view.rotation_start_s is not None:
+            for a, text in measured_angles(view):
+                c, s = math.cos(math.radians(a)), math.sin(math.radians(a))
+                ax.plot(
+                    [0.30 * radius * c, 1.17 * radius * c],
+                    [0.30 * radius * s, 1.17 * radius * s],
+                    color=TEXT_COLOR,
+                    lw=1.3,
+                    zorder=4,
+                )
+                ax.text(
+                    1.24 * radius * c,
+                    1.24 * radius * s,
+                    text,
+                    ha="center",
+                    va="center",
+                    fontsize=8,
+                    color=TEXT_COLOR,
+                    fontweight="bold",
+                    zorder=4,
+                )
             for p0, p1, x, y, text in m["targets"]:
                 ax.plot(*zip(p0, p1), color=GUIDE_COLOR, lw=0.9, ls=(0, (4, 3)), zorder=4)
                 ax.text(

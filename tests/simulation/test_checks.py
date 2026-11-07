@@ -280,10 +280,31 @@ def test_toe_shoulder_of_a_synthetic_charge():
         a = np.concatenate([a_bulk, a_sparse])
         r = rng.uniform(4.9, 5.05, a.size)
         frames.append(np.column_stack([r * np.cos(a), r * np.sin(a)]))
-    res = checks.toe_shoulder(frames, 4.9, 5.05, bin_deg=1.0)
+    # The calibration's cut (postprocess.BULK_THRESHOLD_REL): at 50 % of a
+    # smoothed step the edge stays where it is.
+    res = checks.toe_shoulder(frames, 4.9, 5.05, bin_deg=1.0, threshold_rel=0.5)
     assert res["toe_deg"] == pytest.approx(214.0, abs=1.0)
     assert res["shoulder_deg"] == pytest.approx(27.0, abs=1.0)
     assert res["frames"] == 20
+    # A 10 % cut of the smoothed profile lands about half the 5 deg window outside.
+    low = checks.toe_shoulder(frames, 4.9, 5.05, bin_deg=1.0, threshold_rel=0.1)
+    assert 211.0 < low["toe_deg"] < 214.0 and 27.0 < low["shoulder_deg"] < 30.0
+
+
+def test_toe_shoulder_ignores_a_single_noisy_bin():
+    # One empty degree inside the charge would end the arc without smoothing.
+    rng = np.random.default_rng(4)
+    frames = []
+    for _ in range(10):
+        a = rng.uniform(214.0, 387.0, 3000) % 360.0
+        a = a[(a < 240.0) | (a >= 241.0)]  # an empty bin at 240 deg
+        a = np.radians(a)
+        r = rng.uniform(4.9, 5.05, a.size)
+        frames.append(np.column_stack([r * np.cos(a), r * np.sin(a)]))
+    res = checks.toe_shoulder(frames, 4.9, 5.05, threshold_rel=0.5)
+    assert res["toe_deg"] == pytest.approx(214.0, abs=1.0)
+    raw = checks.toe_shoulder(frames, 4.9, 5.05, threshold_rel=0.5, smooth_deg=0.0)
+    assert raw["toe_deg"] == pytest.approx(241.0, abs=1.0)
 
 
 def test_liner_force_arc():

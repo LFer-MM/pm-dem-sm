@@ -49,6 +49,14 @@ RADIAL_BINS = 12
 #: (docs/scientific_rationale/15_calibration_targets.md).
 TOE_TARGET_DEG = (213.4, 214.5)
 SHOULDER_TARGET_DEG = (26.0, 27.3)
+#: Bulk toe / shoulder density cut, relative to the 90th percentile of the
+#: layer next to the liner: 50 %, not Boemer & Ponthot's 10 %. SAG_A's high
+#: lifters carry thin streams of particles up to ~60 deg at ~30 % of the bulk
+#: density; a cut above them finds where the bulk leaves the shell, as in the
+#: photographs Maleki-Moghaddam et al.'s model (the source of the plant
+#: angles) was fitted to (decided 2026-11-06,
+#: docs/scientific_rationale/15_calibration_targets.md).
+BULK_THRESHOLD_REL = 0.5
 #: V3 limits, overlap relative to the smaller diameter, and the stages they apply to.
 V3_STAGES = ("settle", "spinup", "record")
 V3_MEAN, V3_P99, V3_MAX = 0.005, 0.02, 0.10
@@ -165,7 +173,8 @@ def charge_shape(
 
     The position density is taken in the annulus of ``band_large_diameters``
     ball diameters just inside the lifter tops (the layer of the charge next
-    to the liner, excluding particles held between the lifters).
+    to the liner, excluding particles held between the lifters) and cut at
+    :data:`BULK_THRESHOLD_REL` of its 90th percentile.
 
     Returns:
         dict: ``bulk`` (:func:`pm_dem_sm.simulation.checks.toe_shoulder`
@@ -174,7 +183,11 @@ def charge_shape(
     """
     r_top = scenario.mill.lifter_top_radius_m
     band = (r_top - band_large_diameters * 2.0 * scenario.large.radius_m, r_top)
-    bulk = checks.toe_shoulder((df[["x", "y"]].to_numpy(float) for _, _, df in frames), *band)
+    bulk = checks.toe_shoulder(
+        (df[["x", "y"]].to_numpy(float) for _, _, df in frames),
+        *band,
+        threshold_rel=BULK_THRESHOLD_REL,
+    )
     out = {
         "band_m": list(band),
         "bulk": {k: v for k, v in bulk.items() if k != "density"},
