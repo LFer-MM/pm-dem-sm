@@ -15,6 +15,7 @@ the project environment active (`source .venv/bin/activate`).
 |---|---|
 | `make_grid_scenarios.py` | Writes `configs/simulation/calibration/cal_mup<mu_p>_muw<mu_w>.json` from the IC's own `make_ic` scenario, changing only the run type, the friction and the record length. Default grid {0.3, 0.5, 0.7} x {0.3, 0.5, 0.7}; `--mu-p` / `--mu-w` for a refinement, `--record-revolutions` for the record length |
 | `run_grid.sh` | Runs the grid points `PARALLEL` at a time with `THREADS` threads each (default 2 x 10), through `python -m pm_dem_sm dem-sim` (post-processed when a run succeeds). Points whose run directory already has `validation.json` are skipped, so it can be rerun after an interruption. Logs in `data/raw/calibration/logs/` |
+| `repost_grid.sh` | Runs `pm-dem-sm dem-post` again on every finished point and prints the table: after a change of the toe / shoulder rule (the 50 % cut of 2026-11-06), points finished before it are measured again from their saved frames |
 | `grid_summary.py` | Ranks the finished (and running) points by the distance of the bulk toe / shoulder from the middle of the target ranges; also the liner-force toe / shoulder, spin-up revolutions, mean power and failed checks. Writes `data/raw/calibration/grid_summary.csv` |
 
 ```bash

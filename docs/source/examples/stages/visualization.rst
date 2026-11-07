@@ -140,7 +140,8 @@ that moment, with angle marks around the mill (a tick every 10 deg, a
 label every 30 deg; 0 deg at 3 o'clock, counter-clockwise, the convention
 of the calibration targets) and, when the mill turns, dashed guides at the
 SAG_A toe (214 deg) and shoulder (27 deg) targets, so the charge shape can
-be read by eye. The stage, time, revolutions, charge angle, power, kinetic
+be read by eye; a post-processed ``calibrate`` run also gets solid lines at
+its measured bulk toe and shoulder (``analysis/charge_shape.json``). The stage, time, revolutions, charge angle, power, kinetic
 energy and mean speed from ``mill_log.csv`` are printed below. It reads only
 the files the run writes, so it can follow a run from another terminal
 without slowing it or depending on YADE's Qt window:

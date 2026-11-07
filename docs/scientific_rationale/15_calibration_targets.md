@@ -57,6 +57,40 @@ equivalent to Owen & Cleary's visual bulk toe / shoulder (§4.1). The liner
 contact-force distribution (Owen & Cleary §4.3) is a cross-check, not the
 primary measure, because it mainly detects the impact toe.
 
+**Density cut: 50 %, not 10 %** (decided 2026-11-06, after the first grid
+point). Boemer & Ponthot place the boundary where particles are ~10x less
+likely than in the charge. In SAG_A's slice the 395 mm lifters carry thin
+streams of particles up past the shoulder; in the layer next to the liner
+they keep ~30 % of the bulk density up to ~60 deg, so a 10 % cut reads the
+end of the lifter streams, not the bulk (65 deg on `cal_mup0p3_muw0p5`,
+where the image shows the bulk leaving the liner at ~35-40 deg). The plant
+angles come from Maleki-Moghaddam et al.'s model, fitted to bulk positions
+photographed in a model mill (shoulder: "where the trajectories of the bulk
+particles near the lifters began to diverge from the mill shell"), so the
+cut is set above the lifter streams: **50 % of the bulk density**, for toe
+and shoulder alike. The angular profile is averaged over 5 deg first, so a
+single noisy bin cannot end the arc. Profile of the first grid point
+(layer two ball diameters inside the lifter tops, 253 frames, density
+relative to its 90th percentile; "co-rotating": moving with the shell
+within 30 %):
+
+| Angle (deg) | 10 | 20 | 25 | 30 | 40 | 45-60 | 65 |
+|---|---|---|---|---|---|---|---|
+| Density | 0.93 | 0.82 | 0.73 | 0.59 | 0.37 | ~0.30 (lifter streams) | 0.05 |
+| Co-rotating | 0.90 | 0.55 | 0.35 | 0.24 | 0.12 | 0.1-0 | 0 |
+
+| Rule | Toe | Shoulder |
+|---|---|---|
+| Density, 10 % cut (Boemer) | 233.8 | 65.3 |
+| **Density, 50 % cut (adopted)** | **239.9** | **36.1** |
+| Half the layer no longer co-rotating | -- | ~21 |
+| Liner force, 10 % cut (cross-check) | 235.6 | 10.2 |
+
+The choice of cut moves the toe by ~6 deg and the shoulder by ~30 deg here,
+far more than the target ranges are wide (1.1 / 1.3 deg), so the rule is
+fixed before any grid point is ranked; `dem-view` draws the measured angles
+next to the targets so it can be checked by eye on every point.
+
 **Origin of the plant data** (stated by the author, 2026-10-20):
 - **Jc and Jb** come from a plant model using load cells or bearing
   pressure together with a power model, calibrated against crash-stop and
@@ -122,7 +156,7 @@ twice, neither time to choose parameters:
 
 | Where | What |
 |---|---|
-| `simulation/checks.py` (`toe_shoulder`, `occupied_arc`), `simulation/postprocess.py` (`charge_shape`) | Bulk toe / shoulder (C15-1, commit `69e6ea0`), in this angle convention (0 deg at 3 o'clock, counter-clockwise). Every recorded frame of a `calibrate` run counts particle centres per 1-deg bin in the layer of the charge next to the liner: the annulus two ball diameters wide just inside the lifter tops, which excludes particles held between the lifters. The time-averaged density is cut at 10 % of its 90th percentile (Boemer & Ponthot's "~10x less likely"). The arc above the cut that runs through the bottom of the mill ends at the **toe** (clockwise end) and the **shoulder** (counter-clockwise end). Written to `analysis/charge_shape.json` and reported as V8 against the targets; unit-tested on a synthetic charge (214 / 27 deg recovered within 1 deg) |
+| `simulation/checks.py` (`toe_shoulder`, `occupied_arc`), `simulation/postprocess.py` (`charge_shape`) | Bulk toe / shoulder (C15-1, commit `69e6ea0`), in this angle convention (0 deg at 3 o'clock, counter-clockwise). Every recorded frame of a `calibrate` run counts particle centres per 1-deg bin in the layer of the charge next to the liner: the annulus two ball diameters wide just inside the lifter tops, which excludes particles held between the lifters. The time-averaged density, averaged over 5 deg, is cut at **50 %** of its 90th percentile (`postprocess.BULK_THRESHOLD_REL`; first 10 %, Boemer & Ponthot's "~10x less likely", changed 2026-11-06 in commit `2bea06b`, see the Decision). The arc above the cut that runs through the bottom of the mill ends at the **toe** (clockwise end) and the **shoulder** (counter-clockwise end). Written to `analysis/charge_shape.json` and reported as V8 against the targets; unit-tested on a synthetic charge (214 / 27 deg recovered within 1 deg) and on a charge with an empty bin |
 | `yade_dem/monitor.py` (`liner_force_histogram`), `checks.liner_force_arc` | Cross-check: the monitor writes the contact-force magnitude on the liner facets per 5-deg bin (`liner_forces.csv`) every log row; the arc above 10 % of its 90th percentile gives a force-based toe / shoulder, also in `charge_shape.json`. Smoke test (2 m mill, 22 rpm, J ~ 0.17): bulk toe 245.6 / shoulder 21.4 deg; liner force toe 237.6 / shoulder 7.0 deg (the force toe lies past the bulk toe, as the impact toe should) |
 | `monitor.py` | Contact torque on the mill facets and drive power P = -T_z * omega every monitor interval |
 | `scripts/calibration/grid_summary.py` | Grid table: per point the bulk and liner-force toe / shoulder, in-range flags, distance |toe - 213.95| + |shoulder - 26.65| deg from the middle of the target ranges (the ranking), spin-up revolutions, mean record power and failed checks; `data/raw/calibration/grid_summary.csv` (commit `8e1d4aa`). `pm-dem-sm dem-view` draws the target angles as dashed guides for a by-eye check |
@@ -382,9 +416,14 @@ To do (Claude):
   the SMC help file); verify Morrell's shoulder equation in a primary
   source before quoting a Morrell shoulder value.
 - ~~Implement bulk toe / shoulder extraction from the time-averaged position
-  density (plus the liner-force cross-check).~~ Done (C15-1, commit `69e6ea0`); the band
+  density (plus the liner-force cross-check).~~ Done (C15-1, commit `69e6ea0`). ~~The band
   (two ball diameters inside the lifter tops) and the 10 % cut are to be
-  checked against images of the first full-scale calibration run.
+  checked against images of the first full-scale calibration run.~~ Done
+  2026-11-06 (commit `2bea06b`): the band holds; the cut is now 50 % (Decision).
+- The liner-force cross-check keeps its 10 % cut; its shoulder (10 deg on
+  the first grid point) is far below the bulk shoulder, as Owen & Cleary's
+  liner-force view marks where the charge's weight on the liner ends, not
+  where the bulk leaves it. Compare its toe only.
 
 ## Pending code changes
 
