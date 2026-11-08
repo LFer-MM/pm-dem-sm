@@ -86,3 +86,35 @@ def test_grid_summary_ranks_points(tmp_path):
     assert rows[1]["distance_deg"] < rows[0]["distance_deg"]
     assert rows[0]["status"] == "done" and rows[0]["failed"] == "-"
     assert summary.point(tmp_path / "missing") is None
+
+
+def test_final_scenario_changes_only_mu_r_and_pours_its_own_bed(tmp_path, monkeypatch):
+    final = _module("make_final_scenario")
+    monkeypatch.setattr(final, "OUT_DIR", tmp_path)
+    final.main(["--mu-r", "0.17"])
+    s = load_scenario(tmp_path / "cal_final_mup0p3_muw0p5_mur0p17.json")
+    assert s.run.type == "calibrate" and s.run.ic_dir is None
+    assert s.stages == ("build", "fill", "settle", "spinup", "record")
+    best = load_scenario(REPO_ROOT / "configs/simulation/calibration/cal_mup0p3_muw0p5.json")
+    assert (s.contact.particle_friction, s.contact.wall_friction) == (0.3, 0.5)
+    assert s.contact.rolling_resistance == 0.17
+    assert s.record.duration_s == best.record.duration_s
+    assert s.mill == best.mill and s.species == best.species
+
+
+def test_final_point_summary_v12_and_v15():
+    summary = _module("final_point_summary")
+    rows = [
+        {"toe_deg": 240.0, "shoulder_deg": 36.0, "power_slice_kW": 1100.0, "depth_m": 0.6},
+        {"toe_deg": 242.0, "shoulder_deg": 38.0, "power_slice_kW": 1120.0, "depth_m": 0.6},
+    ]
+    res = summary.summary(rows)
+    assert res["toe_deg"]["mean"] == pytest.approx(241.0)
+    assert res["toe_deg"]["sd"] == pytest.approx(2**0.5)
+    v15 = res["V15"]
+    # Topic 15: 0.95 x (1 - 0.08) x 12,627 kW = 11,036 kW; length factor 5.244 / 0.6.
+    assert v15["P_charge_plant_kW"] == pytest.approx(11036, abs=1)
+    assert v15["length_factor"] == pytest.approx(8.74, abs=0.001)
+    low = v15["cases"][0]
+    assert low["c_cone"] == 0.05
+    assert low["P_mill_kW"] == pytest.approx(1110 * 8.74 * 1.05, rel=1e-3)

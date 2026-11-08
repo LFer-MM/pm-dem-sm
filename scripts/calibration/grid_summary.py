@@ -15,15 +15,15 @@ Run from the repository root with the project environment::
 """
 
 import json
-import sys
 from pathlib import Path
+import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-import pandas as pd  # noqa: E402
+import pandas as pd
 
-from pm_dem_sm.simulation.postprocess import SHOULDER_TARGET_DEG, TOE_TARGET_DEG  # noqa: E402
+from pm_dem_sm.simulation.postprocess import SHOULDER_TARGET_DEG, TOE_TARGET_DEG
 
 TOE_MID = sum(TOE_TARGET_DEG) / 2.0
 SHOULDER_MID = sum(SHOULDER_TARGET_DEG) / 2.0

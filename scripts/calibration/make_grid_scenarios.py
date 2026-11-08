@@ -22,13 +22,13 @@ Names are ``cal_mup<mu_p>_muw<mu_w>`` (``0p5`` for 0.5), one file each in
 
 import argparse
 import json
-import sys
 from pathlib import Path
+import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-from pm_dem_sm.simulation.scenario import load_scenario  # noqa: E402
+from pm_dem_sm.simulation.scenario import load_scenario
 
 BASE = "configs/simulation/sag_a_make_ic_rmic.json"
 IC_DIR = "data/raw/yade_runs/sag_a_make_ic_rmic_s0"
