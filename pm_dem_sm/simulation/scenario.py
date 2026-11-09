@@ -67,8 +67,9 @@ TYPICAL_PACKING = 0.6
 #: Scenario fields with no sourced value yet; runs record them as provisional.
 PROVISIONAL_PARAMETERS = {
     "contact.rolling_resistance": (
-        "mu_r = 0.13 reproduces the 37 deg repose angle in the heap test at mu_p = 0.5 "
-        "(C06-3); to be re-checked with the calibrated mu_p "
+        "mu_r = 0.16 reproduces the 37 deg repose angle in the heap test at the "
+        "calibrated mu_p = 0.3 (C06-3 re-check, 2026-11-08); the 37 deg target itself "
+        "is a handbook value, no plant measurement "
         "(docs/scientific_rationale/06_rolling_resistance.md)"
     ),
 }

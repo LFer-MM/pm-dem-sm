@@ -16,6 +16,12 @@ Run from the repository root with the project environment::
     python scripts/calibration/make_grid_scenarios.py
     python scripts/calibration/make_grid_scenarios.py --mu-p 0.6 0.7 0.8 --mu-w 0.7 0.8 0.9
 
+The packaged grid was written on 2026-11-06, when the base (and the pilot's
+IC) had mu_r = 0.13; since the calibrated defaults (mu_r 0.16) it is
+reproduced with ``--rolling-resistance 0.13``. A new grid needs a new IC
+made with its rolling resistance (rolling resistance is part of an IC's
+material-set id).
+
 Names are ``cal_mup<mu_p>_muw<mu_w>`` (``0p5`` for 0.5), one file each in
 ``configs/simulation/calibration/``.
 """
@@ -41,9 +47,14 @@ def tag(value):
     return f"{value:g}".replace(".", "p")
 
 
-def grid_scenario(base, mu_p, mu_w, ic_dir, record_revolutions):
-    """Return the scenario dict of one grid point (``base`` is not modified)."""
+def grid_scenario(base, mu_p, mu_w, ic_dir, record_revolutions, rolling_resistance=None):
+    """Return the scenario dict of one grid point (``base`` is not modified).
+
+    ``rolling_resistance`` overrides the base's (``None`` keeps it).
+    """
     data = json.loads(json.dumps(base))
+    if rolling_resistance is not None:
+        data.setdefault("contact", {})["rolling_resistance"] = rolling_resistance
     data["name"] = f"cal_mup{tag(mu_p)}_muw{tag(mu_w)}"
     data["run"] = {"type": "calibrate", "ic_dir": ic_dir}
     data.setdefault("contact", {}).update(particle_friction=mu_p, wall_friction=mu_w)
@@ -60,6 +71,12 @@ def main(argv=None):
     p.add_argument("--base", default=BASE, help="The IC's make_ic scenario.")
     p.add_argument("--ic-dir", default=IC_DIR, help="The make_ic run directory.")
     p.add_argument("--record-revolutions", type=float, default=2.0)
+    p.add_argument(
+        "--rolling-resistance",
+        type=float,
+        default=None,
+        help="mu_r of the grid (default: the base's; 0.13 reproduces the packaged grid).",
+    )
     p.add_argument("--out-dir", default=OUT_DIR)
     args = p.parse_args(argv)
 
@@ -68,7 +85,9 @@ def main(argv=None):
     out.mkdir(parents=True, exist_ok=True)
     for mu_p in args.mu_p:
         for mu_w in args.mu_w:
-            data = grid_scenario(base, mu_p, mu_w, args.ic_dir, args.record_revolutions)
+            data = grid_scenario(
+                base, mu_p, mu_w, args.ic_dir, args.record_revolutions, args.rolling_resistance
+            )
             path = out / f"{data['name']}.json"
             path.write_text(json.dumps(data, indent=2) + "\n")
             s = load_scenario(path)  # validates

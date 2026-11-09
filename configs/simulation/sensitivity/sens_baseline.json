@@ -41,7 +41,7 @@
     }
   ],
   "contact": {
-    "rolling_resistance": 0.13
+    "rolling_resistance": 0.16
   },
   "solver": {
     "dt_s": 2.5e-05,

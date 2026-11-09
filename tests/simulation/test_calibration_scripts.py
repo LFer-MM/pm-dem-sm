@@ -33,7 +33,8 @@ def _module(name):
 def test_make_grid_scenarios_matches_the_packaged_grid(tmp_path):
     grid = _module("make_grid_scenarios")
     out = tmp_path / "grid"
-    grid.main(["--out-dir", str(out)])
+    # The grid was written when the base had mu_r 0.13 (before the calibrated defaults).
+    grid.main(["--out-dir", str(out), "--rolling-resistance", "0.13"])
     made = sorted(p.name for p in out.glob("*.json"))
     packaged = sorted(
         p.name for p in (REPO_ROOT / "configs/simulation/calibration").glob("*.json")

@@ -82,7 +82,7 @@ No slide mentions rolling resistance. Slide 42 (structure map) lists
 | Where | What |
 |---|---|
 | `engines.py:60-82` | `Ig2_Sphere_Sphere_ScGeom6D`, `Ig2_Facet_Sphere_ScGeom6D`, `Ip2_FrictMat_FrictMat_MindlinPhys(eta=mu_r, krot=..., ktwist=0)`, `Law2_ScGeom_MindlinPhys_Mindlin(includeMoment=True)` (C06-1, commit `4bb17e4`) |
-| `config.ROLLING_RESISTANCE`, `scenario.py` (`ContactOptions.rolling_resistance`) | mu_r = **0.13** by default and in both `configs/simulation/*.json`: the heap test's value for 37 deg at mu_p = 0.5 (C06-3, commit `9959f69`; Analysis "Heap test results"). Before C06-3 it was a required input, with a 0.25 placeholder in the JSONs. It stays listed under `provisional_parameters` in every manifest until the heap is re-checked with the calibrated mu_p. mu_r = 0 switches the moment law off (`engines.initialize_engines`): in YADE, eta = 0 would leave the rolling spring uncapped |
+| `config.ROLLING_RESISTANCE`, `scenario.py` (`ContactOptions.rolling_resistance`) | mu_r = **0.16** by default and in the production, smoke and sensitivity scenarios: the heap test's value for 37 deg at the calibrated mu_p = 0.3 (re-check 2026-11-08, Decision). It was 0.13 (37 deg at mu_p = 0.5; C06-3, commit `9959f69`; Analysis "Heap test results"); the calibration record (grid, probes) keeps the values it ran with. Before C06-3 it was a required input, with a 0.25 placeholder in the JSONs. It stays listed under `provisional_parameters` in every manifest until the heap is re-checked with the calibrated mu_p. mu_r = 0 switches the moment law off (`engines.initialize_engines`): in YADE, eta = 0 would leave the rolling spring uncapped |
 | `scenario.py` (`rolling_stiffness()`, `check_rolling_stiffness()`) | C06-2, commit `4bb17e4`. `krot` is set so that the smallest sphere's rolling period is exactly 20 time steps, the stiffest the step resolves: with the defaults (r = 0.034925 m, 2850 kg/m^3, dt = 2.5e-5 s) krot = 39,183 N m/rad. At build, `run_simulation` checks T_r >= 20 dt and theta_y <= 0.01 rad at the typical contact force, and stops otherwise. The typical force (`typical_contact_force_n()`) is an order-of-magnitude, high-end estimate: the weight of a column of bulk charge (solid fraction 0.6) as deep as a flat bed holding the fill, standing on one small-particle cross-section (2 r)^2, ~560 N with the defaults. That gives theta_y = 1.3e-4 rad at mu_r = 0.25, far inside the 0.01 rad criterion, so the estimate's precision does not matter. `checks()` and the manifest record krot, T_r, the force and theta_y |
 
 ## Analysis
@@ -265,6 +265,11 @@ band."
 
 ## Open items / validation
 
+- **V11e at the calibrated mu_p:** the sensitivity band 33 / 41 deg was
+  mu_r 0.08 / 0.19 at mu_p 0.5; at mu_p 0.3 the heap curve gives 34.0 deg at
+  0.13 and levels off near 39 deg at 0.18-0.21, so neither end is bracketed.
+  Heaps at mu_r ~0.08-0.10 and ~0.25-0.30 (mu_p 0.3) are needed before the
+  V11e scenarios (`sensitivity/sens_v11e_*`, still at 0.08 / 0.19) are run.
 - Search further for a measured repose angle of coarse SAG-feed or ROM ore
   (peer-reviewed or official CEMA 550 table).
 - Heap test design: rock-only spheres with the simulated rock size, rough

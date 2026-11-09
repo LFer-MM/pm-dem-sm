@@ -426,11 +426,20 @@ simulation:**
 2. That correlation is extrapolated: fitted on a 1 m x 21.5 cm model mill
    with polyurethane liners and validated on a 1:9 model of another (AG)
    mill; SAG_A is 10.7 m with 395 mm lifters.
-3. Independent estimates side with the simulation: Morrell's correlation
-   gives 235 deg at SAG_A's operating point (5 deg from the DEM's 240.8),
-   Owen & Cleary's comparable DEM case 226 deg, Govender's full-scale SAG
-   DEM a toe "between 7 and 8 o'clock" (210-240 deg); the five plant mills'
-   208-215 deg is the correlation's signature (above).
+3. Independent estimates side with the simulation. Only the first is
+   computed for SAG_A; the other two are published values for other mills:
+   - Morrell's correlation (Morrell 1993, via Toor et al. 2023), **evaluated
+     here at SAG_A's operating point** (J_t 0.276, 73 % of critical): 235 deg,
+     5.8 deg from the DEM's 240.8. In it, 213.8 deg needs J_t ~0.43.
+   - Owen & Cleary 2015, Table 5, **as published** for their DEM of an 8.4 m
+     SAG (75 % of critical, 27.5 % fill, 175 mm lifters), mapped to this
+     convention (180 - theta): 226 deg; their 12 cases span 216-234 deg.
+   - Govender 2015, **as published** for Los Bronces (10.12 m, 10 rpm, 41 %
+     fill; DEM tuned to a measured profile): toe "between 7 and 8 o'clock",
+     i.e. 210-240 deg (clock positions converted here). At 41 % fill its toe
+     should sit higher on the wall than SAG_A's at 27.6 %, so it supports the
+     DEM only loosely.
+   The five plant mills' 208-215 deg is the correlation's signature (above).
 4. The gap is structural: over the whole admissible grid the toe spans
    2.4 deg against a 26 deg gap, and the replicate scatter is 0.3 deg.
    Closing it needs a 23 deg ore, which would make the parameters
@@ -438,8 +447,18 @@ simulation:**
 5. The measured quantities agree: the counts reproduce the crash-stop fill
    (J 0.277 vs 0.276, [12](12_charge_fill_and_particles.md)) and the power
    is within -8 to -1 % of the metered plant power.
-6. The shoulder (36.6 deg) lies at the upper edge of the five reference
-   mills (23.0-35.7 deg) and just above Owen & Cleary's DEM range (16-34 deg).
+6. The shoulder (36.6 +- 0.7 deg) is **just above** the five reference
+   mills (23.0-35.7 deg, 0.9 deg past the highest) and Owen & Cleary's DEM
+   range (16-34 deg, 2.6 deg past). The toe (240.8 deg) is outside every
+   reference range on the same side, i.e. lower on the mill wall: 0.8 deg
+   past Govender's 210-240, 6.8 deg past Owen's 216-234, and 25-32 deg past
+   the plant mills' 208.6-215.4; it is closest to Morrell's 235. Both angles
+   are larger than the references (counter-clockwise, the direction of
+   rotation): the simulated charge stands steeper and sits rotated further
+   round -- shoulder higher on the rising side, toe lower on the descending
+   side -- by a few degrees against the independent sources and by far more
+   against the plant correlation. A steep charge is what an ore with a
+   37 deg repose angle gives; flattening it needed a 23 deg ore (probe A).
 
 V8 (toe / shoulder within SAG_A's interquartile range widened to the
 replicate scatter) is therefore **not met**, and is reported with this

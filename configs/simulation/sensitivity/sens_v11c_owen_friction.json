@@ -41,7 +41,7 @@
     }
   ],
   "contact": {
-    "rolling_resistance": 0.13,
+    "rolling_resistance": 0.16,
     "particle_friction_set": "owen"
   },
   "solver": {

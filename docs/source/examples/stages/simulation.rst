@@ -18,9 +18,10 @@ and speed, the two particle species, materials (rock, steel and the steel
 friction (``contact.particle_friction`` mu_p, ``contact.wall_friction``
 mu_w) and rolling resistance, time step, and the settings of each stage.
 Keys left out keep their defaults (which come from :mod:`pm_dem_sm.config`
-and the decisions in ``docs/scientific_rationale/``); mu_r = 0.13 (heap
-test, C06-3) is recorded as provisional in every run until it is
-re-checked with the calibrated friction. Scenarios in ``configs/simulation/``:
+and the decisions in ``docs/scientific_rationale/``). The contact defaults
+are the calibrated point (mu_p 0.3, mu_w 0.5, mu_r 0.16; 2026-11-08); mu_r
+is recorded as provisional in every run, because its 37 deg repose target
+is a handbook value. Scenarios in ``configs/simulation/``:
 
 ``smoke_test.json``, ``smoke_make_ic.json``, ``smoke_dataset.json``
    A 2 m mill with 360 particles; each runs in about a minute. Use them to

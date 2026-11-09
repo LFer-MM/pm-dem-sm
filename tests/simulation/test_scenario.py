@@ -43,7 +43,7 @@ def test_defaults_round_trip_through_dict():
 
 def test_rolling_resistance_default_and_validation():
     # Default from the heap test (C06-3); null is rejected.
-    assert SimulationScenario.from_dict({}).contact.rolling_resistance == 0.13
+    assert SimulationScenario.from_dict({}).contact.rolling_resistance == 0.16
     with pytest.raises(ValueError, match="rolling_resistance"):
         SimulationScenario.from_dict({"contact": {"rolling_resistance": None}})
     with pytest.raises(ValueError, match=">= 0"):
@@ -159,10 +159,10 @@ def test_defaults_match_decisions():
     assert s.materials["steel"]["young"] == 207e9
     assert s.materials["rock"]["young"] == 55e9
     assert s.materials["rock"]["density"] == 2850
-    assert s.contact.particle_friction == 0.5
+    assert s.contact.particle_friction == 0.3
     assert s.contact.wall_friction == 0.5
     assert s.contact.particle_friction_set == "uniform"
-    assert s.contact.rolling_resistance == 0.13
+    assert s.contact.rolling_resistance == 0.16
     assert s.mill.liner_material == "liner"
     liner, steel = s.materials["liner"], s.materials["steel"]
     assert {k: liner[k] for k in ("density", "young", "poisson")} == {
@@ -390,10 +390,12 @@ def test_sag_a_dataset_scenarios_pair_with_make_ic():
 
 
 def test_existing_material_set_ids_unchanged():
-    # The ids the saved ICs carry (smoke ICs of phase 5, the pilot's SAG_A IC).
+    # Pinned so a change of any material, contact value or species shows up here.
+    # Calibrated defaults (2026-11-08, mu_p 0.3, mu_r 0.16); before them the ICs of
+    # phase 5 and the pilot carried d66a6a9c9eb0 / cb4108570cb2.
     root = REPO_ROOT / "configs" / "simulation"
-    assert load_scenario(root / "smoke_make_ic.json").material_set_id() == "d66a6a9c9eb0"
-    assert load_scenario(root / "sag_a_make_ic_rmic.json").material_set_id() == "cb4108570cb2"
+    assert load_scenario(root / "smoke_make_ic.json").material_set_id() == "7bd48fa37a4d"
+    assert load_scenario(root / "sag_a_make_ic_rmic.json").material_set_id() == "34a6b28719ad"
 
 
 def test_material_set_id_ignore_friction():
@@ -428,7 +430,14 @@ def test_preview_interval():
 
 def test_calibration_grid_scenarios_share_the_pilot_ic():
     root = REPO_ROOT / "configs" / "simulation"
-    ic = load_scenario(root / "sag_a_make_ic_rmic.json")
+    # The pilot's IC was made from sag_a_make_ic_rmic.json before the calibrated
+    # defaults: mu_p 0.5, mu_r 0.13.
+    ic = SimulationScenario.from_dict(
+        {
+            **load_scenario(root / "sag_a_make_ic_rmic.json").to_dict(),
+            "contact": {"rolling_resistance": 0.13, "particle_friction": 0.5},
+        }
+    )
     grid = sorted((root / "calibration").glob("cal_*.json"))
     assert len(grid) == 9
     pairs = set()

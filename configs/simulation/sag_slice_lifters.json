@@ -17,7 +17,7 @@
     {"name": "rock", "material": "rock", "radius_m": 0.034925, "count": 16082, "color": [1, 0, 0]},
     {"name": "ball", "material": "steel", "radius_m": 0.06985, "count": 3437, "color": [0, 0, 1]}
   ],
-  "contact": {"rolling_resistance": 0.13},
+  "contact": {"rolling_resistance": 0.16},
   "solver": {"dt_s": 2.5e-5, "young_scale": 0.038461538461538464},
   "record": {"duration_s": 20.0, "frame_interval_s": 0.05, "monitor_interval_s": 0.05}
 }

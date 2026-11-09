@@ -90,17 +90,20 @@ ROCK_DIAM_M = 0.06985
 BALL_DIAM_M = 0.1397
 
 #: Particle-particle friction coefficient mu_p, one value for steel-steel,
-#: steel-rock and rock-rock: the calibration baseline
+#: steel-rock and rock-rock: **calibrated** (2026-11-08, a constrained
+#: calibration: the admissible value closest to SAG_A's toe / shoulder;
+#: docs/scientific_rationale/05_friction.md, 15_calibration_targets.md).
+#: Was 0.5 (the grid's baseline) before.
+PARTICLE_FRICTION = 0.3
+#: Particle-liner friction coefficient mu_w (shell and lifters): 0.5; the
+#: calibration showed it has practically no effect with SAG_A's lifters
 #: (docs/scientific_rationale/05_friction.md).
-PARTICLE_FRICTION = 0.5
-#: Particle-liner friction coefficient mu_w (shell and lifters): the
-#: calibration baseline (docs/scientific_rationale/05_friction.md).
 WALL_FRICTION = 0.5
-#: Rolling-resistance coefficient mu_r (YADE ``eta``): 0.13 reproduces the
-#: 37 deg repose angle in the heap test at mu_p = 0.5 (C06-3, 33 / 41 deg at
-#: 0.08 / 0.19; docs/scientific_rationale/06_rolling_resistance.md).
-#: Re-checked after the mill calibration fixes mu_p.
-ROLLING_RESISTANCE = 0.13
+#: Rolling-resistance coefficient mu_r (YADE ``eta``): 0.16 reproduces the
+#: 37 deg repose angle in the heap test at the calibrated mu_p = 0.3
+#: (re-check of C06-3, 2026-11-08; 0.13 at mu_p = 0.5;
+#: docs/scientific_rationale/06_rolling_resistance.md).
+ROLLING_RESISTANCE = 0.16
 #: Owen & Cleary (2015, Table 4) particle-pair friction, run once as a
 #: sensitivity case (``ContactOptions.particle_friction_set = "owen"``;
 #: docs/scientific_rationale/05_friction.md).
