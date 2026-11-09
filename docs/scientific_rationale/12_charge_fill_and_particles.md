@@ -81,6 +81,26 @@ lies close to the mixed value.
 Cost per cycle (16 threads): ~15 min for a ball cycle; ~2-2.5 h for a mixed
 cycle (fill 42-58 min, settle 13-15 min, 2 revolutions 56-69 min).
 
+**Recheck at the calibrated friction (2026-11-09).** The counts above were
+found at mu_p 0.5 / mu_r 0.13; the calibration ([15](15_calibration_targets.md))
+moved them to mu_p 0.3 / mu_r 0.16, so the procedure was rerun (seed 0,
+same rules; `data/raw/grind_out_calibrated/`, `grind_out_calibrated_confirm/`):
+
+| Cycle | Balls + rocks | J (target) | phi |
+|---|---|---|---|
+| Balls | 3,437 | 0.1838 (0.188 +- 0.005) | 0.527 |
+| Mixed, old count | 3,437 + 16,082 | 0.2676 (0.276) -- low | 0.566 |
+| Mixed, procedure step | 3,437 + 17,700 | 0.2791 | 0.564 |
+| **Mixed, interpolated and confirmed** | **3,437 + 17,270** | **0.2756** | 0.565 |
+
+The lower friction lets the crash-stopped charge pack denser (phi 0.565
+against 0.548), so the same rocks fill less of the mill: **17,270 rocks**
+(+7 %) match Jc, the ball count holds. The defaults (`PROVISIONAL_ROCK_COUNT`)
+and the production / sensitivity scenarios carry 3,437 + 17,270 (20,707)
+since 2026-11-09; the calibration record (grid, probes, first calibrated
+point) and the V10 pair keep the 16,082 they ran with, and the calibrated
+point is rerun with 17,270 ([15](15_calibration_targets.md)).
+
 **At rest vs after turning (pilot, 2026-11-06).** The same counts poured
 randomly mixed and settled without turning (the `make_ic` starting
 packing) give **J = 0.2588, phi = 0.5845**: 1.8 points below Jc. The

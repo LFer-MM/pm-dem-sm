@@ -16,7 +16,13 @@ material-set id, so the grid's shared IC does not fit) and records 2
 revolutions. Replicates (V12) are run with ``--seed`` 0, 1, 2. Run from the
 repository root with the project environment::
 
-    python scripts/calibration/make_final_scenario.py --mu-r 0.17
+    python scripts/calibration/make_final_scenario.py --mu-r 0.16
+    python scripts/calibration/make_final_scenario.py --mu-r 0.16 --tag r17270
+
+The particle counts are the base's. The first calibrated point
+(``cal_final_mup0p3_muw0p5_mur0p16``, 2026-11-08) ran with 16082 rocks; after
+the counts were rechecked at the calibrated friction (17270 rocks,
+2026-11-09) it is run again as ``..._r17270`` (``--tag``).
 """
 
 import argparse
@@ -44,11 +50,14 @@ def main(argv=None):
     """Write the final scenario; print its path."""
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--mu-r", type=float, required=True, help="Re-fitted rolling resistance.")
+    p.add_argument("--tag", default=None, help="Suffix for the name (e.g. r17270).")
     args = p.parse_args(argv)
     grid = _grid_module()
     base = json.loads((grid.REPO_ROOT / grid.BASE).read_text())
     data = grid.grid_scenario(base, MU_P, MU_W, grid.IC_DIR, 2.0)
     data["name"] = f"cal_final_mup{grid.tag(MU_P)}_muw{grid.tag(MU_W)}_mur{grid.tag(args.mu_r)}"
+    if args.tag:
+        data["name"] += f"_{args.tag}"
     data["run"] = {"type": "calibrate"}
     data["contact"]["rolling_resistance"] = args.mu_r
     OUT_DIR.mkdir(parents=True, exist_ok=True)

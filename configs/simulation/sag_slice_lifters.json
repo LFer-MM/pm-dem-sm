@@ -14,7 +14,7 @@
     "end_walls": "frictionless"
   },
   "species": [
-    {"name": "rock", "material": "rock", "radius_m": 0.034925, "count": 16082, "color": [1, 0, 0]},
+    {"name": "rock", "material": "rock", "radius_m": 0.034925, "count": 17270, "color": [1, 0, 0]},
     {"name": "ball", "material": "steel", "radius_m": 0.06985, "count": 3437, "color": [0, 0, 1]}
   ],
   "contact": {"rolling_resistance": 0.16},

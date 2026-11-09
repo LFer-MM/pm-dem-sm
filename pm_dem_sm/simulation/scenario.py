@@ -85,10 +85,12 @@ MIN_STEPS_PER_COLLISION = 20
 #: (docs/scientific_rationale/03_stiffness_young_modulus.md).
 YOUNG_SCALE = 1.0 / 26.0
 #: SAG_A counts for the 0.6 m slice from the grind-out / crash-stop procedure
-#: (C12-3, 2026-11-05: J = 0.188 balls / 0.277 full charge over 3 seeds at
-#: mu_r = 0.13; docs/scientific_rationale/12_charge_fill_and_particles.md).
-#: Provisional until the procedure is rerun with the calibrated friction.
-PROVISIONAL_ROCK_COUNT = 16082
+#: (C12-3, 2026-11-05: 16082 rocks, J = 0.277 at mu_p 0.5 / mu_r 0.13), rechecked
+#: at the calibrated friction (2026-11-09, mu_p 0.3 / mu_r 0.16: the bed packs
+#: denser, 16082 rocks gave J = 0.268; 17270 gives J = 0.2756 against 0.276;
+#: balls unchanged, J = 0.184 against 0.188;
+#: docs/scientific_rationale/12_charge_fill_and_particles.md).
+PROVISIONAL_ROCK_COUNT = 17270
 PROVISIONAL_BALL_COUNT = 3437
 
 

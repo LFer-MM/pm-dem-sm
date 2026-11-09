@@ -34,7 +34,9 @@ def test_make_grid_scenarios_matches_the_packaged_grid(tmp_path):
     grid = _module("make_grid_scenarios")
     out = tmp_path / "grid"
     # The grid was written when the base had mu_r 0.13 (before the calibrated defaults).
-    grid.main(["--out-dir", str(out), "--rolling-resistance", "0.13"])
+    grid.main(
+        ["--out-dir", str(out), "--rolling-resistance", "0.13", "--rock-count", "16082"]
+    )
     made = sorted(p.name for p in out.glob("*.json"))
     packaged = sorted(
         p.name for p in (REPO_ROOT / "configs/simulation/calibration").glob("*.json")
@@ -92,15 +94,18 @@ def test_grid_summary_ranks_points(tmp_path):
 def test_final_scenario_changes_only_mu_r_and_pours_its_own_bed(tmp_path, monkeypatch):
     final = _module("make_final_scenario")
     monkeypatch.setattr(final, "OUT_DIR", tmp_path)
-    final.main(["--mu-r", "0.17"])
-    s = load_scenario(tmp_path / "cal_final_mup0p3_muw0p5_mur0p17.json")
+    final.main(["--mu-r", "0.17", "--tag", "r17270"])
+    s = load_scenario(tmp_path / "cal_final_mup0p3_muw0p5_mur0p17_r17270.json")
     assert s.run.type == "calibrate" and s.run.ic_dir is None
     assert s.stages == ("build", "fill", "settle", "spinup", "record")
     best = load_scenario(REPO_ROOT / "configs/simulation/calibration/cal_mup0p3_muw0p5.json")
     assert (s.contact.particle_friction, s.contact.wall_friction) == (0.3, 0.5)
     assert s.contact.rolling_resistance == 0.17
     assert s.record.duration_s == best.record.duration_s
-    assert s.mill == best.mill and s.species == best.species
+    assert s.mill == best.mill
+    # Counts from the base (rechecked 2026-11-09); the grid ran with 16082 rocks.
+    assert {sp.material: sp.count for sp in s.species} == {"rock": 17270, "steel": 3437}
+    assert {sp.material: sp.count for sp in best.species} == {"rock": 16082, "steel": 3437}
 
 
 def test_final_point_summary_v12_and_v15():

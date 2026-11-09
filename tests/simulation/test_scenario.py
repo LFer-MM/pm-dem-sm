@@ -155,7 +155,7 @@ def test_defaults_match_decisions():
     assert s.mill.speed_rpm == 9.5
     assert s.mill.end_walls == "frictionless"
     assert s.contact.model == "hertz_mindlin"
-    assert {sp.name: sp.count for sp in s.species} == {"rock": 16082, "ball": 3437}
+    assert {sp.name: sp.count for sp in s.species} == {"rock": 17270, "ball": 3437}
     assert s.materials["steel"]["young"] == 207e9
     assert s.materials["rock"]["young"] == 55e9
     assert s.materials["rock"]["density"] == 2850
@@ -395,7 +395,8 @@ def test_existing_material_set_ids_unchanged():
     # phase 5 and the pilot carried d66a6a9c9eb0 / cb4108570cb2.
     root = REPO_ROOT / "configs" / "simulation"
     assert load_scenario(root / "smoke_make_ic.json").material_set_id() == "7bd48fa37a4d"
-    assert load_scenario(root / "sag_a_make_ic_rmic.json").material_set_id() == "34a6b28719ad"
+    # Rock count 17270 since 2026-11-09 (34a6b28719ad with 16082).
+    assert load_scenario(root / "sag_a_make_ic_rmic.json").material_set_id() == "7a4fe8952ab5"
 
 
 def test_material_set_id_ignore_friction():
@@ -431,13 +432,13 @@ def test_preview_interval():
 def test_calibration_grid_scenarios_share_the_pilot_ic():
     root = REPO_ROOT / "configs" / "simulation"
     # The pilot's IC was made from sag_a_make_ic_rmic.json before the calibrated
-    # defaults: mu_p 0.5, mu_r 0.13.
-    ic = SimulationScenario.from_dict(
-        {
-            **load_scenario(root / "sag_a_make_ic_rmic.json").to_dict(),
-            "contact": {"rolling_resistance": 0.13, "particle_friction": 0.5},
-        }
-    )
+    # defaults and the count recheck: mu_p 0.5, mu_r 0.13, 16082 rocks.
+    data = load_scenario(root / "sag_a_make_ic_rmic.json").to_dict()
+    data["contact"] = {"rolling_resistance": 0.13, "particle_friction": 0.5}
+    for sp in data["species"]:
+        if sp["material"] == "rock":
+            sp["count"] = 16082
+    ic = SimulationScenario.from_dict(data)
     grid = sorted((root / "calibration").glob("cal_*.json"))
     assert len(grid) == 9
     pairs = set()
