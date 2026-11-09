@@ -22,6 +22,20 @@ Decided 2026-10-21.
   at the baseline mu_p = 0.5, and 0.08 / 0.19 for 33 / 41 deg (V11e),
   each about +-0.02 from the seed scatter (Analysis, "Heap test results").
   To be re-checked once the mill calibration fixes mu_p (step 3 below).
+- **Re-checked at the calibrated mu_p = 0.3 (2026-11-08): mu_r = 0.16.**
+  At mu_p 0.3 the heap with mu_r 0.13 stands at 34.0 deg, 3 deg below the
+  target (more than the 2 deg of step 3), so mu_r was re-fitted with the
+  same quadratic cell-top fit (12 heaps, residual 1.9 deg; the linear fit
+  gives 0.168):
+
+  | mu_r | 0.13 | 0.15 | 0.18 | 0.21 |
+  |---|---|---|---|---|
+  | Repose (3 seeds) | 34.0 +- 1.1 | 35.8 +- 2.3 | 39.0 +- 2.0 | 39.0 +- 2.1 |
+
+  37 deg at mu_r = 0.157, taken as **0.16**. The calibrated point (mu_p 0.3,
+  mu_w 0.5, mu_r 0.16) was then run with 3 seeds
+  ([15](15_calibration_targets.md), "Calibration outcome"). Data:
+  `data/raw/validation/results/heap_mup0p3/`.
 - **Settings:** `ktwist = 0`; `krot` chosen from the time step and a
   yield-rotation criterion (Analysis); 6-DOF geometry functors.
 

@@ -31,6 +31,16 @@ Friction is the **primary calibration variable**.
   at full scale with SAG_A's 0.6 m slice, [10](10_mill_geometry.md), ~15 h for
   the grid; rough, to be replaced by the pilot's timings). Score: simulated bulk toe / shoulder (position-density
   contour) vs. SAG_A.
+- **Outcome (2026-11-08):** the grid ran (16 h, 2 points at a time); the
+  toe stayed at 240-242 deg and the shoulder at 36-41 deg against 214 / 27
+  deg. mu_w has practically no effect (the lifters carry the charge), so the
+  two-parameter design does not identify two parameters; mu_p moves the
+  angles weakly inside its literature range. **Calibrated (option 1, a
+  constrained calibration): mu_p = 0.3, mu_w = 0.5**, with mu_r re-fitted to
+  0.16 ([06](06_rolling_resistance.md)); the residual and why it is
+  attributed to the reference angles are in [15](15_calibration_targets.md)
+  ("Calibration outcome"). No refinement grid: inside the admissible range
+  there is nothing left to refine.
 
 ## Evidence
 
@@ -157,13 +167,12 @@ Cleary & Morrison 2016 (Table 2), with Owen's set as a sensitivity case."
   in [07](07_restitution.md).
 - Re-measure the packing fraction after calibration ([12](12_charge_fill_and_particles.md)):
   packing depends on friction.
-- **Run the grid** (`scripts/calibration/run_grid.sh`). Cost from the pilot's
-  timings (16 threads: 20 s simulated in 95 min): a spin-up of 2-4 revolutions
-  (12.6-25 s) plus 2 recorded revolutions is roughly 2-3.5 h per point alone;
-  two points side by side at 10 threads each share the 12 physical cores, so
-  each is slower, the pair faster than one after the other -- to measure on
-  the first pair. Then refine around the best point (mu_w up to 0.8-0.9 if
-  the toe is not reached).
+- ~~**Run the grid** (`scripts/calibration/run_grid.sh`).~~ Done 2026-11-06/07
+  (16 h at 2 x 10 threads, ~25 % faster than one point at a time); result
+  in the Decision and in [15](15_calibration_targets.md).
+- The grid's cost estimate held: a point took ~3.4 h at 10 threads with two
+  side by side (one alone at 16 threads ~2.3 h). No refinement grid was run
+  (Decision, "Outcome").
 - The shared IC was settled with mu_p = mu_w = 0.5; with another friction a
   freshly poured bed would pack slightly differently. Sharing it is the
   decision (differences between points come from the friction during

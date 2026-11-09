@@ -220,7 +220,9 @@ empirical correlations differ, and the plant values follow Maleki-Moghaddam
 only through the centrifuging speed (lifter height, Eq. 3.2c), and its own
 data show no significant liner effect on the toe. It is taken as given (Decision); the consequence for
 calibration is that matching 213.8 deg at 27.6 % fill may require friction /
-rolling resistance at the upper end of the literature range. If the
+rolling resistance at the upper end of the literature range (contradicted
+by the calibration: only lower friction moves the toe, "Calibration
+outcome" below). If the
 calibration cannot reach the toe within that range, this section is the
 explanation to report.
 
@@ -356,6 +358,96 @@ then:
   points to a gross error (fill, density, geometry) and is investigated,
   not tuned away.
 
+### Calibration outcome (2026-11-08)
+
+Bulk toe / shoulder with the 50 % density rule (Decision), 2 recorded
+revolutions after the spin-up's steady state (2.5 revolutions everywhere),
+every run passing its per-run checks.
+
+**3 x 3 grid** (mu_r 0.13, one shared IC; [05](05_friction.md)):
+
+| mu_p \ mu_w | 0.3 | 0.5 | 0.7 |
+|---|---|---|---|
+| 0.3 | 240.4 / 35.8 | **239.9 / 36.1** | 240.4 / 35.9 |
+| 0.5 | 242.0 / 38.2 | 241.8 / 37.8 | 241.9 / 38.0 |
+| 0.7 | 242.3 / 40.7 | 242.0 / 39.4 | 241.9 / 38.7 |
+
+**Probes** (one change each from mu_p 0.3 / mu_w 0.5 / mu_r 0.13, commit
+`f4ee9fe`; heap repose from [06](06_rolling_resistance.md)'s heap test at the
+same mu_p / mu_r, 3 seeds):
+
+| Run | mu_p | mu_r | Toe | Shoulder | Heap repose | Slice power |
+|---|---|---|---|---|---|---|
+| Best grid point | 0.3 | 0.13 | 239.9 | 36.1 | 34.0 +- 1.1 | 1,099 kW |
+| Probe A | 0.1 | 0.13 | 228.4 | 28.1 | 23.3 +- 1.7 | 961 kW |
+| Probe B | 0.3 | 0.08 | 237.7 | 34.4 | 29.8 +- 4.2 | 1,079 kW |
+
+- mu_w (0.3-0.7) moves the angles by < 1 deg (2 deg on the shoulder at
+  mu_p 0.7): SAG_A's 395 mm lifters, not liner friction, carry the charge.
+- mu_p moves them weakly inside the literature range (~2 deg from 0.5 to
+  0.3) and strongly only below it (0.3 -> 0.1: toe -11.6, shoulder -8 deg),
+  where the ore piles at 23 deg -- below damp ore (30-37 deg) and below
+  spheres without rolling resistance (24-27 deg, Li et al. 2005). Even
+  there the toe misses by 14 deg.
+- mu_r 0.13 -> 0.08 moves each angle ~2 deg.
+- The expectation above (matching 213.8 deg "may require friction / rolling
+  resistance at the upper end of the literature range") is contradicted:
+  only lower friction moves the toe towards the target.
+
+**Calibrated point (option 1, decided 2026-11-08): a constrained
+calibration.** The reference angles are outputs of Maleki-Moghaddam et
+al.'s correlation, extrapolated from a 1 m laboratory mill; within the
+physically admissible parameters (particle friction in the DEM literature
+range 0.3-0.8, rolling resistance fixed by the 37 deg repose of the ore)
+they cannot be reached. The calibration therefore takes the admissible
+values closest to the targets -- **mu_p = 0.3** (lower end of the range,
+Govender 0.40 nearby), **mu_w = 0.5** (no effect), **mu_r = 0.16** (heap at
+mu_p 0.3 re-fitted to 37 deg, [06](06_rolling_resistance.md)) -- and
+reports the residual. Seeds 0, 1, 2 (V12; `configs/simulation/calibration/
+final/`, commit `ace6ede`; `scripts/calibration/final_point_summary.py`,
+commit `c765e0f`):
+
+| | Seed 0 | Seed 1 | Seed 2 | Mean +- sd |
+|---|---|---|---|---|
+| Bulk toe (target 213.4-214.5) | 240.4 | 241.0 | 241.0 | **240.8 +- 0.3** |
+| Bulk shoulder (target 26.0-27.3) | 37.2 | 35.8 | 36.7 | **36.6 +- 0.7** |
+| Slice power | 1,112 kW | 1,113 kW | 1,108 kW | **1,111 +- 3 kW** |
+
+**V15 (plant power):** P_mill = 1,111 kW x 8.74 x (1 + c_cone) = 10,198
+kW (c_cone 0.05) to 10,975 kW (0.13), against P_charge,plant = 11,036 kW:
+**-7.6 % to -0.6 %**, inside the comparison's ~+-20 % uncertainty
+(eta_d 0.95 and P_NL 8 % assumed, see above).
+
+**Why the residual is attributed to the reference angles, not the
+simulation:**
+1. The targets are not measurements: SAG_A's toe and shoulder are
+   Maleki-Moghaddam's correlation evaluated at the plant's fill and speed
+   (Decision, "Origin of the plant data").
+2. That correlation is extrapolated: fitted on a 1 m x 21.5 cm model mill
+   with polyurethane liners and validated on a 1:9 model of another (AG)
+   mill; SAG_A is 10.7 m with 395 mm lifters.
+3. Independent estimates side with the simulation: Morrell's correlation
+   gives 235 deg at SAG_A's operating point (5 deg from the DEM's 240.8),
+   Owen & Cleary's comparable DEM case 226 deg, Govender's full-scale SAG
+   DEM a toe "between 7 and 8 o'clock" (210-240 deg); the five plant mills'
+   208-215 deg is the correlation's signature (above).
+4. The gap is structural: over the whole admissible grid the toe spans
+   2.4 deg against a 26 deg gap, and the replicate scatter is 0.3 deg.
+   Closing it needs a 23 deg ore, which would make the parameters
+   unphysical and the model less trustworthy for the mixing it predicts.
+5. The measured quantities agree: the counts reproduce the crash-stop fill
+   (J 0.277 vs 0.276, [12](12_charge_fill_and_particles.md)) and the power
+   is within -8 to -1 % of the metered plant power.
+6. The shoulder (36.6 deg) lies at the upper edge of the five reference
+   mills (23.0-35.7 deg) and just above Owen & Cleary's DEM range (16-34 deg).
+
+V8 (toe / shoulder within SAG_A's interquartile range widened to the
+replicate scatter) is therefore **not met**, and is reported with this
+explanation rather than forced. Data (not in git):
+`data/raw/yade_runs/cal_*`, `probe_*`, `cal_final_*_s0..2`,
+`data/raw/calibration/grid_summary.csv`, `final_point.json`,
+`data/raw/validation/results/heap_probes/`, `heap_mup0p3/`.
+
 ## Verdict and how to defend it
 
 "SAG_A is the reference mill: the operating point (9.5 rpm, Jb 18.8 %,
@@ -431,5 +523,5 @@ To do (Claude):
 |---|---|---|---|
 | C15-1 | Bulk toe / shoulder from the time-averaged position-density contour (Boemer & Ponthot §2.3), in this angle convention; liner-force cross-check | Done (`69e6ea0`) | Before calibration |
 | C15-2 | Plant-data analysis: post-reline window, steady-period filter near the operating point, target medians / IQR; SAG_A-E typicality (claims 1-2) | **Done 2026-11-02** as `operational_data_analysis.py` / `.ipynb` in Zotero (kept out of the public repo with the data) | -- |
-| C15-3 | V15 power comparison (P_mill vs P_charge,plant with the stated assumptions) | Monitor logs P only | After calibration |
+| C15-3 | V15 power comparison (P_mill vs P_charge,plant with the stated assumptions) | Done (`c765e0f`): -7.6 % to -0.6 % at the calibrated point (Analysis, "Calibration outcome") | After calibration |
 

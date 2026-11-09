@@ -56,6 +56,13 @@ written to the run manifest so each dataset can be defended individually.
   conclusions.
 - Replicate scatter (V12) is the yardstick for "within the scatter" in
   V8-V11e.
+- **Results at the calibrated point (2026-11-08,
+  [15](15_calibration_targets.md) "Calibration outcome"):** V12 over seeds
+  0-2: toe 240.8 +- 0.3 deg, shoulder 36.6 +- 0.7 deg, slice power 1,111 +- 3
+  kW. V15: -7.6 % (c_cone 0.05) to -0.6 % (0.13) against the plant's power
+  reaching the charge. V8 not met: the toe / shoulder residual (26 / 10 deg)
+  is far outside the replicate scatter and is attributed to the reference
+  angles (Maleki-Moghaddam's correlation), as argued in topic 15.
 
 ## Implementation
 
