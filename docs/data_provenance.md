@@ -78,8 +78,11 @@ contact values of their day.
 
 | Folder | Made | Purpose | Status |
 |---|---|---|---|
-| `yade_runs/sag_a_make_ic_sic_s0..s4` | from 11-10 00:24 (Phase B) | segregated starting packings | production |
-| `yade_runs/sag_a_make_ic_rmic_s1..s5` | Phase B | mixed starting packings (seeds 1-5: `_s0` is the pilot) | production |
+| `yade_runs/sag_a_make_ic_sic_s0..s4` | 11-10 00:24 - 02:52 (Phase B, 2 x 10 threads) | segregated starting packings: J 0.285-0.286, phi 0.541-0.543 (layers do not fill each other's gaps, so above Jc at rest) | production |
+| `yade_runs/sag_a_make_ic_rmic_s1..s5` | 11-10 02:03 - 06:35 (Phase B) | mixed starting packings (seeds 1-5: `_s0` is the pilot): J 0.260, phi 0.597 (dense random 2:1 packing, below Jc at rest) | production |
+
+All ten carry material-set id `7a4fe8952ab5` (set C), settled by the
+geometric rule after 1.2-1.3 s and passed every check.
 
 `calibration/logs/` holds the stdout of every grid, probe, final and
 production run, named after the run.
