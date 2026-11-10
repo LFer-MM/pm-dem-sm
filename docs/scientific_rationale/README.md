@@ -87,7 +87,8 @@ outputs: C03-3, C14-1, C14-3, C14-4, C15-1, C16-1) done 2026-11-05 in commit
 `69e6ea0`; C14-5 done 2026-11-06 in commit `10da406` from the pilot run
 (training window 6.0-7.0 s); C15-2 done earlier outside the repository;
 the calibration done 2026-11-08 (option 1, a constrained calibration:
-mu_p 0.3, mu_w 0.5, mu_r 0.16; toe / shoulder 240.8 / 36.6 deg against the
+mu_p 0.3, mu_w 0.5, mu_r 0.16, 3,437 balls + 17,270 rocks after the count
+recheck of 2026-11-09; toe / shoulder 240.1 / 37.2 deg against the
 reference 214 / 27 deg, power -8 to -1 % of the plant's) with C15-3 in
 commit `c765e0f`. All items done.
 

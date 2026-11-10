@@ -418,6 +418,27 @@ kW (c_cone 0.05) to 10,975 kW (0.13), against P_charge,plant = 11,036 kW:
 **-7.6 % to -0.6 %**, inside the comparison's ~+-20 % uncertainty
 (eta_d 0.95 and P_NL 8 % assumed, see above).
 
+**Rerun with the rechecked count (2026-11-09).** The runs above used
+16,082 rocks; at the calibrated friction the crash-stop procedure gives
+17,270 ([12](12_charge_fill_and_particles.md), J 0.2756 against 0.276). The
+calibrated point was run again with 3,437 + 17,270 (seeds 0-2,
+`cal_final_mup0p3_muw0p5_mur0p16_r17270`); these are the **reported values**
+of the calibrated point:
+
+| | Seed 0 | Seed 1 | Seed 2 | Mean +- sd |
+|---|---|---|---|---|
+| Bulk toe | 240.0 | 240.0 | 240.3 | **240.1 +- 0.2** |
+| Bulk shoulder | 37.3 | 36.9 | 37.3 | **37.2 +- 0.2** |
+| Slice power | 1,110 kW | 1,112 kW | 1,103 kW | **1,108 +- 5 kW** |
+
+V15: 10,169 kW (c_cone 0.05) to 10,944 kW (0.13), **-7.9 % to -0.8 %**;
+the upper end lies inside the plant's interquartile range of power reaching
+the charge (0.95 x 0.92 x 12,445-12,846 kW = 10,877-11,227 kW). The 7 % more
+rock moved the toe by -0.7 deg, the shoulder by +0.6 deg and the power by
+-0.3 %: it fills the denser bed rather than enlarging the charge, so the
+result does not depend on the count detail. All checks passed
+(`data/raw/calibration/final_point_r17270.json`).
+
 **Why the residual is attributed to the reference angles, not the
 simulation:**
 1. The targets are not measurements: SAG_A's toe and shoulder are
@@ -430,7 +451,7 @@ simulation:**
    computed for SAG_A; the other two are published values for other mills:
    - Morrell's correlation (Morrell 1993, via Toor et al. 2023), **evaluated
      here at SAG_A's operating point** (J_t 0.276, 73 % of critical): 235 deg,
-     5.8 deg from the DEM's 240.8. In it, 213.8 deg needs J_t ~0.43.
+     5.1 deg from the DEM's 240.1. In it, 213.8 deg needs J_t ~0.43.
    - Owen & Cleary 2015, Table 5, **as published** for their DEM of an 8.4 m
      SAG (75 % of critical, 27.5 % fill, 175 mm lifters), mapped to this
      convention (180 - theta): 226 deg; their 12 cases span 216-234 deg.
@@ -445,13 +466,15 @@ simulation:**
    Closing it needs a 23 deg ore, which would make the parameters
    unphysical and the model less trustworthy for the mixing it predicts.
 5. The measured quantities agree: the counts reproduce the crash-stop fill
-   (J 0.277 vs 0.276, [12](12_charge_fill_and_particles.md)) and the power
-   is within -8 to -1 % of the metered plant power.
-6. The shoulder (36.6 +- 0.7 deg) is **just above** the five reference
-   mills (23.0-35.7 deg, 0.9 deg past the highest) and Owen & Cleary's DEM
-   range (16-34 deg, 2.6 deg past). The toe (240.8 deg) is outside every
-   reference range on the same side, i.e. lower on the mill wall: 0.8 deg
-   past Govender's 210-240, 6.8 deg past Owen's 216-234, and 25-32 deg past
+   at the calibrated friction (J 0.2756 vs 0.276,
+   [12](12_charge_fill_and_particles.md)) and the power is within -8 to
+   -1 % of the metered plant power, inside its interquartile range at the
+   upper cone allowance.
+6. The shoulder (37.2 +- 0.2 deg) is **just above** the five reference
+   mills (23.0-35.7 deg, 1.5 deg past the highest) and Owen & Cleary's DEM
+   range (16-34 deg, 3.2 deg past). The toe (240.1 deg) is at the edge of
+   Govender's 210-240 and outside the other ranges on the same side, i.e.
+   lower on the mill wall: 6.1 deg past Owen's 216-234 and 25-32 deg past
    the plant mills' 208.6-215.4; it is closest to Morrell's 235. Both angles
    are larger than the references (counter-clockwise, the direction of
    rotation): the simulated charge stands steeper and sits rotated further
