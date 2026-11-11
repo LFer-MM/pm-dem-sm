@@ -138,3 +138,5 @@ def test_default_run_dir_and_dem_post_without_manifest(tmp_path):
     d = launcher.default_run_dir(SMOKE, seed=3)
     assert d.name == "smoke_test_s3" and d.parent.name == "yade_runs"
     assert cli.main(["dem-post", str(tmp_path)]) == 1
+    # Extending a record stage needs the run directory to extend.
+    assert cli.main(["dem-sim", "--extend-record", "25"]) == 1

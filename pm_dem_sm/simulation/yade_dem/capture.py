@@ -68,7 +68,7 @@ def start_frame_capture(folder_name, interval, runner_label="frameCapture", iter
     return r
 
 
-def start_recording(frames_dir, interval, index_path, runner_label="recorder"):
+def start_recording(frames_dir, interval, index_path, runner_label="recorder", append=False):
     """Write a frame CSV every ``interval`` seconds of simulated time, from now on.
 
     Frames go to ``frames_dir/frame_00000.csv``, ``frame_00001.csv``, ...;
@@ -81,15 +81,25 @@ def start_recording(frames_dir, interval, index_path, runner_label="recorder"):
         interval: Simulated time between frames (s).
         index_path: CSV path for the frame-time index.
         runner_label: Label for the ``PyRunner`` engine.
+        append: Continue an existing recording (an extended record stage):
+            keep ``index_path`` and number the new frames after its last one.
 
     Returns:
         PyRunner: The appended runner.
     """
     os.makedirs(frames_dir, exist_ok=True)
+    first = 0
+    if append and os.path.exists(index_path):
+        with open(index_path, newline="") as f:
+            ids = [int(r[0]) for r in list(csv.reader(f))[1:] if r and r[0].isdigit()]
+        first = max(ids) + 1 if ids else 0
     _recordingState.clear()
-    _recordingState.update({"folder": str(frames_dir), "index": str(index_path), "frame_id": 0})
-    with open(index_path, "w", newline="") as f:
-        csv.writer(f).writerow(["frame", "time", "iter"])
+    _recordingState.update(
+        {"folder": str(frames_dir), "index": str(index_path), "frame_id": first}
+    )
+    if not (append and os.path.exists(index_path)):
+        with open(index_path, "w", newline="") as f:
+            csv.writer(f).writerow(["frame", "time", "iter"])
 
     runner = PyRunner(command="capture._record_frame()", virtPeriod=float(interval),
                       initRun=True, label=runner_label)

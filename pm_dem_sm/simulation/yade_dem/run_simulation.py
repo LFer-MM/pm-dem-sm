@@ -57,6 +57,7 @@ if _REPO_ROOT not in sys.path:
 import argparse
 import json
 import math
+import shutil
 import time
 
 import yade
@@ -190,6 +191,81 @@ def run(scenario_path=None, run_dir=None, from_stage=None, to_stage=None, gui=Fa
                 f"V14 failed: {stage_checks['escaped']} particles outside the mill after {name}"
             )
 
+    return manifest
+
+
+def extend_record(run_dir, seconds):
+    """Record ``seconds`` more after a finished record stage, from its checkpoint.
+
+    For a run whose charge is still evolving at the end of its record stage
+    (e.g. a segregated dataset whose Lacey index has not levelled off,
+    docs/scientific_rationale/14_dataset_runs_and_recording.md). Loads
+    ``checkpoints/record.yade.gz`` (kept as ``record_t<time>s.yade.gz``),
+    continues with the same mill speed, frame and monitor intervals and
+    snapshots, numbering the new frames after the existing ones, and saves
+    the new end state as ``checkpoints/record.yade.gz``. The manifest's
+    record stage gets the new end time and frame count; the extension's own
+    checks (overlaps, energy balance, ...) go to
+    ``manifest["record_extensions"]``. Post-processing afterwards covers the
+    whole extended record.
+
+    Args:
+        run_dir: Run directory with a finished record stage.
+        seconds: Simulated time to add (s).
+
+    Returns:
+        dict: The updated manifest.
+
+    Raises:
+        ValueError: If the run has no finished record stage or ``seconds`` <= 0.
+    """
+    run_dir = Path(run_dir)
+    check_yade_version(str(getattr(yade.config, "version", "unknown")))
+    manifest = _read_manifest(run_dir)
+    if "record" not in manifest.get("stages", {}):
+        raise ValueError(f"{run_dir} has no finished record stage to extend")
+    if seconds <= 0:
+        raise ValueError(f"seconds must be > 0, got {seconds}")
+    scenario = SimulationScenario.from_dict(manifest["scenario"])
+    checkpoint = run_dir / "checkpoints" / "record.yade.gz"
+    _load_checkpoint(run_dir, "record", manifest)
+    t0, it0, wall0 = float(O.time), int(O.iter), time.time()
+    kept = run_dir / "checkpoints" / f"record_t{t0:.0f}s.yade.gz"
+    if not kept.exists():
+        shutil.copy2(checkpoint, kept)
+    print(f"\n=== Extending record from t = {t0:.2f} s by {seconds} s ===")
+    engines.set_gravity_damping(NUMERICAL_DAMPING)
+    engines.assert_no_damping()
+    omega = _omega(scenario)
+    engines._get_rotation_engine().angularVelocity = omega
+    _ensure_preview(scenario, run_dir, manifest, "record")
+    _start_monitor(scenario, run_dir, manifest, "record", omega=omega)
+    opts = scenario.record
+    capture.start_recording(
+        run_dir / "frames", opts.frame_interval_s, run_dir / "frames_index.csv", append=True
+    )
+    O.run(round(seconds / O.dt), True)
+    n_frames = capture.stop_recording()
+    checks = _stage_checks(scenario, "record")
+    O.save(str(checkpoint))
+    rec = manifest["stages"]["record"]
+    rec["sim_time_end_s"] = float(O.time)
+    rec["frames"] = n_frames
+    rec["iterations"] = rec.get("iterations", 0) + int(O.iter) - it0
+    manifest.setdefault("record_extensions", []).append(
+        {
+            "seconds": seconds,
+            "sim_time_start_s": t0,
+            "sim_time_end_s": float(O.time),
+            "wall_s": time.time() - wall0,
+            "frames_total": n_frames,
+            "checks": checks,
+        }
+    )
+    _write_manifest(run_dir, manifest)
+    print(f"=== record extended to t = {O.time:.2f} s ({n_frames} frames) ===")
+    if checks["escaped"]:
+        raise RuntimeError(f"V14 failed: {checks['escaped']} particles outside the mill")
     return manifest
 
 
@@ -527,6 +603,13 @@ def _parse_args(argv):
     p.add_argument("--to-stage", default=None, choices=STAGES)
     p.add_argument("--seed", type=int, default=None, help="Override the scenario seed (replicates).")
     p.add_argument("--gui", action="store_true", help="Open the YADE Qt viewer.")
+    p.add_argument(
+        "--extend-record",
+        type=float,
+        default=None,
+        metavar="SECONDS",
+        help="Record this much more after the finished record stage of --run-dir.",
+    )
     return p.parse_args(argv)
 
 
@@ -547,4 +630,9 @@ def _stage_function(name):
 
 if __name__ == "__main__":
     _args = _parse_args(sys.argv[1:])
-    run(_args.scenario, _args.run_dir, _args.from_stage, _args.to_stage, _args.gui, _args.seed)
+    if _args.extend_record is not None:
+        if not _args.run_dir:
+            raise SystemExit("--extend-record needs --run-dir")
+        extend_record(_args.run_dir, _args.extend_record)
+    else:
+        run(_args.scenario, _args.run_dir, _args.from_stage, _args.to_stage, _args.gui, _args.seed)

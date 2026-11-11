@@ -367,6 +367,14 @@ def _add_dem_sim_arguments(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         help="Do not post-process the run directory after a successful run.",
     )
+    parser.add_argument(
+        "--extend-record",
+        type=float,
+        default=None,
+        metavar="SECONDS",
+        help="Record SECONDS more after the finished record stage of --run-dir "
+        "(e.g. a dataset whose charge is still evolving); post-processed again after.",
+    )
 
 
 def _leaf_override_names() -> list[str]:
@@ -394,6 +402,11 @@ def _run_dem_sim(args: argparse.Namespace) -> int:
             extra.append("--gui")
         if args.seed is not None:
             extra += ["--seed", str(args.seed)]
+        if args.extend_record is not None:
+            if args.run_dir is None:
+                print("--extend-record needs --run-dir")
+                return 1
+            extra += ["--extend-record", str(args.extend_record)]
         result = launcher.launch_simulation(
             script=args.script,
             yade_executable=args.yade_executable,
