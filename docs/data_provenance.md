@@ -84,6 +84,16 @@ contact values of their day.
 All ten carry material-set id `7a4fe8952ab5` (set C), settled by the
 geometric rule after 1.2-1.3 s and passed every check.
 
+| Folder | Made | Purpose | Status |
+|---|---|---|---|
+| `yade_runs/sag_a_dataset_rmic_s1..s5` | 11-10 06:37 - 23:10 (Phase C, 2 x 10 threads) | mixed training datasets, 20 s from rest, each loading packing `rmic_s<N>`: quasi-steady at 4-6 s (C14-5's 6-7 s window holds), Lacey 0.997-0.998, every check passed | production |
+| `yade_runs/sag_a_dataset_sic_s0..s4` | 11-10 06:37 - 11-11 04:22 (Phase C) | segregated datasets, 35 s from rest: Lacey 0.854-0.871 and still rising, charge angle not settled -> V7 not met (topic 14 open item "extend if not") | production; length under review (K9) |
+| `yade_runs/sag_a_dataset_sic_s0_ext` | from 11-11 01:22 | **copy** of `sic_s0` extended in 25 s chunks (`--extend-record`, commit `aadae35`) until Lacey levels off, to find how long segregated runs must be | experiment (K9) |
+
+**K9 (11-10 21:05):** the first segregated datasets show the charge still
+mixing at 35 s; option 3 chosen: extend one copy to find the plateau before
+deciding on the other four. The production `sic_s0` stays as recorded.
+
 `calibration/logs/` holds the stdout of every grid, probe, final and
 production run, named after the run.
 
