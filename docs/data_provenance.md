@@ -38,11 +38,11 @@ contact values of their day.
 
 | Folder | Made | By | Purpose | Status |
 |---|---|---|---|---|
-| `grind_out_mur025/` | 11-04 23:00 - 11-05 01:27 | `grind_out.py` at mu_r 0.25 | first count attempt | superseded (mu_r placeholder) |
-| `grind_out/` | 11-05 01:28 - 12:52 | `scripts/validation/run_grind_out.sh` | counts 3,437 + 16,082, 3 seeds (C12-3) | record of P0 counts |
-| `heap/` | 11-05 01:28 (copied) | heap test | working copy of the mu_r curve at mu_p 0.5 | duplicate of `validation/results/heap/` |
+| `grind_out_mur025/` | 11-04 23:00 - 11-05 01:27 | `grind_out.py` at mu_r 0.25 | first count attempt | superseded (mu_r placeholder); **archived** (NVMe, 2026-11-12) |
+| `grind_out/` | 11-05 01:28 - 12:52 | `scripts/validation/run_grind_out.sh` | counts 3,437 + 16,082, 3 seeds (C12-3) | record of P0 counts; **archived** (NVMe, 2026-11-12) |
+| `heap/` | 11-05 01:28 (copied) | heap test | working copy of the mu_r curve at mu_p 0.5 | duplicate of `validation/results/heap/`; **archived** (NVMe, 2026-11-12) |
 | `validation/results/{v1,heap,smoke,build,grind_out}` | 11-05 09:20 - 12:53 (stored) | `scripts/validation/` | phases 1-4 validations (V1-V5, V13, V14, V18, C06-3, C10-4, C12-3) | record |
-| `yade_runs/smoke_make_ic_s2`, `smoke_dataset_s2` | 11-05 15:36 | smoke chain (phase 5) | run types make_ic -> dataset | test |
+| `yade_runs/smoke_make_ic_s2`, `smoke_dataset_s2` | 11-05 15:36 | smoke chain (phase 5) | run types make_ic -> dataset | test; **archived** (NVMe, 2026-11-12) |
 | `yade_runs/sag_a_make_ic_rmic_s0` | 11-05 21:16 - 11-06 07:56 | pilot `make_ic` (P0) | starting packing at rest (J 0.2588); **the shared IC of the grid and probe A** | calibration record; keeps `_s0` |
 | `yade_runs/sag_a_dataset_rmic_s0` | 11-06 07:58 - 09:34 | pilot dataset (P0) | quasi-steady time -> C14-5 | calibration record |
 | `validation/results/crash_stop/` | 11-06 10:04 | `scripts/validation/crash_stop_check.py` | J after turning: 0.2770 | record (K2) |
@@ -51,26 +51,26 @@ contact values of their day.
 
 | Folder | Made | Purpose | Status |
 |---|---|---|---|
-| `yade_runs/smoke_make_ic_s3` | 11-06 11:35 | IC for the shared-IC tests | test |
-| `yade_runs/smoke_calibrate_ic_s3` | 11-06 11:49 | test of the run type `calibrate_ic` | **obsolete**: that run type was folded into `calibrate` + `run.ic_dir` the same day; its manifest no longer loads |
-| `yade_runs/smoke_calibrate_from_ic_s3` | 11-06 12:14 | test of `calibrate` + `run.ic_dir` | test |
+| `yade_runs/smoke_make_ic_s3` | 11-06 11:35 | IC for the shared-IC tests | test; **archived** (NVMe, 2026-11-12) |
+| `yade_runs/smoke_calibrate_ic_s3` | 11-06 11:49 | test of the run type `calibrate_ic` | **obsolete**: that run type was folded into `calibrate` + `run.ic_dir` the same day; its manifest no longer loads; **archived** (NVMe, 2026-11-12) |
+| `yade_runs/smoke_calibrate_from_ic_s3` | 11-06 12:14 | test of `calibrate` + `run.ic_dir` | test; **archived** (NVMe, 2026-11-12) |
 
 ### Calibration record (G, C16)
 
 | Folder | Made | Purpose | Status |
 |---|---|---|---|
-| `yade_runs/cal_mup*_muw*` (9) | 11-06 12:26 - 11-07 04:23, 2 at a time | the 3 x 3 friction grid from the pilot IC | record. Post-processed first with the 10 % cut, **re-measured with the 50 % rule** (K3; first four on 11-06 ~20:50, all nine on 11-07 04:23) |
+| `yade_runs/cal_mup*_muw*` (9) | 11-06 12:26 - 11-07 04:23, 2 at a time | the 3 x 3 friction grid from the pilot IC | record. Post-processed first with the 10 % cut, **re-measured with the 50 % rule** (K3; first four on 11-06 ~20:50, all nine on 11-07 04:23); **archived** (NVMe, 2026-11-12) |
 | `calibration/grid_summary.csv` | updated with each summary | grid table | record |
-| `yade_runs/probe_mup0p1_muw0p5` | 11-07 07:37 - 12:43 | probe A, shared pilot IC | record (K5) |
-| `yade_runs/probe_mup0p3_muw0p5_mur0p08` | 11-07 07:37 - 13:16 | probe B, own bed (mu_r is part of the IC id) | record (K5) |
+| `yade_runs/probe_mup0p1_muw0p5` | 11-07 07:37 - 12:43 | probe A, shared pilot IC | record (K5); **archived** (NVMe, 2026-11-12) |
+| `yade_runs/probe_mup0p3_muw0p5_mur0p08` | 11-07 07:37 - 13:16 | probe B, own bed (mu_r is part of the IC id) | record (K5); **archived** (NVMe, 2026-11-12) |
 | `validation/results/heap_probes/` | 11-07 07:37 - 10:41 | repose at the best grid point (34.0 deg) and the probes (23.3 / 29.8 deg) | record |
 | `validation/results/heap_mup0p3/` | 11-08 09:33 - 10:17 | mu_r curve at mu_p 0.3 -> 0.16 | record (K6) |
-| `yade_runs/cal_final_mup0p3_muw0p5_mur0p16_s0..s2` | 11-08 10:18 - 17:15 | calibrated point, C16 (16,082 rocks) | record; superseded as reported values by the rerun below |
+| `yade_runs/cal_final_mup0p3_muw0p5_mur0p16_s0..s2` | 11-08 10:18 - 17:15 | calibrated point, C16 (16,082 rocks) | record; superseded as reported values by the rerun below; **archived** (NVMe, 2026-11-12) |
 | `calibration/final_point.json` | 11-08 ~17:30 | V12 / V15 of the C16 runs | record |
-| `grind_out_calibrated/` | 11-08 21:26 - 11-09 03:46 | count recheck at C: 16,082 -> J 0.268; 17,700 -> 0.279 | record (K7) |
+| `grind_out_calibrated/` | 11-08 21:26 - 11-09 03:46 | count recheck at C: 16,082 -> J 0.268; 17,700 -> 0.279 | record (K7); **archived** (NVMe, 2026-11-12) |
 | `validation/results/heap_v11e_mup0p3/`, `heap_mup0p3_all/` | 11-08 21:42 - 11-09 09:44 | V11e band at mu_p 0.3: 33 deg at mu_r 0.105, 41 deg unreachable (~40 deg plateau); combined 24-heap fit (37 deg at 0.163) | current |
-| `yade_runs/sens_v10_stiffness_f13`, `_f52` | 11-09 03:46 - 09:44 | V10 stiffness x2 / x0.5 at C16 (16,082 rocks, compared with the C16 point) | record; V10 passed (f52 fails V3, expected) |
-| `grind_out_calibrated_confirm/` | 11-09 10:11 - 13:26 | 17,270 rocks -> J 0.2756 | record (K7) |
+| `yade_runs/sens_v10_stiffness_f13`, `_f52` | 11-09 03:46 - 09:44 | V10 stiffness x2 / x0.5 at C16 (16,082 rocks, compared with the C16 point) | record; V10 passed (f52 fails V3, expected); **archived** (NVMe, 2026-11-12) |
+| `grind_out_calibrated_confirm/` | 11-09 10:11 - 13:26 | 17,270 rocks -> J 0.2756 | record (K7); **archived** (NVMe, 2026-11-12) |
 | `yade_runs/cal_final_mup0p3_muw0p5_mur0p16_r17270_s0..s2` | 11-09 14:49 - 22:33 | **calibrated point at C (reported values)**: toe 240.1, shoulder 37.2 deg, power -7.9 to -0.8 % | current |
 | `calibration/final_point_r17270.json` | 11-09 ~22:40 | V12 / V15 of the C runs | current |
 
@@ -99,6 +99,32 @@ The mixed datasets confirmed C14-5 (quasi-steady at 4-6 s).
 
 `calibration/logs/` holds the stdout of every grid, probe, final and
 production run, named after the run.
+
+## Archive (2026-11-12)
+
+To free the system disk (8.9 -> 17 GB free) before Phase D, the folders
+marked **archived** above (26 folders, 7.5 GB: grid, probes, first
+calibrated point at 16,082 rocks, V10 pair, all grind-outs, smoke runs, the
+`heap/` duplicate) were moved to the 477 GB NVMe disk (NTFS, a Windows
+partition shared with another account), same structure:
+`/mnt/archive/pm-dem-sm-archive/data/raw/<same path>`; the list is
+`/mnt/archive/pm-dem-sm-archive/ARCHIVED_ITEMS.txt`. Copied, verified byte
+for byte twice (the second time after dropping the page cache, i.e. read
+back from the NVMe: 0 differences, 6,220 / 6,220 files), then deleted from
+the system disk. Their results stay in `calibration/`, `validation/` and the
+topic files. The NVMe is mounted by hand (not in `/etc/fstab`); to reach
+the archive after a reboot:
+
+```bash
+sudo mkdir -p /mnt/archive
+sudo mount -t ntfs3 -o uid=1000,gid=1000 /dev/nvme0n1p2 /mnt/archive
+```
+
+(if the desktop has auto-mounted it for another user, `sudo umount` that
+mount point first). Kept on the system disk: the production packings and
+datasets, the pilot (`sag_a_make_ic_rmic_s0`, `sag_a_dataset_rmic_s0`), the
+reported calibrated point (`cal_final_..._r17270_s0..s2`), `calibration/`,
+`validation/`.
 
 ## Rules this file keeps
 
