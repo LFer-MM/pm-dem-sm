@@ -32,7 +32,14 @@ Decided 2026-10-21.
   |---|---|---|---|---|
   | Repose (3 seeds) | 34.0 +- 1.1 | 35.8 +- 2.3 | 39.0 +- 2.0 | 39.0 +- 2.1 |
 
-  37 deg at mu_r = 0.157, taken as **0.16**. The calibrated point (mu_p 0.3,
+  37 deg at mu_r = 0.157, taken as **0.16**. Sensitivity band (V11e) at
+  mu_p 0.3, from all 24 heaps there (0.08-0.30, quadratic fit, residual
+  1.9 deg): **33 deg at mu_r 0.106, taken as 0.11**; **41 deg is not
+  reachable** -- the repose levels off at ~40 deg above mu_r ~0.2 (39.0 at
+  0.18 and 0.21, 39.8 at 0.25, 40.3 at 0.30) -- so the upper V11e case is
+  **mu_r 0.30 (40.3 deg)**, the top of what spheres with this rolling
+  resistance give. The V11e scenarios are `sensitivity/sens_v11e_mu_r_0p11`
+  and `sens_v11e_mu_r_0p3` (were 0.08 / 0.19, the band at mu_p 0.5). The calibrated point (mu_p 0.3,
   mu_w 0.5, mu_r 0.16) was then run with 3 seeds
   ([15](15_calibration_targets.md), "Calibration outcome"). Data:
   `data/raw/validation/results/heap_mup0p3/`.
@@ -265,11 +272,11 @@ band."
 
 ## Open items / validation
 
-- **V11e at the calibrated mu_p:** the sensitivity band 33 / 41 deg was
-  mu_r 0.08 / 0.19 at mu_p 0.5; at mu_p 0.3 the heap curve gives 34.0 deg at
-  0.13 and levels off near 39 deg at 0.18-0.21, so neither end is bracketed.
-  Heaps at mu_r ~0.08-0.10 and ~0.25-0.30 (mu_p 0.3) are needed before the
-  V11e scenarios (`sensitivity/sens_v11e_*`, still at 0.08 / 0.19) are run.
+- ~~**V11e at the calibrated mu_p:** the sensitivity band 33 / 41 deg was
+  mu_r 0.08 / 0.19 at mu_p 0.5; heaps at mu_p 0.3 are needed before the
+  V11e scenarios are run.~~ Done 2026-11-09 / 12: mu_r 0.11 (33 deg) and
+  0.30 (~40 deg, 41 deg unreachable), Decision; data
+  `data/raw/validation/results/heap_mup0p3_all/`.
 - Search further for a measured repose angle of coarse SAG-feed or ROM ore
   (peer-reviewed or official CEMA 550 table).
 - Heap test design: rock-only spheres with the simulated rock size, rough

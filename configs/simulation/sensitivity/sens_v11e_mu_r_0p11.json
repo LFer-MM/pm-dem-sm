@@ -1,5 +1,5 @@
 {
-  "name": "sens_v11e_mu_r_0p19",
+  "name": "sens_v11e_mu_r_0p11",
   "seed": 0,
   "run": {
     "type": "calibrate"
@@ -41,7 +41,7 @@
     }
   ],
   "contact": {
-    "rolling_resistance": 0.19
+    "rolling_resistance": 0.11
   },
   "solver": {
     "dt_s": 2.5e-05,
