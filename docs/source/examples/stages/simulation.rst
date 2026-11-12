@@ -116,6 +116,10 @@ Running
    # Post-process a run directory again (dem-sim does it after every successful run):
    pm-dem-sm dem-post data/raw/yade_runs/sag_a_dataset_rmic_s0
 
+   # Record 25 s more after a finished record stage (a charge still evolving),
+   # from its end-of-record checkpoint; frames, log and snapshots continue:
+   pm-dem-sm dem-sim --run-dir data/raw/yade_runs/sag_a_dataset_sic_s0 --extend-record 25
+
    # Watch it from another terminal, while it runs or afterwards:
    pm-dem-sm dem-view data/raw/yade_runs/sag_a_dataset_rmic_s0
 

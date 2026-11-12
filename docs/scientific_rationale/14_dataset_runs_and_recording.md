@@ -7,7 +7,7 @@
 | Start | Load a saved IC; damping 0; mill starts from rest at t = 0 and turns at 9.5 rpm ([11](11_mill_speed.md)) |
 | Recording | From t = 0, one frame every **0.05 s** (columns `id,x,y,z,r,m,vx,vy,vz`) plus an exact frame-time index and a mill log (charge angle, power, kinetic energy, overlaps) |
 | RMIC duration | **20 s** (3.2 revolutions at 9.5 rpm; Kishida: 2.5) -- decided 2026-11-02 |
-| SIC duration | **35 s** (5.5 revolutions; Kishida: 5) -- decided 2026-11-02 |
+| SIC duration | **85 s** (13.4 revolutions) -- 35 s (5.5 revolutions; Kishida: 5) decided 2026-11-02, extended 2026-11-11 because the mixing had not levelled off (Analysis, "Calibrated datasets") |
 | Training window | 20 frames (1 s) starting **after the measured quasi-steady state** of kinetic energy / power -- not a fixed 3-4 s |
 | Replicates | **5 per IC type, each with its own seed** (decided 2026-11-02): different random initial packings of the same charge, everything else identical; they show that the metrics do not depend on the microscopic arrangement. More if the spread is large compared with the segregation effect. Seed and thread count go into each manifest |
 | Frame storage | Binary float32 (parquet), not per-frame CSV kept long term |
@@ -136,6 +136,34 @@ for prediction; SIC runs are 35 s.
 Data (not in git): `data/raw/yade_runs/sag_a_make_ic_rmic_s0/`,
 `data/raw/yade_runs/sag_a_dataset_rmic_s0/` (`validation.json`).
 
+### Calibrated datasets (2026-11-10/12)
+
+Phase C: 5 RMIC (seeds 1-5; `_s0` is the pilot) and 5 SIC (seeds 0-4)
+datasets from the calibrated packings (mu_p 0.3, mu_w 0.5, mu_r 0.16;
+3,437 balls + 17,270 rocks), 2 x 10 threads.
+
+- **RMIC (20 s):** quasi-steady kinetic energy 4 s, power 4-6 s, charge
+  angle 5 s; Lacey 0.997-0.998 at a plateau; every check passed. **C14-5
+  confirmed:** the 6.0-7.0 s window starts after the slowest quasi-steady
+  time (6 s on one seed, 4-5 s on the others).
+- **SIC (35 s as first recorded):** the charge motion is steady within
+  seconds (5-s means of the charge angle 50-51 deg, power ~1.1 MW), but the
+  mixing is not: Lacey 0.85-0.88 at 35 s and still rising, V7 not met. A
+  copy of seed 0 was extended in 25 s chunks (`--extend-record`, commit
+  `aadae35`) to find where it levels off:
+
+  | t (s) | 10 | 35 | 50 | 60 | 70 | 80 |
+  |---|---|---|---|---|---|---|
+  | Lacey (5-s means, seed 0) | 0.839 | 0.871 | 0.897 | 0.906 | 0.918 | 0.923 |
+
+  The increments fall from ~0.01 to ~0.001 per 5 s; an exponential fit from
+  15 s gives an asymptote ~0.96 (0.93-0.97) with a time constant ~50 s, so
+  85 s covers ~75 % of the rise. **All five SIC datasets were extended to
+  85 s** (13.4 revolutions), each from its own end-of-record checkpoint:
+  Lacey 0.918-0.925 at 80-85 s, plateau and V7 met, every check passed, no
+  escapes. 95 % of the rise would need ~165 s; not pursued. The SIC
+  scenario now records 85 s directly.
+
 ## Verdict and how to defend it
 
 "Dataset runs start from the static IC and are recorded from t = 0 every
@@ -158,9 +186,10 @@ state of kinetic energy, the criterion used by Kishida et al. (§3, Fig. S1)."
 - ~~Pilot RMIC run: measure the time to quasi-steady kinetic energy / power /
   charge angle; set `start_frame` / `dt0` from it.~~ Done (C14-5, commit `10da406`):
   6.0 s, window 6.0-7.0 s. Confirm on the first calibrated RMIC and SIC
-  datasets.
-- Check the Lacey index curves reach their plateau within the run length
-  (SIC 5 rev); extend if not.
+  datasets. Confirmed on the 5 calibrated RMIC datasets (4-6 s).
+- ~~Check the Lacey index curves reach their plateau within the run length
+  (SIC 5 rev); extend if not.~~ Done 2026-11-11: RMIC at a plateau within
+  20 s; SIC not at 35 s, extended to 85 s (Analysis, "Calibrated datasets").
 - ~~Separate run types in the code: `calibrate` (spin-up, steady state),
   `make_ic`, `dataset` (record from rest).~~ Done (C14-1, commit `69e6ea0`).
 

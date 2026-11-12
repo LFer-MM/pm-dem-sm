@@ -379,7 +379,8 @@ def test_material_set_id():
 
 def test_sag_a_dataset_scenarios_pair_with_make_ic():
     root = REPO_ROOT / "configs" / "simulation"
-    for kind, seconds in (("rmic", 20.0), ("sic", 35.0)):
+    # SIC 85 s since 2026-11-11 (35 s did not reach the Lacey plateau).
+    for kind, seconds in (("rmic", 20.0), ("sic", 85.0)):
         ic = load_scenario(root / f"sag_a_make_ic_{kind}.json")
         ds = load_scenario(root / f"sag_a_dataset_{kind}.json")
         assert ic.run.type == "make_ic" and ds.run.type == "dataset"
