@@ -61,7 +61,7 @@ length only there ([15](15_calibration_targets.md)).
 | 11 | [11_mill_speed.md](11_mill_speed.md) | SAG_A median 9.5 rpm = 73.0 % of critical (N_c 13.01 rpm); SAG_B-E 70.4-76.2 %; compared as % critical |
 | 12 | [12_charge_fill_and_particles.md](12_charge_fill_and_particles.md) | Jb 18.8 % / Jc 27.6 % (SAG_A) in Morrell's convention (D inside liners, lifters not subtracted); counts from a simulated grind-out + mixed crash stop (estimate ~3,750 balls + ~14,650 rocks); phi is a result |
 | 13 | [13_initial_conditions.md](13_initial_conditions.md) | SIC / RMIC at rest, undamped settle with a geometric stop rule, velocities zeroed; SIC = rock bottom, balls top |
-| 14 | [14_dataset_runs_and_recording.md](14_dataset_runs_and_recording.md) | Record from rest every 0.05 s; RMIC 20 s, SIC 35 s (revolution-matched); 5 replicates per IC; Lacey on 0.3 m cubes; radial segregation as result, axial only as end-wall check |
+| 14 | [14_dataset_runs_and_recording.md](14_dataset_runs_and_recording.md) | Record from rest every 0.05 s; RMIC 20 s, SIC 85 s (35 s revolution-matched at first; extended because the SIC mixing levels off only after ~80 s); 5 replicates per IC; Lacey on 0.3 m cubes; radial segregation as result, axial only as end-wall check |
 | 15 | [15_calibration_targets.md](15_calibration_targets.md) | Match SAG_A's bulk toe 213.8 deg (IQR 213.4-214.5) and shoulder 26.6 deg (IQR 26.0-27.3) at Jb 18.8 % / Jc 27.6 % / 9.5 rpm (0 deg at 3 o'clock, CCW), band widened to the replicate scatter if larger; SAG_B-E show these are typical; power only for V4 and V15 |
 | 16 | [16_validation_checks.md](16_validation_checks.md) | Per-run checks (V1-V8, V12-V14, V16, V18, V19) and one-off studies (V9-V11e, V15, V17), mapped to code items |
 

@@ -115,7 +115,10 @@ therefore never reached; a geometric criterion is.
   surrogate must be trained on RM-IC data (uniform spatial coverage) to
   predict both ICs; SIC runs are mainly prediction / test cases.
 
-- **J of a starting packing is below Jc, by design.** The ICs are poured and
+- **J of a starting packing differs from Jc, by design** (calibrated packings,
+  2026-11-10: **RMIC J 0.260, below** Jc -- a dense random 2:1 bed, phi 0.597;
+  **SIC J 0.286, above** -- balls and rocks in separate layers cannot fill each
+  other's gaps, phi 0.541). For the RMIC case: the ICs are poured and
   settled without turning, so they pack like a random 2:1 bed (pilot RMIC:
   J = 0.2588, phi = 0.5845) rather than like the plant's crash-stopped
   charge (J = 0.276). The plant's Jc is matched through the particle counts

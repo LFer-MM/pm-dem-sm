@@ -6,7 +6,8 @@ Friction is the **primary calibration variable**.
 
 - **Particle-particle friction: one uniform mu_p for all three pairs**
   (steel-steel, steel-rock, rock-rock), as in Cleary & Morrison 2016
-  (decided 2026-10-20). Baseline mu_p = 0.5. The Owen & Cleary set
+  (decided 2026-10-20). Baseline mu_p = 0.5; **calibrated mu_p = 0.3**
+  (2026-11-08, "Outcome" below). The Owen & Cleary set
   0.4 / 0.5 / 0.8 is run **once as a sensitivity case**, not calibrated.
 - Only two friction parameters are calibrated, because there are only two
   targets (plant toe / shoulder, [15](15_calibration_targets.md)): mu_p and a

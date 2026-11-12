@@ -181,7 +181,7 @@ it shows the front (z = 0) and back outlines of the liner and one
 lengthwise line per lifter, with the angle marks on the front face, and
 keeps the viewing angle from one view to the next.
 
-At full scale (19,519 particles) a 2D view takes about 0.6 s to draw, so a
+At full scale (20,707 particles) a 2D view takes about 0.6 s to draw, so a
 GIF of a 20 s dataset (400 frames) takes about 4 minutes. MP4 output needs
 ``ffmpeg`` on ``PATH``.
 

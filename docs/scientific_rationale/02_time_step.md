@@ -227,6 +227,10 @@ of the full-scale lifter benchmark, with part of the charge loaded: ~400
 steps/s (expect less with SAG_A's ~18,400 particles). A 35 s SIC run at
 2.5e-5 s is 1.4 M steps (~1 h at that rate); at 1e-4 s it would be ~15 min. The 4x
 cost buys a collision resolution that the cited literature requires.
+Measured later at full scale (20,707 particles, 2026-11): ~4.75 min of wall
+time per simulated second alone at 16 threads (~70 steps/s), 7-9 min with two
+runs side by side at 10 threads each; a 20 s RMIC dataset took ~2.8 h and an
+85 s SIC dataset ~13 h at 10 threads.
 
 ## Verdict and how to defend it
 

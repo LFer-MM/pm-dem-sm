@@ -54,7 +54,7 @@ No spin-up stage before recording: spinning up first would destroy the IC.
 |---|---|
 | `config.py:210, 215, 216` | `start_frame = 126`, `dt0 = 7.05`, `dt_step = 0.05`: training window 6.0-7.0 s after the pilot's quasi-steady time (C14-5, commit `10da406`); `configs/pipeline_example.json` keeps 66 / 4.05 for the old-dataset walkthrough |
 | `config.py:258-259`, `configs/pipeline_example.json` | `MetricsOptions.cell_size = 0.3` (C14-2, commit `5c194ab`), `min_particles_per_cell = 15` |
-| `scenario.py` (`RunOptions`, `RUN_TYPE_STAGES`), `run_simulation.py` (`_stage_save_ic`, `_stage_load_ic`) | Three run types (C14-1, commit `69e6ea0`): `calibrate` (build, fill, settle, spinup, record), `make_ic` (build, fill, settle, save_ic: velocities zeroed; `ic/positions.csv`, `ic/scene.yade.gz`, `ic/ic.json` with seed, counts, J, phi, settle result and the material-set id in the IC's name) and `dataset` (load_ic, record from rest at t = 0; refuses an IC whose material-set id differs). `--seed N` (`run_simulation.py`, `pm-dem-sm dem-sim`) makes replicate N and appends `_sN` to the run name; `{seed}` in a dataset's `run.ic_dir` pairs it with `make_ic` replicate N. SAG_A scenarios: `configs/simulation/sag_a_make_ic_{rmic,sic}.json`, `sag_a_dataset_{rmic,sic}.json` (20 / 35 s) |
+| `scenario.py` (`RunOptions`, `RUN_TYPE_STAGES`), `run_simulation.py` (`_stage_save_ic`, `_stage_load_ic`) | Three run types (C14-1, commit `69e6ea0`): `calibrate` (build, fill, settle, spinup, record), `make_ic` (build, fill, settle, save_ic: velocities zeroed; `ic/positions.csv`, `ic/scene.yade.gz`, `ic/ic.json` with seed, counts, J, phi, settle result and the material-set id in the IC's name) and `dataset` (load_ic, record from rest at t = 0; refuses an IC whose material-set id differs). `--seed N` (`run_simulation.py`, `pm-dem-sm dem-sim`) makes replicate N and appends `_sN` to the run name; `{seed}` in a dataset's `run.ic_dir` pairs it with `make_ic` replicate N. SAG_A scenarios: `configs/simulation/sag_a_make_ic_{rmic,sic}.json`, `sag_a_dataset_{rmic,sic}.json` (20 / 85 s; SIC 35 s until 2026-11-11) |
 | `capture.py`, `simulation/postprocess.py` (`convert_frames`) | YADE writes one CSV per frame (its Python has no pandas / pyarrow); after a successful run `pm-dem-sm dem-sim` (or `dem-post <run-dir>`) converts them to float32 parquet (`id` int32, `m` string) and deletes the CSVs (C14-4, commit `69e6ea0`). Smoke test: 20 frames of 360 particles, 18 kB each |
 | `yade_dem/capture.py` (`start_preview`), `run_simulation.py` (`_ensure_preview`) | Preview snapshots for watching a run (not training data): `record.preview_interval_s` (default 0.5 s, 0 = off) writes `preview/snap_*.csv` (frame columns) and `preview_index.csv` (time, stage, mill angle from a liner facet's orientation) in **every** stage, each file written under a temporary name and renamed; a resumed run drops the snapshots from the checkpoint time on. `pm-dem-sm dem-view` shows them with the frames (commit `8e1d4aa`) |
 | `simulation/postprocess.py` (`segregation_profiles`, `lacey_series`) | `dataset` runs: radial large-particle fraction per frame (12 bins out to the radius inside liners) for the whole slice, the centre layer and the near-wall layers (one ball diameter from each end wall, V19), in `analysis/radial_fraction.parquet`; Lacey's index per frame on 0.3 m cells in `analysis/lacey.csv`; both summarised in the validation table (C14-3, commit `69e6ea0`) |
@@ -131,7 +131,7 @@ With `frames_in` = 15 the prediction is seeded with frames 126-140
 Provisional on two counts, to confirm on the first calibrated datasets:
 the calibrated friction can change the spin-up, and an SIC charge may take
 longer than this RMIC one. The 20 s RMIC run leaves 13 s after the window
-for prediction; SIC runs are 35 s.
+for prediction; SIC runs are 85 s (35 s until 2026-11-11, "Calibrated datasets").
 
 Data (not in git): `data/raw/yade_runs/sag_a_make_ic_rmic_s0/`,
 `data/raw/yade_runs/sag_a_dataset_rmic_s0/` (`validation.json`).
@@ -168,8 +168,9 @@ datasets from the calibrated packings (mu_p 0.3, mu_w 0.5, mu_r 0.16;
 
 "Dataset runs start from the static IC and are recorded from t = 0 every
 0.05 s, as in Kishida et al. (2025, §3). Durations are scaled by revolutions
-(20 s and 35 s, i.e. 3.2 and 5.5 revolutions, against 2.5 and 5 in the
-reference at 15 rpm), five replicates per initial condition show the
+(20 s and 85 s, i.e. 3.2 and 13.4 revolutions, against 2.5 and 5 in the
+reference at 15 rpm; the SIC runs are longer because their mixing levels
+off only after ~80 s), five replicates per initial condition show the
 run-to-run spread, mixing is measured with Lacey's index on 0.3 m cubic
 cells (Kishida et al. found it insensitive below 0.04 D) and segregation by
 the radial fraction of large particles, and the 20-frame training window is placed after the measured quasi-steady
@@ -197,7 +198,7 @@ state of kinetic energy, the criterion used by Kishida et al. (§3, Fig. S1)."
 
 | ID | Change | Current code | When |
 |---|---|---|---|
-| C14-1 | Run types: `dataset` (load IC, start from rest, record from t = 0 for 20 / 35 s), `calibrate` (spin-up, then record), `make_ic` | Done (`69e6ea0`) | Before datasets |
+| C14-1 | Run types: `dataset` (load IC, start from rest, record from t = 0 for 20 / 35 s; SIC 85 s since 2026-11-11), `calibrate` (spin-up, then record), `make_ic` | Done (`69e6ea0`) | Before datasets |
 | C14-2 | `MetricsOptions.cell_size = 0.3` | Done (`5c194ab`) | With C14-3 |
 | C14-3 | Radial large-particle fraction (result) and axial profile with near-wall vs centre layers (artefact check) | Done (`69e6ea0`) | Before datasets |
 | C14-4 | Frames to parquet float32 at the end of each run; drop the per-frame CSVs | Done (`69e6ea0`) | Any time |

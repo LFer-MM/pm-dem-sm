@@ -183,10 +183,10 @@ class ContactOptions:
         rolling_resistance: mu_r, YADE's ``eta`` (plastic rolling moment
             ``mu_r R_mean |F_n|``), one value for all contacts
             (docs/scientific_rationale/06_rolling_resistance.md). Default
-            :data:`pm_dem_sm.config.ROLLING_RESISTANCE` = 0.13 (37 deg in the
-            heap test, C06-3); ``0`` switches the rolling moment off. Runs
-            record it as provisional until the heap is re-checked with the
-            calibrated mu_p.
+            :data:`pm_dem_sm.config.ROLLING_RESISTANCE` = 0.16 (37 deg in the
+            heap test at the calibrated mu_p 0.3; C06-3 re-check);
+            ``0`` switches the rolling moment off. Runs record it as
+            provisional because the 37 deg target is a handbook value.
     """
 
     model: str = "hertz_mindlin"

@@ -28,12 +28,13 @@ is a handbook value. Scenarios in ``configs/simulation/``:
    check the pipeline (calibrate, make_ic -> dataset), not the physics.
 ``sag_slice_lifters.json``
    The SAG_A slice (10.7128 m inside liners, 0.6 m deep, 9.5 rpm) with the
-   grind-out charge (16,082 rocks, 3,437 steel balls; C12-3), SAG_A's new
+   grind-out charge (17,270 rocks, 3,437 steel balls; C12-3, rechecked at the
+   calibrated friction), SAG_A's new
    liner (36 lifters of 395 mm at 35 deg alternating with 130 mm plates)
    and frictionless slice end walls; a ``calibrate`` run.
 ``sag_a_make_ic_rmic.json``, ``sag_a_make_ic_sic.json``, ``sag_a_dataset_rmic.json``, ``sag_a_dataset_sic.json``
    The same slice as initial conditions (randomly mixed / segregated) and
-   datasets recorded from them (20 s / 35 s).
+   datasets recorded from them (20 s / 85 s).
 ``sensitivity/``
    The one-off sensitivity runs (V9, V10, V11, V11b-e), each one change
    from ``sens_baseline.json``.
@@ -75,7 +76,7 @@ Run types and stages
 ``dataset``
    ``load_ic``, ``record``: the IC of ``run.ic_dir`` is loaded (refused if its
    material-set id differs) and recorded from rest at t = 0 for
-   ``record.duration_s`` (20 s RMIC, 35 s SIC).
+   ``record.duration_s`` (20 s RMIC, 85 s SIC).
 
 The stages:
 
