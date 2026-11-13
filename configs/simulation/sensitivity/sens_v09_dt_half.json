@@ -51,5 +51,8 @@
     "duration_s": 12.632,
     "frame_interval_s": 0.05,
     "monitor_interval_s": 0.05
+  },
+  "fill": {
+    "settle_steps": 40000
   }
 }
