@@ -116,6 +116,7 @@ ratio that drives segregation, a run with 2650 kg/m^3 (Cleary & Morrison
 
 ## Open items
 
+- **V11b result (2026-11-12, [16](16_validation_checks.md)):** 2650 kg/m^3 moved the toe -0.1 deg, the shoulder +0.4 deg, the power -0.9 %; segregation unchanged (Lacey 0.988, large fractions 0.179 / 0.118). Within the replicate scatter except the shoulder at its edge: ore density is not a limitation.
 - **Sensitivity run (V11b):** rock density 2650 vs. 2850 kg/m^3 at the
   calibrated parameters, same moduli (f = 26), 3 revolutions; compare toe,
   shoulder, power **and steel / rock segregation** with the replicate

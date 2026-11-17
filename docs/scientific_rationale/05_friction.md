@@ -158,6 +158,7 @@ Cleary & Morrison 2016 (Table 2), with Owen's set as a sensitivity case."
 
 ## Open items / validation
 
+- **Owen set result (V11c, 2026-11-12, [16](16_validation_checks.md)):** 0.4 / 0.5 / 0.8 instead of uniform 0.3 moved the toe +1.9 deg, the shoulder +2.0 deg, the power -0.6 %; Lacey 0.989 (baseline 0.988), inner large-particle fraction 0.134 (0.117). Not within the replicate scatter literally, but small: the uniform mu_p is justified.
 - **Owen sensitivity run** (decided 2026-10-20): after calibration, one run
   with steel-steel / steel-rock / rock-rock = 0.4 / 0.5 / 0.8 scaled so that
   the charge shape stays matched (or plain 0.4 / 0.5 / 0.8 with the

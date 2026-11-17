@@ -254,6 +254,7 @@ surrogate model (Kishida et al. 2025, §3)."
 
 ## Open items / validation
 
+- **V9 result (2026-11-13, [16](16_validation_checks.md) "Sensitivity results"):** dt / 2 moved the toe +1.0 deg, the shoulder -0.9 deg and the power +0.8 %: not within the (very narrow) replicate scatter, but dt is converged at the 1 deg / 1 % level. The pour needs `fill.settle_steps` scaled with 1/dt (it counts steps).
 - Measure the impact-velocity distribution in a pilot run (99th percentile of
   normal relative velocity at contact) and recompute the steps-per-collision
   table with it (logged since C02-3; smoke test, 22 rpm in a 2 m mill: spin-up

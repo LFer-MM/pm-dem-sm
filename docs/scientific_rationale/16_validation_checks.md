@@ -65,6 +65,49 @@ written to the run manifest so each dataset can be defended individually.
   is far outside the replicate scatter and is attributed to the reference
   angles (Maleki-Moghaddam's correlation), as argued in topic 15.
 
+### Sensitivity results (Phase D, 2026-11-12/13)
+
+One run per check at the calibrated point (mu_p 0.3, mu_w 0.5, mu_r 0.16;
+3,437 + 17,270 particles), each pouring its own bed, spinning up to steady
+state and recording 3 revolutions (V9: 2), compared with `sens_baseline`
+(the same, unchanged). V10 ran earlier against the calibrated point at
+16,082 rocks. Every run passed its per-run checks. Segregation (V11,
+V11b-e) was computed afterwards from the saved frames with the dataset
+functions (`postprocess.segregation_profiles`, `lacey_series`;
+`data/raw/calibration/sensitivity_segregation.json`).
+
+**Yardstick (V12, the calibrated point's 3 seeds):** toe +-0.2 deg,
+shoulder +-0.2 deg, power +-5 kW; Lacey 0.992 +- 0.0002; large-particle
+fraction in the outer (liner-side) half of the radius 0.177 +- 0.0005, in
+the inner half 0.121 +- 0.003; near-wall minus centre -0.133 +- 0.002. The
+baseline itself (one seed, 3 recorded revolutions) differs from the seeds'
+mean by -0.3 deg (toe) and -0.004 (Lacey): record length alone moves the
+time averages by about that much.
+
+| Check | Change | Toe | Shoulder | Power | Lacey | Large fraction outer / inner | Literal verdict (within +-2 sd) | Interpretation |
+|---|---|---|---|---|---|---|---|---|
+| baseline | -- | 239.8 | 37.3 | 1,114 kW | 0.988 | 0.179 / 0.117 | -- | -- |
+| V9 | dt / 2 (2.5e-5 -> 1.25e-5 s) | +1.0 | -0.9 | +0.8 % | -- | -- | not within | small; dt converged at the 1 deg / 1 % level |
+| V10 | E x 0.5 / x 2 | +0.0 / +0.1 | +0.0 / +0.6 | -0.3 / +0.8 % | -- | -- | within / shoulder just outside | stiffness reduction does not drive the results (f = 52 fails V3, expected) |
+| V11 | liner-friction end walls | **+6.8** | **+28.6** | +1.6 % | **0.964** | **0.196 / 0.172** | not within | **real effect**: in a 0.6 m slice the walls hold back the whole charge (2.4x more particles carried to 45-70 deg across the whole width, spin-up 4.25 rev); confirms frictionless end walls |
+| V11b | rock density 2,650 | -0.1 | +0.4 | -0.9 % | 0.988 | 0.179 / 0.118 | shoulder at the edge, rest within | no effect |
+| V11c | Owen pair set 0.4 / 0.5 / 0.8 | +1.9 | +2.0 | -0.6 % | 0.989 | 0.178 / 0.134 | not within | small; uniform mu_p justified (05) |
+| V11d | e -0.1 / +0.1 | +0.9 / -1.0 | -0.6 / +0.3 | +0.2 / +0.1 % | 0.990 / 0.987 | 0.178 / 0.120 ; 0.179 / 0.115 | not within | small |
+| V11e | mu_r 0.11 (33 deg) / 0.30 (~40 deg) | -1.4 / +2.3 | -1.6 / +1.9 | -0.8 / +1.5 % | 0.991 / 0.986 | 0.177 / 0.109 ; 0.180 / 0.131 | not within | small; the repose band moves the angles by ~2 deg |
+
+**Literally**, only V11b (and V10) stay within the replicate scatter: the
+yardstick from three seeds is very narrow (0.2 deg, 0.0002 in Lacey), and
+record length alone shifts the averages by about that much. **In
+substance**, every modelling choice except the end walls moves the toe and
+shoulder by at most ~2 deg, the power by < 2 % and the segregation state
+barely (Lacey 0.986-0.991, outer fraction +-0.003, inner fraction within
+0.02), an order of magnitude below the 26 deg toe residual of the
+calibration ([15](15_calibration_targets.md)). The end-wall choice is the
+one that matters, and the frictionless walls are what the setup uses.
+The first V9 run failed in the pour (`fill.settle_steps` counts steps, so
+half dt halved the settling time; V13 abort); fixed in commit `5d5577b`
+(40,000 steps = the baseline's 0.5 s) and rerun.
+
 ## Implementation
 
 The code, rerun commands, stored results and provenance (commit, date) of

@@ -483,6 +483,13 @@ simulation:**
    against the plant correlation. A steep charge is what an ore with a
    37 deg repose angle gives; flattening it needed a 23 deg ore (probe A).
 
+7. The modelling choices do not explain it: the sensitivity runs (Phase D,
+   [16](16_validation_checks.md) "Sensitivity results") move the toe and
+   shoulder by at most ~2 deg for dt, stiffness, ore density, the Owen
+   friction set, restitution +-0.1 and the whole repose band (33-40 deg).
+   Only frictional slice end walls move the charge a lot (shoulder +29 deg,
+   further from the target), and the setup uses frictionless ones.
+
 V8 (toe / shoulder within SAG_A's interquartile range widened to the
 replicate scatter) is therefore **not met**, and is reported with this
 explanation rather than forced. Data (not in git):

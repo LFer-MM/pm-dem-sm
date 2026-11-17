@@ -100,6 +100,23 @@ The mixed datasets confirmed C14-5 (quasi-steady at 4-6 s).
 `calibration/logs/` holds the stdout of every grid, probe, final and
 production run, named after the run.
 
+### Sensitivity set (Phase D, set C)
+
+| Folder | Made | Purpose | Status |
+|---|---|---|---|
+| `yade_runs/sens_baseline` | 11-12 09:01 - 15:13 | calibrated point, one seed, 3 recorded revolutions: the reference of the sensitivity runs | current |
+| `yade_runs/sens_v11_end_walls_liner`, `sens_v11b_rock_density_2650`, `sens_v11c_owen_friction`, `sens_v11d_restitution_{minus,plus}_0p1`, `sens_v11e_mu_r_{0p11,0p3}` | 11-12 09:34 - 11-13 11:09 (2 x 10 threads) | V11, V11b-e: one change each from the baseline | current; results in topic 16 "Sensitivity results" |
+| `yade_runs/sens_v09_dt_half_failed_pour` | 11-12 09:01 - 09:34 | first V9 run: failed in the pour (half dt halved the settling time per batch; V13 abort). Kept as the record of the failure | record |
+| `yade_runs/sens_v09_dt_half` | 11-13 11:40 - 18:50 (20 threads) | V9 rerun with `fill.settle_steps` 40,000 (commit `5d5577b`) | current |
+| `calibration/sensitivity_segregation.json` | 11-17 | segregation metrics (Lacey, radial large fraction, near-wall vs centre) of the baseline, V11, V11b-e and the calibrated point's three seeds (the yardstick), from the saved frames | current |
+
+**K10 (11-12 - 11-17):** Phase D. Every modelling choice except the end
+walls moves the toe / shoulder by <= ~2 deg, the power by < 2 % and the
+segregation state barely; frictional end walls raise the shoulder by 29
+deg (the slice artefact the setup avoids). Reported both literally (most
+checks are not within the very narrow three-seed scatter) and in
+substance (topic 16).
+
 ## Archive (2026-11-12)
 
 To free the system disk (8.9 -> 17 GB free) before Phase D, the folders

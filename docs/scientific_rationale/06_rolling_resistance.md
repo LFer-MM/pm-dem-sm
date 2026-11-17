@@ -272,6 +272,7 @@ band."
 
 ## Open items / validation
 
+- **V11e result (2026-11-13, [16](16_validation_checks.md)):** mu_r 0.11 (33 deg) / 0.30 (~40 deg) moved the toe -1.4 / +2.3 deg, the shoulder -1.6 / +1.9 deg, the power -0.8 / +1.5 %; Lacey 0.991 / 0.986. The uncertain repose target moves the charge shape by ~2 deg either way.
 - ~~**V11e at the calibrated mu_p:** the sensitivity band 33 / 41 deg was
   mu_r 0.08 / 0.19 at mu_p 0.5; heaps at mu_p 0.3 are needed before the
   V11e scenarios are run.~~ Done 2026-11-09 / 12: mu_r 0.11 (33 deg) and

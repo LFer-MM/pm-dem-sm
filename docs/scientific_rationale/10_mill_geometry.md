@@ -257,6 +257,7 @@ reported separately because it has no counterpart in the real mill."
 
 ## Open items / validation
 
+- **V11 result (2026-11-12, [16](16_validation_checks.md)):** liner-friction end walls moved the shoulder **+28.6 deg** (65.9), the toe +6.8 deg, the power +1.6 %, lowered Lacey to 0.964 and lengthened the spin-up to 4.25 revolutions. In a 0.6 m slice the walls hold back the whole charge (2.4x more particles carried to 45-70 deg across the whole width, not only next to the walls). This is the slice artefact frictionless end walls avoid: the decision is confirmed.
 - Design data SAG_A-E received (CSV, 2026-10-30; plates verified flat, LH
   from the inside shell; lengths flange to flange; SAG_A EGL 17.21 ft and
   lifter base width 523 mm and lifter section added 2026-11-01; belly

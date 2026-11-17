@@ -129,6 +129,7 @@ et al. (2013), so the coefficient holds at all impact velocities."
 
 ## Open items / validation
 
+- **V11d result (2026-11-12/13, [16](16_validation_checks.md)):** all e -0.1 / +0.1 moved the toe +0.9 / -1.0 deg, the shoulder -0.6 / +0.3 deg, the power +0.2 / +0.1 %; Lacey 0.990 / 0.987. Small.
 - Binary-collision test in YADE at the chosen dt: measured e must match the
   input within ~2 % for each pair ([16](16_validation_checks.md)).
 - Interstitial slurry not modelled (limitation, see Analysis).

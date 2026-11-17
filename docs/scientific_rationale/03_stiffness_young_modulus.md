@@ -205,6 +205,7 @@ scaling with particle size in coarse-grained DEM, not softening for dt.
 
 ## Open items / validation
 
+- **V10 result (2026-11-09, [16](16_validation_checks.md)):** E x 0.5 / x 2 moved toe and shoulder by <= 0.6 deg and power by < 1 %; the stiffness reduction does not drive the results. E x 0.5 fails V3 (overlaps), as expected for half the stiffness.
 - Measure mean / P99 / max overlap relative to the diameter, per contact
   pair type, in a steady-rotation run with the f = 26 set.
 - **V10** (kept, 2026-10-19): runs at E x 0.5 (f = 52) and E x 2 (f = 13),
