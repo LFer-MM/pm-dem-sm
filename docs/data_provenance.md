@@ -105,9 +105,12 @@ production run, named after the run.
 | Folder | Made | Purpose | Status |
 |---|---|---|---|
 | `yade_runs/sens_baseline` | 11-12 09:01 - 15:13 | calibrated point, one seed, 3 recorded revolutions: the reference of the sensitivity runs | current |
-| `yade_runs/sens_v11_end_walls_liner`, `sens_v11b_rock_density_2650`, `sens_v11c_owen_friction`, `sens_v11d_restitution_{minus,plus}_0p1`, `sens_v11e_mu_r_{0p11,0p3}` | 11-12 09:34 - 11-13 11:09 (2 x 10 threads) | V11, V11b-e: one change each from the baseline | current; results in topic 16 "Sensitivity results" |
-| `yade_runs/sens_v09_dt_half_failed_pour` | 11-12 09:01 - 09:34 | first V9 run: failed in the pour (half dt halved the settling time per batch; V13 abort). Kept as the record of the failure | record |
-| `yade_runs/sens_v09_dt_half` | 11-13 11:40 - 18:50 (20 threads) | V9 rerun with `fill.settle_steps` 40,000 (commit `5d5577b`) | current |
+| `yade_runs/sens_v11_end_walls_liner`, `sens_v11b_rock_density_2650`, `sens_v11c_owen_friction`, `sens_v11d_restitution_{minus,plus}_0p1`, `sens_v11e_mu_r_{0p11,0p3}` | 11-12 09:34 - 11-13 11:09 (2 x 10 threads) | V11, V11b-e: one change each from the baseline | current; results in topic 16 "Sensitivity results"; **archived** (NVMe, 2026-11-19) |
+| `yade_runs/sens_v09_dt_half_failed_pour` | 11-12 09:01 - 09:34 | first V9 run: failed in the pour (half dt halved the settling time per batch; V13 abort). Kept as the record of the failure | record; **archived** (NVMe, 2026-11-19) |
+| `yade_runs/sens_v09_dt_half` | 11-13 11:40 - 18:50 (20 threads) | V9 rerun with `fill.settle_steps` 40,000 (commit `5d5577b`) | current; **archived** (NVMe, 2026-11-19) |
+| `yade_runs/sens_baseline_s1`, `sens_baseline_s2` | 11-19 06:58 - 15:31 (3 x 6 threads) | baseline replicates (seeds 1, 2; 3 recorded revolutions): the replicate scatter recorded like the sensitivity runs | current |
+| `yade_runs/sens_best_case_combined` | 11-19 06:58 - 15:27 | combined best case: mu_r 0.11 + restitution +0.1 (commit `5766625`) | current |
+| `calibration/replicates_3rev_and_best_case.json` | 11-19 | toe, shoulder, power and segregation of the 3 baseline seeds and the best case; the 3-revolution scatter | current |
 | `calibration/sensitivity_segregation.json` | 11-17 | segregation metrics (Lacey, radial large fraction, near-wall vs centre) of the baseline, V11, V11b-e and the calibrated point's three seeds (the yardstick), from the saved frames | current |
 
 **K10 (11-12 - 11-17):** Phase D. Every modelling choice except the end
@@ -116,6 +119,11 @@ segregation state barely; frictional end walls raise the shoulder by 29
 deg (the slice artefact the setup avoids). Reported both literally (most
 checks are not within the very narrow three-seed scatter) and in
 substance (topic 16).
+
+**K11 (11-19):** two more baseline seeds (3 revolutions) widen the yardstick
+(shoulder +-0.37 deg, Lacey +-0.0013): V10 and V11b within on everything,
+V11d nearly; a combined best case (mu_r 0.11 + e +0.1) moves the toe by
+2.8 deg -- the plausible levers together cannot reach the target.
 
 ## Archive (2026-11-12)
 
@@ -142,6 +150,15 @@ mount point first). Kept on the system disk: the production packings and
 datasets, the pilot (`sag_a_make_ic_rmic_s0`, `sag_a_dataset_rmic_s0`), the
 reported calibrated point (`cal_final_..._r17270_s0..s2`), `calibration/`,
 `validation/`.
+
+**Second archive batch (2026-11-19):** the Phase D variants (`sens_v09_*`,
+`sens_v11*`; 9 folders, 4.8 GB; `sens_baseline` stays as the reference) were
+copied to `/mnt/archive/pm-dem-sm-archive/data/raw/yade_runs/` (list:
+`ARCHIVED_ITEMS_phase_d.txt`), verified byte for byte (0 differences,
+3,810 / 3,810 files) and deleted from the system disk; after the deletion
+every archived file was read back without error (2,906 parquet, 829 CSV,
+25 JSON, 50 other). Their results are in topic 16 and
+`calibration/sensitivity_segregation.json`.
 
 ## Rules this file keeps
 

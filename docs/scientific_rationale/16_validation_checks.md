@@ -95,7 +95,29 @@ time averages by about that much.
 | V11d | e -0.1 / +0.1 | +0.9 / -1.0 | -0.6 / +0.3 | +0.2 / +0.1 % | 0.990 / 0.987 | 0.178 / 0.120 ; 0.179 / 0.115 | not within | small |
 | V11e | mu_r 0.11 (33 deg) / 0.30 (~40 deg) | -1.4 / +2.3 | -1.6 / +1.9 | -0.8 / +1.5 % | 0.991 / 0.986 | 0.177 / 0.109 ; 0.180 / 0.131 | not within | small; the repose band moves the angles by ~2 deg |
 
-**Literally**, only V11b (and V10) stay within the replicate scatter: the
+**Firmer yardstick and combined best case (2026-11-19).** Two more seeds of
+the baseline (`sens_baseline_s1`, `_s2`) give the replicate scatter
+**recorded like the sensitivity runs** (3 revolutions, 3 seeds): toe 240.0
++- 0.19 deg, shoulder 37.4 +- 0.37 deg, power 1,111 +- 7.5 kW (0.7 %),
+Lacey 0.988 +- 0.0013, large fraction outer / inner 0.179 +- 0.0005 /
+0.118 +- 0.003 (`data/raw/calibration/replicates_3rev_and_best_case.json`).
+The 2-revolution yardstick above was too narrow for the shoulder (x 2) and
+Lacey (x 6). Against +-2 sd of this one: **V10 and V11b are within on
+everything** (V11b including segregation); **V11d** is within on shoulder,
+power, Lacey and the radial fractions, outside only on the toe (+-1 deg);
+V9, V11c, V11e (by design: the band's ends) and V11 stay outside.
+
+A **combined best case** (`sens_best_case_combined`, commit `5766625`): every
+lever that moved the toe towards the target within plausible values, at
+once -- mu_r 0.11 (33 deg ore) and restitution +0.1 (mu_p is already at the
+bottom of its range, mu_w 0.5 was the grid's best, the Owen set and the end
+walls move the wrong way, density does nothing). Measured against the
+3-seed mean: **toe -2.8 deg (237.2), shoulder -0.7 deg (36.7)**, power
+-0.7 %, segregation unchanged (Lacey 0.992); the sum of the single effects
+predicted -2.4 / -1.3 deg. The plausible levers together move the toe by
+~3 deg, leaving 23 deg to the 214 deg target.
+
+**Literally** (against the 2-revolution yardstick), only V11b (and V10) stay within the replicate scatter: the
 yardstick from three seeds is very narrow (0.2 deg, 0.0002 in Lacey), and
 record length alone shifts the averages by about that much. **In
 substance**, every modelling choice except the end walls moves the toe and

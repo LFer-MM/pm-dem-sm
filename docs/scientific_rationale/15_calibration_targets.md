@@ -488,7 +488,10 @@ simulation:**
    shoulder by at most ~2 deg for dt, stiffness, ore density, the Owen
    friction set, restitution +-0.1 and the whole repose band (33-40 deg).
    Only frictional slice end walls move the charge a lot (shoulder +29 deg,
-   further from the target), and the setup uses frictionless ones.
+   further from the target), and the setup uses frictionless ones. All the
+   plausible levers that help, applied together (mu_r 0.11 and restitution
+   +0.1), moved the toe by **2.8 deg** and the shoulder by 0.7 deg
+   (measured, `sens_best_case_combined`): 23 deg from the target remain.
 
 V8 (toe / shoulder within SAG_A's interquartile range widened to the
 replicate scatter) is therefore **not met**, and is reported with this
