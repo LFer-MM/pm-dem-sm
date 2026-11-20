@@ -107,6 +107,17 @@ everything** (V11b including segregation); **V11d** is within on shoulder,
 power, Lacey and the radial fractions, outside only on the toe (+-1 deg);
 V9, V11c, V11e (by design: the band's ends) and V11 stay outside.
 
+**How the two readings are used (decided 2026-11-19).** The literal verdict
+asks whether a choice has *any* detectable effect on the DEM; the
+substantive reading asks whether the effect matters for the results and the
+surrogate's data. The conclusions rest on the substantive reading. The
+literal verdicts are reported for transparency and rest on **three
+replicates**: with n = 3 the true scatter could lie between ~0.5x and ~6x
+the measured value (95 % interval for the standard deviation; n = 5 would
+narrow it to ~0.6-2.9x, and Owen & Cleary used four repeats), so verdicts
+near the edge (V9, V11d's toe, V11b's shoulder) are not firm either way.
+More replicates were not run, since no conclusion depends on them.
+
 A **combined best case** (`sens_best_case_combined`, commit `5766625`): every
 lever that moved the toe towards the target within plausible values, at
 once -- mu_r 0.11 (33 deg ore) and restitution +0.1 (mu_p is already at the
